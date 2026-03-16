@@ -8,13 +8,14 @@ import (
 type TokenKind string
 
 const (
-	TokenEOF     TokenKind = "EOF"
-	TokenNewline TokenKind = "NEWLINE"
-	TokenIdent   TokenKind = "IDENT"
-	TokenInt     TokenKind = "INT"
-	TokenString  TokenKind = "STRING"
-	TokenKeyword TokenKind = "KEYWORD"
-	TokenSymbol  TokenKind = "SYMBOL"
+	TokenEOF        TokenKind = "EOF"
+	TokenNewline    TokenKind = "NEWLINE"
+	TokenDocComment TokenKind = "DOC_COMMENT"
+	TokenIdent      TokenKind = "IDENT"
+	TokenInt        TokenKind = "INT"
+	TokenString     TokenKind = "STRING"
+	TokenKeyword    TokenKind = "KEYWORD"
+	TokenSymbol     TokenKind = "SYMBOL"
 )
 
 type Token struct {
@@ -50,6 +51,8 @@ func Lex(src string) ([]Token, error) {
 			l.lexIdent()
 		case unicode.IsDigit(ch):
 			l.lexInt()
+		case ch == '/' && l.peekNext('/'):
+			l.lexComment()
 		case ch == '"':
 			if err := l.lexString(); err != nil {
 				return nil, err
@@ -106,6 +109,32 @@ func (l *Lexer) lexString() error {
 	return nil
 }
 
+func (l *Lexer) lexComment() {
+	line, col := l.line, l.col
+	l.advance()
+	l.advance()
+
+	isDoc := false
+	if !l.eof() && l.peek() == '/' {
+		isDoc = true
+		l.advance()
+	}
+
+	start := l.mark()
+	for !l.eof() && l.peek() != '\n' {
+		l.advance()
+	}
+	if !isDoc {
+		return
+	}
+
+	text := string(l.src[start:l.pos])
+	if len(text) > 0 && text[0] == ' ' {
+		text = text[1:]
+	}
+	l.emitAt(TokenDocComment, text, line, col)
+}
+
 func (l *Lexer) emit(kind TokenKind, text string) {
 	l.toks = append(l.toks, Token{Kind: kind, Text: text, Line: l.line, Column: l.col})
 }
@@ -129,9 +158,16 @@ func (l *Lexer) peek() rune { return l.src[l.pos] }
 func (l *Lexer) mark() int  { return l.pos }
 func (l *Lexer) eof() bool  { return l.pos >= len(l.src) }
 
+func (l *Lexer) peekNext(ch rune) bool {
+	if l.pos+1 >= len(l.src) {
+		return false
+	}
+	return l.src[l.pos+1] == ch
+}
+
 func isKeyword(s string) bool {
 	switch s {
-	case "mod", "import", "const", "type", "fn", "let", "mut", "if", "else", "when", "for", "in", "while", "break", "continue", "defer", "return", "spawn", "await":
+	case "mod", "import", "const", "type", "fn", "let", "mut", "if", "else", "when", "for", "in", "while", "break", "continue", "defer", "return", "spawn", "await", "group":
 		return true
 	default:
 		return false

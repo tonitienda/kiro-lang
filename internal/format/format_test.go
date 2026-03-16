@@ -77,3 +77,23 @@ fn main() -> i32 {
 		t.Fatalf("unexpected format:\n%s", out)
 	}
 }
+
+func TestSource_DocComment(t *testing.T) {
+	in := `mod main
+
+///greet returns a greeting.
+fn greet(name:str)->str= "hello ${name}"`
+	out, err := Source(in)
+	if err != nil {
+		t.Fatalf("Source() error = %v", err)
+	}
+	want := `mod main
+
+/// greet returns a greeting.
+fn greet(name:str) -> str =
+  "hello ${name}"
+`
+	if out != want {
+		t.Fatalf("unexpected format:\n%s", out)
+	}
+}

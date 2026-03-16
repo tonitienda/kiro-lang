@@ -1,0 +1,23 @@
+mod main
+
+fn slow_a() -> str {
+  return "A"
+}
+
+fn slow_b() -> str {
+  return "B"
+}
+
+fn main() -> i32 {
+  group {
+    let a = spawn slow_a()
+    let b = spawn slow_b()
+
+    let ra = await a
+    let rb = await b
+
+    println("${ra}-${rb}")
+  }
+
+  return 0
+}

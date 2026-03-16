@@ -1,0 +1,10 @@
+mod main
+
+/// greet returns a greeting.
+fn greet(name:str) -> str =
+  "hello ${name}"
+
+fn main() -> i32 {
+  println(greet("toni"))
+  return 0
+}
