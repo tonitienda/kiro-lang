@@ -1,0 +1,19 @@
+mod main
+
+type Resp {
+  code:i32
+  body:str
+}
+
+fn text(code:i32, body:str) -> Resp =
+  Resp{code:code body:body}
+
+fn route(path:str) -> Resp =
+  when path
+    "/health" => text(200, "ok")
+    _ => text(404, "not found")
+
+fn main() -> i32 =
+  let res = route("/health")
+  print(res.body)
+  0
