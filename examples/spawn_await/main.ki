@@ -5,13 +5,11 @@ fn work(x:i32) -> i32 {
 }
 
 fn main() -> i32 {
-  let a = spawn work(1)
-  let b = spawn work(2)
-
+  let a = spawn work ( 1 )
+  let b = spawn work ( 2 )
   let ra = await a
   let rb = await b
-
-  println("${ra}")
-  println("${rb}")
+  println ( "${ra}" )
+  println ( "${rb}" )
   return 0
 }

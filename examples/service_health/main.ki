@@ -5,16 +5,16 @@ import log
 
 fn app(req:httpReq) -> Resp {
   when req.path
-    "/health" => {
-      return Ok(http.text(200, "ok"))
-    }
-    _ => {
-      return Ok(http.not_found())
-    }
+  "/health" => {
+  return Ok ( http.text ( 200 , "ok" ) )
+  }
+  _ => {
+  return Ok ( http.not_found ( ) )
+  }
 }
 
 fn main() -> i32 {
-  log.info("starting :8080")
-  http.serve(":8080", app)?
+  log.info ( "starting :8080" )
+  http.serve ( ":8080" , app ) ?
   return 0
 }

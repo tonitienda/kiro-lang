@@ -2,7 +2,7 @@
 
 Kiro is an experimental, Go-backed server-side language.
 
-This repository now contains a **Phase 7 coherence slice** focused on package/service boundaries, tiny service ergonomics, inspectable generated Go, and explicit scaffolding.
+This repository now contains a **Phase 8 hardening slice** focused on package/service boundaries, tiny service ergonomics, inspectable generated Go, and explicit scaffolding.
 
 ## Implemented language/tooling surface (current repo)
 
@@ -19,6 +19,7 @@ This repository now contains a **Phase 7 coherence slice** focused on package/se
 - CLI command surface:
   - `kiro fmt`
   - `kiro check`
+  - `kiro compat`
   - `kiro inspect go`
   - `kiro new`
   - `kiro build` (placeholder)
@@ -40,6 +41,7 @@ go build ./cmd/kiro
 ```bash
 ./kiro fmt <paths...>
 ./kiro check <entry-or-path>
+./kiro compat [root] [--mode fmt,check,inspect]
 ./kiro inspect go <entry-or-path> [--out-dir <dir>]
 ./kiro new <hello|service>
 ./kiro build <entry>
@@ -65,7 +67,9 @@ go test ./...
 - `docs/concurrency.md`
 - `docs/debugging_generated_go.md`
 - `docs/stability.md`
-- `PHASE7_NOTES.md`
+- `docs/compatibility.md`
+- `docs/contributing.md`
+- `PHASE8_NOTES.md`
 
 ## Compatibility / roadmap
 
@@ -73,4 +77,4 @@ Kiro is still experimental.
 
 - Stable enough today: parser/formatter workflow, project/module boundaries, inspect-go workflow, starter templates.
 - Likely to change soon: semantic/type system implementation details, executable backend code generation, stdlib runtime APIs.
-- Near-term roadmap: complete semantic checking, real codegen pipeline, practical test runner output, stdlib surface hardening for service workflows.
+- Near-term roadmap: broaden compatibility fixtures, strengthen semantic/codegen invariants, and keep CI fast while adding reliability coverage.

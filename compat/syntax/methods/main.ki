@@ -1,0 +1,13 @@
+mod main
+
+type User {
+  name:str
+}
+
+fn (u:User) greet(prefix:str) -> str = "${prefix} ${u.name}"
+
+fn main() -> i32 {
+  let u = User{name:"kiro"}
+  println(u.greet("hi"))
+  return 0
+}

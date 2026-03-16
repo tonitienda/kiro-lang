@@ -1,0 +1,5 @@
+mod main
+
+import does/not/exist
+
+fn main() -> i32 = 0

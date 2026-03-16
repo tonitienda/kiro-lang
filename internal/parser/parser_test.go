@@ -143,3 +143,22 @@ import env
 		t.Fatalf("expected error")
 	}
 }
+
+func TestParseGenericTypeRef(t *testing.T) {
+	src := `mod main
+
+fn load() -> R[Config,str] =
+  Ok(Config{})
+`
+	file, err := Parse(src)
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	fd, ok := file.Decls[0].(ast.FuncDecl)
+	if !ok {
+		t.Fatalf("decl[0] type = %T", file.Decls[0])
+	}
+	if fd.ReturnType != "R[Config,str]" {
+		t.Fatalf("return type = %q", fd.ReturnType)
+	}
+}

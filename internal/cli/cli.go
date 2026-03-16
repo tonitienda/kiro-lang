@@ -8,19 +8,22 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/codegen"
+	"github.com/kiro-lang/kiro/internal/compat"
 	"github.com/kiro-lang/kiro/internal/format"
 	"github.com/kiro-lang/kiro/internal/project"
 )
 
 func Run(args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: kiro <fmt|check|inspect|new|build|run|test> ...")
+		return errors.New("usage: kiro <fmt|check|compat|inspect|new|build|run|test> ...")
 	}
 	switch args[0] {
 	case "fmt":
 		return runFmt(args[1:])
 	case "check":
 		return runCheck(args[1:])
+	case "compat":
+		return runCompat(args[1:])
 	case "inspect":
 		return runInspect(args[1:])
 	case "new":
@@ -30,6 +33,27 @@ func Run(args []string) error {
 	default:
 		return fmt.Errorf("unknown command: %s", args[0])
 	}
+}
+
+func runCompat(args []string) error {
+	root := "compat"
+	modes := map[string]bool{"fmt": true, "check": true, "inspect": true}
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--mode":
+			if i+1 >= len(args) {
+				return errors.New("usage: kiro compat [root] [--mode fmt,check,inspect]")
+			}
+			modes = map[string]bool{}
+			for _, m := range strings.Split(args[i+1], ",") {
+				modes[strings.TrimSpace(m)] = true
+			}
+			i++
+		default:
+			root = args[i]
+		}
+	}
+	return compat.Run(compat.RunOptions{Root: root, Modes: modes})
 }
 
 func runCheck(args []string) error {

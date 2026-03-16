@@ -1,0 +1,18 @@
+mod main
+
+/// AppName is fixture doc comment.
+const AppName = "compat"
+
+/// Pair demonstrates declaration docs.
+type Pair {
+  left:str
+  right:str
+}
+
+/// join is expression body for parser coverage.
+fn join(a:str, b:str) -> str = "${a}-${b}"
+
+fn main() -> i32 {
+  println(join(AppName, "doc"))
+  return 0
+}

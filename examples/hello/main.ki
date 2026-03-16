@@ -1,5 +1,5 @@
 mod main
 
 fn main() -> i32 =
-  print("hello")
+  print ( "hello" )
   0

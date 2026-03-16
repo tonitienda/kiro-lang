@@ -35,6 +35,17 @@ const Name = "kiro"
 	}
 }
 
+func TestRunCompat(t *testing.T) {
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "main.ki"), `mod main
+
+fn main() -> i32 = 0
+`)
+	if err := Run([]string{"compat", dir, "--mode", "fmt,check"}); err != nil {
+		t.Fatalf("Run(compat) error = %v", err)
+	}
+}
+
 func TestRunNewHello(t *testing.T) {
 	dir := t.TempDir()
 	prev, _ := os.Getwd()

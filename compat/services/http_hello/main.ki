@@ -1,0 +1,18 @@
+mod main
+
+import http
+
+fn main() -> i32 {
+  http.serve(":8080", handler)?
+  return 0
+}
+
+fn handler(req:httpReq) -> Resp {
+  when req.path
+    "/" => {
+      return Ok(http.text(200, "hello"))
+    }
+    _ => {
+      return Ok(http.not_found())
+    }
+}

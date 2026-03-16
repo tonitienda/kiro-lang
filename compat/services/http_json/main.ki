@@ -1,0 +1,18 @@
+mod main
+
+import http
+import json
+
+type Msg {
+  text:str
+}
+
+fn handler(req:httpReq) -> Resp {
+  let body = Msg{text:"ok"}
+  return Ok(http.json(200, json.encode(body)))
+}
+
+fn main() -> i32 {
+  http.serve(":8080", handler)?
+  return 0
+}
