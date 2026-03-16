@@ -4,7 +4,7 @@
 These instructions apply to the full repository.
 
 ## Implementation expectations
-- Follow the Phase 1 plan in `docs/phase1-spec.md` and keep milestones incremental.
+- Follow `docs/phase1-spec.md` for foundation and `docs/roadmap-phase2.md` for current incremental Phase 2 work.
 - Prefer straightforward, readable Go over abstractions.
 - Keep parser/formatter behavior deterministic.
 

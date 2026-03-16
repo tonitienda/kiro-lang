@@ -1,9 +1,9 @@
-# Kiro Syntax Overview (Phase 1 subset)
+# Kiro Syntax Overview (Current frontend subset)
 
 ```ki
 mod main
 
-import fs
+import app/router
 
 type Resp {
   code:i32
@@ -13,17 +13,21 @@ type Resp {
 fn text(code:i32, body:str) -> Resp =
   Resp{code:code body:body}
 
-fn main() -> i32 =
-  let r = text(200, "ok")
-  print(r.body)
-  0
+fn route(path:str) -> Resp {
+  if path == "/health" => {
+    return text(200, "ok")
+  }
+
+  return text(404, "not found")
+}
 ```
 
-## Current parser support
+## Parser support
 
 - `mod <name>`
-- `import <name>`
+- `import <name>` and `import <name>/<name>` paths
 - `type <Name> { <field>:<type> ... }` (struct form)
 - `fn <name>(<params>) -> <type> = <body>`
+- `fn <name>(<params>) -> <type> { <body> }`
 
-Function bodies are currently stored as normalized source text in the AST during early milestones.
+Function bodies are currently preserved as normalized source text in the AST while the compiler frontend evolves.

@@ -1,0 +1,13 @@
+mod main
+
+import http
+
+fn app(req:http.Req) -> R[http.Resp, str] =
+  when req.path
+    "/health" => Ok(http.text(200, "ok"))
+    _ => Ok(http.text(404, "not found"))
+
+fn main() -> i32 {
+  http.serve(":8080", app)?
+  return 0
+}

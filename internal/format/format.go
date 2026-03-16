@@ -44,9 +44,17 @@ func Print(file *ast.File) string {
 				}
 				fmt.Fprintf(&b, "%s:%s", p.Name, p.Type)
 			}
-			fmt.Fprintf(&b, ") -> %s =\n", decl.ReturnType)
-			for _, line := range normalizeBody(decl.Body) {
-				fmt.Fprintf(&b, "  %s\n", line)
+			if decl.BlockBody {
+				fmt.Fprintf(&b, ") -> %s {\n", decl.ReturnType)
+				for _, line := range normalizeBody(decl.Body) {
+					fmt.Fprintf(&b, "  %s\n", line)
+				}
+				b.WriteString("}")
+			} else {
+				fmt.Fprintf(&b, ") -> %s =\n", decl.ReturnType)
+				for _, line := range normalizeBody(decl.Body) {
+					fmt.Fprintf(&b, "  %s\n", line)
+				}
 			}
 		}
 		if i < len(file.Decls)-1 {
@@ -66,6 +74,9 @@ func normalizeBody(body string) []string {
 	out := make([]string, 0, len(lines))
 	for _, line := range lines {
 		trimmed := strings.Join(strings.Fields(strings.TrimSpace(line)), " ")
+		trimmed = strings.ReplaceAll(trimmed, "= =", "==")
+		trimmed = strings.ReplaceAll(trimmed, "= >", "=>")
+		trimmed = strings.ReplaceAll(trimmed, "- >", "->")
 		if trimmed != "" {
 			out = append(out, trimmed)
 		}

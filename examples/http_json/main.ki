@@ -1,0 +1,24 @@
+mod main
+
+import http
+import json
+
+type Msg {
+  status:str
+}
+
+fn app(req:http.Req) -> R[http.Resp, str] {
+  when req.path
+    "/health" => {
+      let body = json.encode(Msg{status:"ok"})?
+      return Ok(http.json(200, body))
+    }
+    _ => {
+      return Ok(http.text(404, "not found"))
+    }
+}
+
+fn main() -> i32 {
+  http.serve(":8080", app)?
+  return 0
+}

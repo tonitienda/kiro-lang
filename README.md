@@ -2,15 +2,19 @@
 
 Kiro is an experimental server-side language.
 
-This repository currently contains the **Phase 1 bootstrap**:
+This repository currently contains a **Phase 2-in-progress frontend** with:
 
 - Go module and CLI skeleton (`kiro`)
 - Lexer with line/column token metadata
-- Parser for a constrained subset (`mod`, `import`, `type` structs, `fn` signatures + body capture)
+- Parser for:
+  - `mod`, `import`
+  - `type` structs
+  - function declarations with **expression bodies** (`=`) and **block bodies** (`{ ... }`)
+  - import paths like `app/router`
 - AST package
-- Deterministic formatter (`kiro fmt`)
-- Early tests for lexer/parser/formatter
-- Example `.ki` programs
+- Deterministic formatter (`kiro fmt`) for current syntax
+- Tests for lexer/parser/formatter
+- Example `.ki` programs for planned Phase 2 demos
 
 ## Build
 
@@ -42,8 +46,9 @@ go test ./...
 - `internal/format`: canonical formatter
 - `internal/cli`: command wiring
 - `examples`: sample `.ki` programs
-- `docs`: spec, syntax overview, roadmap
+- `docs`: specs, syntax notes, roadmap
+- `PHASE2_NOTES.md`: implemented pieces, limits, next steps
 
 ## Status
 
-Current implementation aligns with early Milestone 1-2 scaffolding and keeps architecture simple for later semantic analysis, code generation, and stdlib work.
+Kiro is still intentionally small. Current work focuses on incremental, readable parser/formatter evolution before semantic analysis and code generation milestones.

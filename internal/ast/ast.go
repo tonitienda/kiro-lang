@@ -26,6 +26,7 @@ type FuncDecl struct {
 	Name       string
 	Params     []Param
 	ReturnType string
+	BlockBody  bool
 	Body       string
 }
 
