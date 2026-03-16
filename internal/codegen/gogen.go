@@ -11,10 +11,17 @@ import (
 )
 
 func EmitProjectGo(p *project.Project, outDir string) error {
+	if err := os.MkdirAll(filepath.Join(outDir, "runtime"), 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(outDir, "runtime", "README.txt"), []byte("runtime helpers are emitted here in later phases\n"), 0o644); err != nil {
+		return err
+	}
+
 	for _, f := range p.Files {
-		dest := filepath.Join(outDir, strings.TrimSuffix(f.Rel, ".ki")+".go")
+		dest := filepath.Join(outDir, "src", strings.TrimSuffix(f.Rel, ".ki")+".go")
 		if f.Rel == "main.ki" || strings.HasSuffix(f.Rel, "/main.ki") {
-			dest = filepath.Join(outDir, strings.TrimSuffix(f.Rel, "main.ki")+"module.go")
+			dest = filepath.Join(outDir, "src", strings.TrimSuffix(f.Rel, "main.ki")+"module.go")
 		}
 		if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
 			return err
@@ -34,14 +41,17 @@ func renderGoFile(f project.File) string {
 	for _, d := range f.AST.Decls {
 		switch decl := d.(type) {
 		case ast.ConstDecl:
+			b.WriteString(fmt.Sprintf("// from %s: const %s\n", f.Rel, decl.Name))
 			b.WriteString(fmt.Sprintf("const %s = %q\n\n", decl.Name, decl.Value))
 		case ast.TypeDecl:
+			b.WriteString(fmt.Sprintf("// from %s: type %s\n", f.Rel, decl.Name))
 			b.WriteString("type " + decl.Name + " struct {\n")
 			for _, field := range decl.Fields {
 				b.WriteString(fmt.Sprintf("\t%s string // kiro:%s\n", strings.Title(field.Name), field.Type))
 			}
 			b.WriteString("}\n\n")
 		case ast.FuncDecl:
+			b.WriteString(fmt.Sprintf("// from %s: fn %s\n", f.Rel, decl.Name))
 			b.WriteString("// fn " + decl.Name + " translated as stub\n")
 			b.WriteString("func " + strings.Title(decl.Name) + "() {\n")
 			for _, line := range strings.Split(strings.TrimSpace(decl.Body), "\n") {

@@ -2,7 +2,7 @@
 
 Kiro is an experimental, Go-backed server-side language.
 
-This repository now contains a **Phase 6 polish slice** focused on coherent project layout, faster validation, inspectable generated Go, and starter scaffolding.
+This repository now contains a **Phase 7 coherence slice** focused on package/service boundaries, tiny service ergonomics, inspectable generated Go, and explicit scaffolding.
 
 ## Implemented language/tooling surface (current repo)
 
@@ -25,7 +25,8 @@ This repository now contains a **Phase 6 polish slice** focused on coherent proj
   - `kiro run` (placeholder)
   - `kiro test` (placeholder)
 - Project loader with explicit module/import resolution rules
-- Generated Go inspection output with source-to-file mapping
+- Generated Go inspection output with source partitioning (`src/` and `runtime/`) and declaration-origin comments
+- `kiro new service` template aligned to config + handler + test layout
 - Examples for service/CLI/testing/project patterns
 
 ## Build
@@ -56,14 +57,20 @@ go test ./...
 
 - `docs/language_tour.md`
 - `docs/project_layout.md`
-- `docs/testing.md`
+- `docs/packages.md`
+- `docs/service_structure.md`
+- `docs/config.md`
 - `docs/http_json.md`
-- `PHASE6_NOTES.md`
+- `docs/testing.md`
+- `docs/concurrency.md`
+- `docs/debugging_generated_go.md`
+- `docs/stability.md`
+- `PHASE7_NOTES.md`
 
 ## Compatibility / roadmap
 
 Kiro is still experimental.
 
-- Stable enough today: parser/formatter workflow, project loading rules, CLI check/inspect/new behavior.
+- Stable enough today: parser/formatter workflow, project/module boundaries, inspect-go workflow, starter templates.
 - Likely to change soon: semantic/type system implementation details, executable backend code generation, stdlib runtime APIs.
-- Near-term roadmap: complete semantic checking, real codegen pipeline, practical test runner output, stdlib surface hardening.
+- Near-term roadmap: complete semantic checking, real codegen pipeline, practical test runner output, stdlib surface hardening for service workflows.

@@ -95,34 +95,100 @@ fn main() -> i32 {
 }
 
 func scaffoldService() error {
-	if err := os.MkdirAll("service", 0o755); err != nil {
+	if err := os.MkdirAll("service/app", 0o755); err != nil {
 		return err
 	}
+	if err := os.MkdirAll("service/internal/config", 0o755); err != nil {
+		return err
+	}
+	if err := os.MkdirAll("service/test", 0o755); err != nil {
+		return err
+	}
+
 	main := `mod main
 
+import app
+import internal/config
 import http
 import log
 
-fn app(req:httpReq) -> Resp {
+fn main() -> i32 {
+  let cfg = config.load()?
+  log.info("starting ${cfg.port}")
+  http.serve(cfg.port, app.handler)?
+  return 0
+}
+`
+	app := `mod app
+
+import http
+
+fn handler(req:httpReq) -> Resp {
   when req.path
     "/health" => {
       return Ok(http.text(200, "ok"))
     }
     _ => {
-      return Ok(http.text(404, "not found"))
+      return Ok(http.not_found())
     }
 }
+`
+	config := `mod config
 
-fn main() -> i32 {
-  log.info("starting :8080")
-  http.serve(":8080", app)?
-  return 0
+import env
+
+type AppConfig {
+  port:str
+  env:str
+}
+
+fn load() -> R[AppConfig, str] {
+  let port = env.get_or("PORT", ":8080")
+  let app_env = env.get_or("APP_ENV", "dev")
+  return Ok(AppConfig{port:port env:app_env})
 }
 `
+	testFile := `mod health_test
+
+import app
+import http
+import test
+
+fn test_health_handler() -> nil {
+  let req = http.test_req("GET", "/health", "")
+  let res = app.handler(req)?
+  test.eq(res.code, 200)
+}
+`
+	readme := `# Kiro service template
+
+This template shows the Phase 7 service shape:
+
+- ` + "`internal/config`" + ` for explicit config loading
+- ` + "`app`" + ` module for handler composition
+- handler-level test via ` + "`http.test_req`" + ` style helpers
+
+Check and inspect generated Go:
+
+` + "```bash" + `
+kiro check .
+kiro inspect go . --out-dir .kiro-gen
+` + "```" + `
+`
+
 	if err := os.WriteFile("service/main.ki", []byte(main), 0o644); err != nil {
 		return err
 	}
-	return os.WriteFile("service/README.md", []byte("Run with `kiro run service`.\n"), 0o644)
+	if err := os.WriteFile("service/app/main.ki", []byte(app), 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile("service/internal/config/main.ki", []byte(config), 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile("service/test/health.ki", []byte(testFile), 0o644); err != nil {
+		return err
+	}
+	return os.WriteFile("service/README.md", []byte(readme), 0o644)
 }
 
 func runFmt(paths []string) error {

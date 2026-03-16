@@ -27,8 +27,11 @@ const Name = "kiro"
 	if err := Run([]string{"inspect", "go", dir, "--out-dir", out}); err != nil {
 		t.Fatalf("Run(inspect) error = %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(out, "module.go")); err != nil {
+	if _, err := os.Stat(filepath.Join(out, "src", "module.go")); err != nil {
 		t.Fatalf("generated file missing: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(out, "runtime", "README.txt")); err != nil {
+		t.Fatalf("runtime layout missing: %v", err)
 	}
 }
 
@@ -44,6 +47,29 @@ func TestRunNewHello(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "hello", "main.ki")); err != nil {
 		t.Fatalf("hello template missing: %v", err)
+	}
+}
+
+func TestRunNewService(t *testing.T) {
+	dir := t.TempDir()
+	prev, _ := os.Getwd()
+	defer os.Chdir(prev)
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	if err := Run([]string{"new", "service"}); err != nil {
+		t.Fatalf("Run(new service) error = %v", err)
+	}
+	for _, p := range []string{
+		"service/main.ki",
+		"service/app/main.ki",
+		"service/internal/config/main.ki",
+		"service/test/health.ki",
+		"service/README.md",
+	} {
+		if _, err := os.Stat(filepath.Join(dir, p)); err != nil {
+			t.Fatalf("service template file missing %s: %v", p, err)
+		}
 	}
 }
 

@@ -1,13 +1,20 @@
 mod main
 
 import http
+import log
 
 fn app(req:httpReq) -> Resp {
   when req.path
     "/health" => {
-      return http.text(200, "ok")
+      return Ok(http.text(200, "ok"))
     }
     _ => {
-      return http.text(404, "not found")
+      return Ok(http.not_found())
     }
+}
+
+fn main() -> i32 {
+  log.info("starting :8080")
+  http.serve(":8080", app)?
+  return 0
 }

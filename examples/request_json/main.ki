@@ -1,0 +1,20 @@
+mod main
+
+import http
+import json
+
+type CreateReq {
+  name:str
+}
+
+fn app(req:httpReq) -> Resp {
+  when req.path
+    "/items" => {
+      let body = req.body
+      let input = json.decode[CreateReq](body)?
+      return Ok(http.json(200, json.encode(input)?))
+    }
+    _ => {
+      return Ok(http.not_found())
+    }
+}

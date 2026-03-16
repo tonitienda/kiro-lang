@@ -1,15 +1,30 @@
 mod main
 
-fn a() -> str = "A"
-fn b() -> str = "B"
+import http
+import json
+
+type Msg {
+  a:str
+  b:str
+}
+
+fn slow_a() -> str = "A"
+fn slow_b() -> str = "B"
+
+fn app(req:httpReq) -> Resp {
+  group {
+    let ta = spawn slow_a()
+    let tb = spawn slow_b()
+
+    let a = await ta
+    let b = await tb
+
+    let body = json.encode(Msg{a:a b:b})?
+    return Ok(http.json(200, body))
+  }
+}
 
 fn main() -> i32 {
-  group {
-    let ta = spawn a()
-    let tb = spawn b()
-    let ra = await ta
-    let rb = await tb
-    println("${ra}${rb}")
-  }
+  http.serve(":8080", app)?
   return 0
 }

@@ -4,8 +4,19 @@ import env
 
 const DefaultPort = ":8080"
 
-fn main() -> i32 {
+type AppConfig {
+  port:str
+  env:str
+}
+
+fn load_config() -> R[AppConfig, str] {
   let port = env.get_or("PORT", DefaultPort)
-  println("starting ${port}")
+  let app_env = env.get_or("APP_ENV", "dev")
+  return Ok(AppConfig{port:port env:app_env})
+}
+
+fn main() -> i32 {
+  let cfg = load_config()?
+  println("starting ${cfg.port} (${cfg.env})")
   return 0
 }
