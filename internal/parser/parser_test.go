@@ -111,3 +111,35 @@ fn (u:User) display() -> ?str =
 		t.Fatalf("return type = %q", fd.ReturnType)
 	}
 }
+
+func TestParseDocCommentOnFunc(t *testing.T) {
+	src := `mod main
+
+/// greet returns a greeting.
+fn greet(name:str) -> str =
+  "hello ${name}"
+`
+	file, err := Parse(src)
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	fd, ok := file.Decls[0].(ast.FuncDecl)
+	if !ok {
+		t.Fatalf("decl[0] type = %T", file.Decls[0])
+	}
+	if len(fd.Doc) != 1 || fd.Doc[0] != "greet returns a greeting." {
+		t.Fatalf("doc = %#v", fd.Doc)
+	}
+}
+
+func TestParseDocCommentBeforeImportFails(t *testing.T) {
+	src := `mod main
+
+/// bad location
+import env
+`
+	_, err := Parse(src)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+}

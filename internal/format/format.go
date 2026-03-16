@@ -29,6 +29,7 @@ func Print(file *ast.File) string {
 		b.WriteString("\n")
 	}
 	for i, d := range file.Decls {
+		printDoc(&b, d.GetDoc())
 		switch decl := d.(type) {
 		case ast.ConstDecl:
 			val := decl.Value
@@ -73,6 +74,12 @@ func Print(file *ast.File) string {
 	}
 	out := strings.TrimRight(b.String(), "\n") + "\n"
 	return out
+}
+
+func printDoc(b *strings.Builder, lines []string) {
+	for _, line := range lines {
+		fmt.Fprintf(b, "/// %s\n", strings.TrimSpace(line))
+	}
 }
 
 func normalizeBody(body string) []string {

@@ -9,8 +9,9 @@ import (
 )
 
 type Parser struct {
-	tokens []lexer.Token
-	pos    int
+	tokens     []lexer.Token
+	pos        int
+	pendingDoc []string
 }
 
 func Parse(src string) (*ast.File, error) {
@@ -39,11 +40,19 @@ func (p *Parser) parseFile() (*ast.File, error) {
 			break
 		}
 		t := p.peek()
+		if t.Kind == lexer.TokenDocComment {
+			p.pendingDoc = append(p.pendingDoc, t.Text)
+			p.next()
+			continue
+		}
 		if t.Kind != lexer.TokenKeyword {
 			return nil, fmt.Errorf("unexpected token %q at %d:%d", t.Text, t.Line, t.Column)
 		}
 		switch t.Text {
 		case "import":
+			if len(p.pendingDoc) > 0 {
+				return nil, fmt.Errorf("doc comments may only appear on declarations at %d:%d", t.Line, t.Column)
+			}
 			p.next()
 			imp, err := p.parseImportPath()
 			if err != nil {
@@ -72,6 +81,9 @@ func (p *Parser) parseFile() (*ast.File, error) {
 			return nil, fmt.Errorf("unsupported keyword %q at %d:%d", t.Text, t.Line, t.Column)
 		}
 	}
+	if len(p.pendingDoc) > 0 {
+		return nil, fmt.Errorf("doc comment not attached to declaration")
+	}
 	return file, nil
 }
 
@@ -88,7 +100,7 @@ func (p *Parser) parseConstDecl() (ast.Decl, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ast.ConstDecl{Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
+	return ast.ConstDecl{Doc: p.takePendingDoc(), Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
 }
 
 func (p *Parser) expectConstValue() (lexer.Token, error) {
@@ -125,7 +137,7 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 	if _, err := p.expectText("{"); err != nil {
 		return nil, err
 	}
-	decl := ast.TypeDecl{Name: name.Text}
+	decl := ast.TypeDecl{Doc: p.takePendingDoc(), Name: name.Text}
 	for {
 		p.skipNewlines()
 		if p.peekText("}") {
@@ -199,7 +211,7 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 	if p.peekText("=") {
 		p.next()
 		body := p.collectExprBody()
-		return ast.FuncDecl{Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, Body: body}, nil
+		return ast.FuncDecl{Doc: p.takePendingDoc(), Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, Body: body}, nil
 	}
 	if p.peekText("{") {
 		p.next()
@@ -207,7 +219,7 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ast.FuncDecl{Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, BlockBody: true, Body: body}, nil
+		return ast.FuncDecl{Doc: p.takePendingDoc(), Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, BlockBody: true, Body: body}, nil
 	}
 	return nil, fmt.Errorf("expected \"=\" or \"{\" at %d:%d", p.peek().Line, p.peek().Column)
 }
@@ -307,6 +319,16 @@ func renderToken(t lexer.Token) string {
 		return fmt.Sprintf("\"%s\"", t.Text)
 	}
 	return t.Text
+}
+
+func (p *Parser) takePendingDoc() []string {
+	if len(p.pendingDoc) == 0 {
+		return nil
+	}
+	out := make([]string, len(p.pendingDoc))
+	copy(out, p.pendingDoc)
+	p.pendingDoc = nil
+	return out
 }
 
 func (p *Parser) expectKeyword(k string) error {

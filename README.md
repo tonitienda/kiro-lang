@@ -1,23 +1,30 @@
 # kiro-lang
 
-Kiro is an experimental server-side language.
+Kiro is an experimental, Go-backed server-side language.
 
-This repository currently contains a **Phase 4 early frontend slice** with:
+This repository now contains a **Phase 5 frontend slice** focused on small service-language ergonomics with deterministic tooling.
 
-- Go module and CLI skeleton (`kiro`)
+## Implemented language/tooling surface (current repo)
+
 - Lexer with line/column token metadata
 - Parser for:
   - `mod`, `import`, module-level `const`
   - `type` structs
-  - function declarations with **expression bodies** (`=`) and **block bodies** (`{ ... }`)
-  - value-receiver method declarations (`fn (u:User) name(...) -> ...`)
-  - import paths like `app/router`
-- AST package with receiver-aware function declarations
-- Deterministic formatter (`kiro fmt`) for current syntax
-- Tests for lexer/parser/formatter
-- Optional type references in signatures/fields (`?T`)
-- Reserved lexer keywords for upcoming concurrency syntax (`spawn`, `await`)
-- Example `.ki` programs for Phase 2, Phase 3, and initial Phase 4 demos
+  - function declarations with expression (`=`) and block (`{ ... }`) bodies
+  - value-receiver methods (`fn (u:User) ...`)
+  - optional type references in signatures/fields (`?T`)
+  - top-level doc comments (`/// ...`) attached to declarations
+- AST package with receiver-aware declarations and doc comment capture
+- Deterministic formatter (`kiro fmt`) that preserves canonical doc comment placement
+- CLI command surface:
+  - `kiro fmt`
+  - `kiro build` (placeholder)
+  - `kiro run` (placeholder)
+  - `kiro test` (placeholder)
+- Reserved lexer keywords for concurrency/control-flow evolution including `spawn`, `await`, and `group`
+- Examples for Phase 4 and new Phase 5 acceptance-style programs
+
+> Note: semantic analysis, codegen, runtime helpers, and stdlib execution behavior described in roadmap notes are still incremental and not all represented in this frontend-focused slice.
 
 ## Build
 
@@ -29,9 +36,9 @@ go build ./cmd/kiro
 
 ```bash
 ./kiro fmt <paths...>
-./kiro build <entry>   # milestone placeholder
-./kiro run <entry>     # milestone placeholder
-./kiro test <path>     # milestone placeholder
+./kiro build <entry>
+./kiro run <entry>
+./kiro test <path>
 ```
 
 ## Development
@@ -48,12 +55,15 @@ go test ./...
 - `internal/ast`: AST nodes
 - `internal/format`: canonical formatter
 - `internal/cli`: command wiring
-- `examples`: sample `.ki` programs
+- `examples`: sample `.ki` programs, including new Phase 5 examples
 - `docs`: specs, syntax notes, roadmap
-- `PHASE2_NOTES.md`: Phase 2 implementation notes
-- `PHASE3_NOTES.md`: ongoing Phase 3 implementation notes and known limitations
-- `PHASE4_NOTES.md`: Phase 4 updates, limitations, and next-scope recommendations
+- `PHASE2_NOTES.md`, `PHASE3_NOTES.md`, `PHASE4_NOTES.md`, `PHASE5_NOTES.md`: phased implementation notes
 
-## Status
+## Philosophy
 
-Kiro is still intentionally small. Current work focuses on incremental, readable parser/formatter evolution and staged language-surface additions before full semantic/codegen/runtime milestones.
+Kiro aims to be a tiny, opinionated language for backend services and operational tooling:
+
+- small syntax surface
+- deterministic formatting/parsing behavior
+- pragmatic Go integration
+- no giant-language ambitions (no macro/typeclass/ownership complexity)

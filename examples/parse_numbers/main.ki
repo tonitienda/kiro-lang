@@ -1,0 +1,9 @@
+mod main
+
+import parse
+
+fn main() -> i32 {
+  let n = parse.i32("42")?
+  println("${n}")
+  return 0
+}
