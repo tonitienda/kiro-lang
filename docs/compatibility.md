@@ -2,7 +2,7 @@
 
 Phase 8 formalizes a repository-owned compatibility corpus under `compat/`.
 
-## Layout
+## Layout and contract classification
 
 ```text
 compat/
@@ -14,6 +14,15 @@ compat/
   templates/
   regression/
 ```
+
+Phase 9 classifies fixture groups by intended compatibility strength:
+
+- **Stable contract fixtures**: `syntax/`, `cli/`, `services/`, `stdlib/`, `templates/`
+  - represent source-compatibility-sensitive behavior; drift should be deliberate.
+- **Regression fixtures**: `regression/`
+  - lock specific bug fixes or diagnostics.
+- **Experimental fixtures**: currently `concurrency/`
+  - useful for confidence but allowed to evolve faster while semantics continue to harden.
 
 Each fixture is a small directory containing at minimum a `main.ki`. Optional `fixture.json` metadata can declare:
 
@@ -35,6 +44,8 @@ or with a custom path/modes:
 ```bash
 kiro compat compat/regression --mode check
 ```
+
+When compatibility fixtures change intentionally, update `PHASE9_NOTES.md` with rationale.
 
 ## What is validated
 
