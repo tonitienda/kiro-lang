@@ -50,6 +50,12 @@ func (p *Parser) parseFile() (*ast.File, error) {
 				return nil, err
 			}
 			file.Imports = append(file.Imports, imp)
+		case "const":
+			d, err := p.parseConstDecl()
+			if err != nil {
+				return nil, err
+			}
+			file.Decls = append(file.Decls, d)
 		case "type":
 			d, err := p.parseTypeDecl()
 			if err != nil {
@@ -67,6 +73,30 @@ func (p *Parser) parseFile() (*ast.File, error) {
 		}
 	}
 	return file, nil
+}
+
+func (p *Parser) parseConstDecl() (ast.Decl, error) {
+	p.next()
+	name, err := p.expect(lexer.TokenIdent)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := p.expectText("="); err != nil {
+		return nil, err
+	}
+	val, err := p.expectConstValue()
+	if err != nil {
+		return nil, err
+	}
+	return ast.ConstDecl{Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
+}
+
+func (p *Parser) expectConstValue() (lexer.Token, error) {
+	t := p.next()
+	if t.Kind != lexer.TokenString && t.Kind != lexer.TokenInt && t.Kind != lexer.TokenIdent {
+		return lexer.Token{}, fmt.Errorf("expected const value at %d:%d", t.Line, t.Column)
+	}
+	return t, nil
 }
 
 func (p *Parser) parseImportPath() (string, error) {
@@ -109,7 +139,7 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 		if _, err := p.expectText(":"); err != nil {
 			return nil, err
 		}
-		typ, err := p.expect(lexer.TokenIdent)
+		typ, err := p.parseTypeRef()
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +175,7 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		if _, err := p.expectText(":"); err != nil {
 			return nil, err
 		}
-		paramType, err := p.expect(lexer.TokenIdent)
+		paramType, err := p.parseTypeRef()
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +191,7 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 	if _, err := p.expectText(">"); err != nil {
 		return nil, err
 	}
-	ret, err := p.expect(lexer.TokenIdent)
+	ret, err := p.parseTypeRef()
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +223,7 @@ func (p *Parser) parseReceiver() (ast.Param, error) {
 	if _, err := p.expectText(":"); err != nil {
 		return ast.Param{}, err
 	}
-	typ, err := p.expect(lexer.TokenIdent)
+	typ, err := p.parseTypeRef()
 	if err != nil {
 		return ast.Param{}, err
 	}
@@ -207,7 +237,7 @@ func (p *Parser) collectExprBody() string {
 	var parts []string
 	for !p.isEOF() {
 		t := p.peek()
-		if t.Kind == lexer.TokenKeyword && t.Column == 1 && (t.Text == "fn" || t.Text == "type" || t.Text == "import") {
+		if t.Kind == lexer.TokenKeyword && t.Column == 1 && (t.Text == "fn" || t.Text == "type" || t.Text == "import" || t.Text == "const") {
 			break
 		}
 		p.next()
@@ -256,6 +286,20 @@ func (p *Parser) collectBlockBody() (string, error) {
 		current = append(current, renderToken(t))
 	}
 	return "", fmt.Errorf("unterminated block body")
+}
+
+func (p *Parser) parseTypeRef() (lexer.Token, error) {
+	if p.peekText("?") {
+		q := p.next()
+		base, err := p.expect(lexer.TokenIdent)
+		if err != nil {
+			return lexer.Token{}, err
+		}
+		base.Text = q.Text + base.Text
+		base.Column = q.Column
+		return base, nil
+	}
+	return p.expect(lexer.TokenIdent)
 }
 
 func renderToken(t lexer.Token) string {

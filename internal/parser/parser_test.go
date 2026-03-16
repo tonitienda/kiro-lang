@@ -11,9 +11,11 @@ func TestParseFile(t *testing.T) {
 
 import app/router
 
+const Version = "0.4"
+
 type Resp {
   code:i32
-  body:str
+  body:?str
 }
 
 fn main() -> i32 =
@@ -29,8 +31,22 @@ fn main() -> i32 =
 	if len(file.Imports) != 1 || file.Imports[0] != "app/router" {
 		t.Fatalf("imports = %#v", file.Imports)
 	}
-	if len(file.Decls) != 2 {
+	if len(file.Decls) != 3 {
 		t.Fatalf("decl count = %d", len(file.Decls))
+	}
+	cd, ok := file.Decls[0].(ast.ConstDecl)
+	if !ok {
+		t.Fatalf("decl[0] type = %T", file.Decls[0])
+	}
+	if cd.Name != "Version" || cd.Value != "0.4" {
+		t.Fatalf("const = %#v", cd)
+	}
+	td, ok := file.Decls[1].(ast.TypeDecl)
+	if !ok {
+		t.Fatalf("decl[1] type = %T", file.Decls[1])
+	}
+	if td.Fields[1].Type != "?str" {
+		t.Fatalf("optional field type = %q", td.Fields[1].Type)
 	}
 }
 
@@ -68,7 +84,7 @@ type User {
   name:str
 }
 
-fn (u:User) display() -> str =
+fn (u:User) display() -> ?str =
   u.name
 `
 	file, err := Parse(src)
@@ -90,5 +106,8 @@ fn (u:User) display() -> str =
 	}
 	if fd.Name != "display" {
 		t.Fatalf("name = %q", fd.Name)
+	}
+	if fd.ReturnType != "?str" {
+		t.Fatalf("return type = %q", fd.ReturnType)
 	}
 }

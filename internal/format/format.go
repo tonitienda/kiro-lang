@@ -30,6 +30,12 @@ func Print(file *ast.File) string {
 	}
 	for i, d := range file.Decls {
 		switch decl := d.(type) {
+		case ast.ConstDecl:
+			val := decl.Value
+			if decl.ValueKind == "STRING" {
+				val = fmt.Sprintf("\"%s\"", decl.Value)
+			}
+			fmt.Fprintf(&b, "const %s = %s", decl.Name, val)
 		case ast.TypeDecl:
 			fmt.Fprintf(&b, "type %s {\n", decl.Name)
 			for _, f := range decl.Fields {

@@ -10,6 +10,14 @@ type Decl interface {
 	declNode()
 }
 
+type ConstDecl struct {
+	Name      string
+	Value     string
+	ValueKind string
+}
+
+func (ConstDecl) declNode() {}
+
 type TypeDecl struct {
 	Name   string
 	Fields []Field

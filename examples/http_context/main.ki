@@ -1,0 +1,12 @@
+mod main
+
+import ctx
+import log
+
+fn main() -> i32 {
+  let c = ctx.background()
+  let t = ctx.with_timeout_ms(c, 1000)
+  log.info("started")
+  println("ok ${t}")
+  return 0
+}

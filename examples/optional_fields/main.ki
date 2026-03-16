@@ -1,0 +1,13 @@
+mod main
+
+type User {
+  id:i32
+  name:str
+  email:?str
+}
+
+fn main() -> i32 {
+  let u = User{id:1 name:"toni" email:nil}
+  println("user=${u.name}")
+  return 0
+}

@@ -1,0 +1,9 @@
+mod main
+
+const Version = "0.4"
+const Port = ":8080"
+
+fn main() -> i32 {
+  println("kiro ${Version} on ${Port}")
+  return 0
+}

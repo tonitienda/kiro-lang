@@ -17,4 +17,5 @@ These instructions apply to the full repository.
 - Run `go test ./...` before finishing.
 
 ## Current milestone context
-- Phase 3 has started; use `PHASE3_NOTES.md` for the latest implemented scope and limitations before adding new Phase 3 features.
+- Phase 4 has started; check `PHASE4_NOTES.md` first for latest implemented scope and limitations.
+- Keep `PHASE3_NOTES.md` aligned when touching earlier-phase assumptions.
