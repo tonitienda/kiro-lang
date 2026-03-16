@@ -1,0 +1,9 @@
+mod main
+
+import fs
+
+fn main() -> i32 {
+  let body = fs.read("./README.md")
+  println("bytes ${body}")
+  return 0
+}

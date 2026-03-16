@@ -2,7 +2,7 @@
 
 Kiro is an experimental, Go-backed server-side language.
 
-This repository now contains a **Phase 5 frontend slice** focused on small service-language ergonomics with deterministic tooling.
+This repository now contains a **Phase 6 polish slice** focused on coherent project layout, faster validation, inspectable generated Go, and starter scaffolding.
 
 ## Implemented language/tooling surface (current repo)
 
@@ -18,13 +18,15 @@ This repository now contains a **Phase 5 frontend slice** focused on small servi
 - Deterministic formatter (`kiro fmt`) that preserves canonical doc comment placement
 - CLI command surface:
   - `kiro fmt`
+  - `kiro check`
+  - `kiro inspect go`
+  - `kiro new`
   - `kiro build` (placeholder)
   - `kiro run` (placeholder)
   - `kiro test` (placeholder)
-- Reserved lexer keywords for concurrency/control-flow evolution including `spawn`, `await`, and `group`
-- Examples for Phase 4 and new Phase 5 acceptance-style programs
-
-> Note: semantic analysis, codegen, runtime helpers, and stdlib execution behavior described in roadmap notes are still incremental and not all represented in this frontend-focused slice.
+- Project loader with explicit module/import resolution rules
+- Generated Go inspection output with source-to-file mapping
+- Examples for service/CLI/testing/project patterns
 
 ## Build
 
@@ -36,6 +38,9 @@ go build ./cmd/kiro
 
 ```bash
 ./kiro fmt <paths...>
+./kiro check <entry-or-path>
+./kiro inspect go <entry-or-path> [--out-dir <dir>]
+./kiro new <hello|service>
 ./kiro build <entry>
 ./kiro run <entry>
 ./kiro test <path>
@@ -47,23 +52,18 @@ go build ./cmd/kiro
 go test ./...
 ```
 
-## Project layout
+## Docs
 
-- `cmd/kiro`: CLI entrypoint
-- `internal/lexer`: tokenizer
-- `internal/parser`: parser
-- `internal/ast`: AST nodes
-- `internal/format`: canonical formatter
-- `internal/cli`: command wiring
-- `examples`: sample `.ki` programs, including new Phase 5 examples
-- `docs`: specs, syntax notes, roadmap
-- `PHASE2_NOTES.md`, `PHASE3_NOTES.md`, `PHASE4_NOTES.md`, `PHASE5_NOTES.md`: phased implementation notes
+- `docs/language_tour.md`
+- `docs/project_layout.md`
+- `docs/testing.md`
+- `docs/http_json.md`
+- `PHASE6_NOTES.md`
 
-## Philosophy
+## Compatibility / roadmap
 
-Kiro aims to be a tiny, opinionated language for backend services and operational tooling:
+Kiro is still experimental.
 
-- small syntax surface
-- deterministic formatting/parsing behavior
-- pragmatic Go integration
-- no giant-language ambitions (no macro/typeclass/ownership complexity)
+- Stable enough today: parser/formatter workflow, project loading rules, CLI check/inspect/new behavior.
+- Likely to change soon: semantic/type system implementation details, executable backend code generation, stdlib runtime APIs.
+- Near-term roadmap: complete semantic checking, real codegen pipeline, practical test runner output, stdlib surface hardening.
