@@ -1,9 +1,16 @@
-# Phase 2 Roadmap (Not Implemented)
+# Phase 2 Roadmap (Incremental)
 
-Planned future items after Phase 1:
+This repository is implementing Phase 2 incrementally.
 
-- async/await and structured concurrency
-- richer stdlib and HTTP ergonomics
-- fuller generics and union pattern matching
-- improved diagnostics and LSP support
-- package management and native backend options
+## Completed in this slice
+
+- Block-bodied function parsing (`fn ... { ... }`) alongside existing expression-bodied form.
+- Basic formatter support for block-bodied functions.
+- Parser support for slash-separated import paths (`import app/router`).
+
+## Next milestones
+
+1. Statement-level parsing inside blocks (`return`, assignment, block `if`, `for in`).
+2. Expression improvements (`when`, list literals, indexing, `len`).
+3. Type/semantic diagnostics and Result (`R[T,E]`, `?`) flow.
+4. Stdlib/module improvements and end-to-end examples.

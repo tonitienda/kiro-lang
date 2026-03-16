@@ -45,11 +45,11 @@ func (p *Parser) parseFile() (*ast.File, error) {
 		switch t.Text {
 		case "import":
 			p.next()
-			imp, err := p.expect(lexer.TokenIdent)
+			imp, err := p.parseImportPath()
 			if err != nil {
 				return nil, err
 			}
-			file.Imports = append(file.Imports, imp.Text)
+			file.Imports = append(file.Imports, imp)
 		case "type":
 			d, err := p.parseTypeDecl()
 			if err != nil {
@@ -67,6 +67,23 @@ func (p *Parser) parseFile() (*ast.File, error) {
 		}
 	}
 	return file, nil
+}
+
+func (p *Parser) parseImportPath() (string, error) {
+	seg, err := p.expect(lexer.TokenIdent)
+	if err != nil {
+		return "", err
+	}
+	parts := []string{seg.Text}
+	for p.peekText("/") {
+		p.next()
+		nextSeg, err := p.expect(lexer.TokenIdent)
+		if err != nil {
+			return "", err
+		}
+		parts = append(parts, nextSeg.Text)
+	}
+	return strings.Join(parts, "/"), nil
 }
 
 func (p *Parser) parseTypeDecl() (ast.Decl, error) {
@@ -140,14 +157,24 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := p.expectText("="); err != nil {
-		return nil, err
+
+	if p.peekText("=") {
+		p.next()
+		body := p.collectExprBody()
+		return ast.FuncDecl{Name: name.Text, Params: params, ReturnType: ret.Text, Body: body}, nil
 	}
-	body := p.collectBody()
-	return ast.FuncDecl{Name: name.Text, Params: params, ReturnType: ret.Text, Body: body}, nil
+	if p.peekText("{") {
+		p.next()
+		body, err := p.collectBlockBody()
+		if err != nil {
+			return nil, err
+		}
+		return ast.FuncDecl{Name: name.Text, Params: params, ReturnType: ret.Text, BlockBody: true, Body: body}, nil
+	}
+	return nil, fmt.Errorf("expected \"=\" or \"{\" at %d:%d", p.peek().Line, p.peek().Column)
 }
 
-func (p *Parser) collectBody() string {
+func (p *Parser) collectExprBody() string {
 	var parts []string
 	for !p.isEOF() {
 		t := p.peek()
@@ -162,15 +189,51 @@ func (p *Parser) collectBody() string {
 			parts = append(parts, "\n")
 			continue
 		}
-		if t.Kind == lexer.TokenString {
-			parts = append(parts, fmt.Sprintf("\"%s\"", t.Text))
-			continue
-		}
-		parts = append(parts, t.Text)
+		parts = append(parts, renderToken(t))
 	}
 	body := strings.TrimSpace(strings.Join(parts, " "))
 	body = strings.ReplaceAll(body, "\n ", "\n")
 	return body
+}
+
+func (p *Parser) collectBlockBody() (string, error) {
+	depth := 1
+	var lines []string
+	var current []string
+	for !p.isEOF() {
+		t := p.next()
+		if t.Kind == lexer.TokenSymbol {
+			if t.Text == "{" {
+				depth++
+			}
+			if t.Text == "}" {
+				depth--
+				if depth == 0 {
+					if len(current) > 0 {
+						lines = append(lines, strings.Join(current, " "))
+					}
+					return strings.TrimSpace(strings.Join(lines, "\n")), nil
+				}
+			}
+		}
+		if t.Kind == lexer.TokenNewline {
+			line := strings.TrimSpace(strings.Join(current, " "))
+			if line != "" {
+				lines = append(lines, line)
+			}
+			current = nil
+			continue
+		}
+		current = append(current, renderToken(t))
+	}
+	return "", fmt.Errorf("unterminated block body")
+}
+
+func renderToken(t lexer.Token) string {
+	if t.Kind == lexer.TokenString {
+		return fmt.Sprintf("\"%s\"", t.Text)
+	}
+	return t.Text
 }
 
 func (p *Parser) expectKeyword(k string) error {
