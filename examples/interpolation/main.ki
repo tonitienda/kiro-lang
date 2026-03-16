@@ -1,0 +1,7 @@
+mod main
+
+fn main() -> i32 {
+  let name = "kiro"
+  println("hello ${name}")
+  return 0
+}

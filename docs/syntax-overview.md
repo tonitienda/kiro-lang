@@ -5,12 +5,15 @@ mod main
 
 import app/router
 
+const Version = "0.4"
+
 type User {
   id:i32
   name:str
+  email:?str
 }
 
-fn (u:User) display() -> str =
+fn (u:User) display() -> ?str =
   u.name
 
 fn route(path:str) -> Resp {
@@ -26,7 +29,8 @@ fn route(path:str) -> Resp {
 
 - `mod <name>`
 - `import <name>` and `import <name>/<name>` paths
-- `type <Name> { <field>:<type> ... }` (struct form)
+- `const <Name> = <string|int|ident>` (module scoped)
+- `type <Name> { <field>:<type> ... }` (struct form, including optional refs like `?str`)
 - `fn <name>(<params>) -> <type> = <body>`
 - `fn <name>(<params>) -> <type> { <body> }`
 - `fn (<recv>:<Type>) <name>(<params>) -> <type> = <body>`
@@ -36,4 +40,4 @@ Function bodies are currently preserved as normalized source text in the AST whi
 
 ## Reserved keywords
 
-Current keywords include: `mod`, `import`, `type`, `fn`, `let`, `mut`, `if`, `else`, `when`, `for`, `in`, `while`, `break`, `continue`, `defer`, `return`.
+Current keywords include: `mod`, `import`, `const`, `type`, `fn`, `let`, `mut`, `if`, `else`, `when`, `for`, `in`, `while`, `break`, `continue`, `defer`, `return`, `spawn`, `await`.

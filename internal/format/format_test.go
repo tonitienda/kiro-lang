@@ -7,8 +7,10 @@ func TestSource(t *testing.T) {
 
 import app/router
 
+const Version="0.4"
+
 type Resp { code:i32
-body:str }
+body:?str }
 
 fn main()->i32= 0`
 	out, err := Source(in)
@@ -19,9 +21,11 @@ fn main()->i32= 0`
 
 import app/router
 
+const Version = "0.4"
+
 type Resp {
   code:i32
-  body:str
+  body:?str
 }
 
 fn main() -> i32 =
@@ -53,24 +57,21 @@ fn route(path:str) -> Resp {
 	}
 }
 
-func TestSource_Method(t *testing.T) {
+func TestSource_InterpolationStringBody(t *testing.T) {
 	in := `mod main
 
-type User {name:str}
-
-fn (u:User)display()->str=u.name`
+fn main()->i32{println("kiro ${Version}")
+return 0}`
 	out, err := Source(in)
 	if err != nil {
 		t.Fatalf("Source() error = %v", err)
 	}
 	want := `mod main
 
-type User {
-  name:str
+fn main() -> i32 {
+  println ( "kiro ${Version}" )
+  return 0
 }
-
-fn (u:User) display() -> str =
-  u.name
 `
 	if out != want {
 		t.Fatalf("unexpected format:\n%s", out)

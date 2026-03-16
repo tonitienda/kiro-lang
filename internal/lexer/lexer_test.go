@@ -16,13 +16,13 @@ func TestLexBasic(t *testing.T) {
 	}
 }
 
-func TestLexPhase3Keywords(t *testing.T) {
-	src := "while break continue defer"
+func TestLexPhase4Keywords(t *testing.T) {
+	src := "const spawn await while break continue defer"
 	toks, err := Lex(src)
 	if err != nil {
 		t.Fatalf("Lex() error = %v", err)
 	}
-	for i, tok := range toks[:4] {
+	for i, tok := range toks[:7] {
 		if tok.Kind != TokenKeyword {
 			t.Fatalf("token[%d] kind = %s", i, tok.Kind)
 		}
