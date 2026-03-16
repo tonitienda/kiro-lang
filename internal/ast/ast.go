@@ -24,6 +24,7 @@ type Field struct {
 
 type FuncDecl struct {
 	Name       string
+	Receiver   *Param
 	Params     []Param
 	ReturnType string
 	BlockBody  bool

@@ -60,3 +60,35 @@ fn route(path:str) -> Resp {
 		t.Fatalf("expected non-empty body")
 	}
 }
+
+func TestParseMethodDecl(t *testing.T) {
+	src := `mod main
+
+type User {
+  name:str
+}
+
+fn (u:User) display() -> str =
+  u.name
+`
+	file, err := Parse(src)
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	if len(file.Decls) != 2 {
+		t.Fatalf("decl count = %d", len(file.Decls))
+	}
+	fd, ok := file.Decls[1].(ast.FuncDecl)
+	if !ok {
+		t.Fatalf("decl[1] type = %T", file.Decls[1])
+	}
+	if fd.Receiver == nil {
+		t.Fatalf("expected receiver")
+	}
+	if fd.Receiver.Name != "u" || fd.Receiver.Type != "User" {
+		t.Fatalf("receiver = %#v", *fd.Receiver)
+	}
+	if fd.Name != "display" {
+		t.Fatalf("name = %q", fd.Name)
+	}
+}
