@@ -2,7 +2,7 @@
 
 Kiro is an experimental, Go-backed server-side language.
 
-This repository now contains a **Phase 8 hardening slice** focused on package/service boundaries, tiny service ergonomics, inspectable generated Go, and explicit scaffolding.
+This repository now contains a **Phase 9 quality/consistency slice** focused on API coherence, diagnostics clarity, compatibility discipline, and maintainable workflows.
 
 ## Implemented language/tooling surface (current repo)
 
@@ -69,7 +69,11 @@ go test ./...
 - `docs/stability.md`
 - `docs/compatibility.md`
 - `docs/contributing.md`
+- `docs/stdlib_style.md`
+- `docs/testing_services.md`
+- `docs/readiness.md`
 - `PHASE8_NOTES.md`
+- `PHASE9_NOTES.md`
 
 ## Compatibility / roadmap
 
@@ -77,4 +81,4 @@ Kiro is still experimental.
 
 - Stable enough today: parser/formatter workflow, project/module boundaries, inspect-go workflow, starter templates.
 - Likely to change soon: semantic/type system implementation details, executable backend code generation, stdlib runtime APIs.
-- Near-term roadmap: broaden compatibility fixtures, strengthen semantic/codegen invariants, and keep CI fast while adding reliability coverage.
+- Near-term roadmap: complete Phase 9 hardening milestones (stdlib consistency, sema/codegen invariants, snapshots, tiny-project acceptance, and contributor workflow polish).

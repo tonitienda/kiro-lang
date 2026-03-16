@@ -21,6 +21,6 @@ These instructions apply to the full repository.
 - When compatibility fixtures change, run `go run ./cmd/kiro compat`.
 
 ## Current milestone context
-- Phase 8 is active: prioritize compatibility corpus coverage, deterministic checks, and CI reliability over new syntax.
-- Keep `PHASE8_NOTES.md` aligned with implementation and tradeoffs.
-- Keep `PHASE6_NOTES.md`, `PHASE5_NOTES.md`, `PHASE4_NOTES.md`, and `PHASE3_NOTES.md` aligned when touching earlier-phase assumptions.
+- Phase 9 is active: prioritize consistency, diagnostics clarity, codegen readability, and compatibility discipline over new syntax.
+- Keep `PHASE9_NOTES.md` aligned with implementation decisions and tradeoffs.
+- Keep `PHASE8_NOTES.md` plus `PHASE6_NOTES.md`, `PHASE5_NOTES.md`, `PHASE4_NOTES.md`, and `PHASE3_NOTES.md` aligned when touching earlier-phase assumptions.
