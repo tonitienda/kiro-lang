@@ -1,0 +1,20 @@
+mod main
+
+import http
+import test
+
+fn app(req:httpReq) -> Resp {
+  when req.path
+    "/health" => {
+      return Ok(http.text(200, "ok"))
+    }
+    _ => {
+      return Ok(http.text(404, "not found"))
+    }
+}
+
+fn test_health_handler() -> nil {
+  let req = http.test_req("GET", "/health", "")
+  let res = app(req)?
+  test.eq(res.code, 200)
+}

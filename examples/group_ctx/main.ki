@@ -1,0 +1,17 @@
+mod main
+
+import http
+
+fn fetch_a(c:ctxCtx) -> str = "A"
+fn fetch_b(c:ctxCtx) -> str = "B"
+
+fn app(req:httpReq) -> Resp {
+  let c = req.ctx
+  group {
+    let ta = spawn fetch_a(c)
+    let tb = spawn fetch_b(c)
+    let a = await ta
+    let b = await tb
+    return Ok(http.text(200, "${a}${b}"))
+  }
+}
