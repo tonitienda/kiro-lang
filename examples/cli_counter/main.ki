@@ -1,0 +1,9 @@
+mod main
+
+import cli
+
+fn main() -> i32 {
+  let args = cli.args()
+  println("count ${args}")
+  return 0
+}

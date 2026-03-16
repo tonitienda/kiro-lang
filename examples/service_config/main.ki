@@ -1,0 +1,11 @@
+mod main
+
+import env
+
+const DefaultPort = ":8080"
+
+fn main() -> i32 {
+  let port = env.get_or("PORT", DefaultPort)
+  println("starting ${port}")
+  return 0
+}

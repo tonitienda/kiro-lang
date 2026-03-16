@@ -1,0 +1,15 @@
+mod main
+
+fn a() -> str = "A"
+fn b() -> str = "B"
+
+fn main() -> i32 {
+  group {
+    let ta = spawn a()
+    let tb = spawn b()
+    let ra = await ta
+    let rb = await tb
+    println("${ra}${rb}")
+  }
+  return 0
+}
