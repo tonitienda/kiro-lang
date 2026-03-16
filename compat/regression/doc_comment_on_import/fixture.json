@@ -1,0 +1,5 @@
+{
+  "expect_success": false,
+  "error_contains": "doc comments may only appear on declarations",
+  "skip_fmt": true
+}

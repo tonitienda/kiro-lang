@@ -1,0 +1,13 @@
+mod main
+
+import app
+import internal/config
+import http
+import log
+
+fn main() -> i32 {
+  let cfg = config.load()?
+  log.info("starting ${cfg.port}")
+  http.serve(cfg.port, app.handler)?
+  return 0
+}

@@ -1,0 +1,6 @@
+mod main
+
+/// this is invalid placement
+import http
+
+fn main() -> i32 = 0

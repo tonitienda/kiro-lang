@@ -1,0 +1,15 @@
+mod main
+
+fn main() -> i32 {
+  group g {
+    let t1 = spawn work("a")
+    let t2 = spawn work("b")
+    await t1
+    await t2
+  }
+  return 0
+}
+
+fn work(name:str) -> nil {
+  println("working ${name}")
+}

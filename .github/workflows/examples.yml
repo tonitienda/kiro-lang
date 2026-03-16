@@ -1,0 +1,45 @@
+name: examples-and-templates
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+      - run: go run ./cmd/kiro check examples/hello
+      - run: go run ./cmd/kiro check examples/service_health
+      - run: go run ./cmd/kiro check examples/spawn_await
+      - run: go run ./cmd/kiro fmt examples/hello examples/service_health examples/spawn_await
+      - run: go run ./cmd/kiro inspect go examples/hello --out-dir .kiro-gen-example
+
+  templates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+      - run: go build -o ./kiro ./cmd/kiro
+      - run: |
+          tmpdir="$(mktemp -d)"
+          cd "$tmpdir"
+          $GITHUB_WORKSPACE/kiro new hello
+          $GITHUB_WORKSPACE/kiro check hello
+          $GITHUB_WORKSPACE/kiro fmt hello
+          $GITHUB_WORKSPACE/kiro inspect go hello --out-dir .kiro-gen-hello
+      - run: |
+          tmpdir="$(mktemp -d)"
+          cd "$tmpdir"
+          $GITHUB_WORKSPACE/kiro new service
+          $GITHUB_WORKSPACE/kiro check service
+          $GITHUB_WORKSPACE/kiro fmt service
+          $GITHUB_WORKSPACE/kiro inspect go service --out-dir .kiro-gen-service

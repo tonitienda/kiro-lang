@@ -1,0 +1,3 @@
+mod util
+
+fn msg(name:str) -> str = "hello ${name}"

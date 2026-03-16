@@ -301,17 +301,43 @@ func (p *Parser) collectBlockBody() (string, error) {
 }
 
 func (p *Parser) parseTypeRef() (lexer.Token, error) {
+	optional := ""
+	startCol := 0
 	if p.peekText("?") {
 		q := p.next()
-		base, err := p.expect(lexer.TokenIdent)
-		if err != nil {
-			return lexer.Token{}, err
-		}
-		base.Text = q.Text + base.Text
-		base.Column = q.Column
-		return base, nil
+		optional = q.Text
+		startCol = q.Column
 	}
-	return p.expect(lexer.TokenIdent)
+	base, err := p.expect(lexer.TokenIdent)
+	if err != nil {
+		return lexer.Token{}, err
+	}
+	text := base.Text
+	if p.peekText("[") {
+		parts := []string{text, "["}
+		p.next()
+		depth := 1
+		for depth > 0 {
+			t := p.next()
+			if t.Kind == lexer.TokenEOF {
+				return lexer.Token{}, fmt.Errorf("unterminated type reference at %d:%d", base.Line, base.Column)
+			}
+			parts = append(parts, renderToken(t))
+			if t.Kind == lexer.TokenSymbol {
+				if t.Text == "[" {
+					depth++
+				} else if t.Text == "]" {
+					depth--
+				}
+			}
+		}
+		text = strings.Join(parts, "")
+	}
+	base.Text = optional + text
+	if optional != "" {
+		base.Column = startCol
+	}
+	return base, nil
 }
 
 func renderToken(t lexer.Token) string {

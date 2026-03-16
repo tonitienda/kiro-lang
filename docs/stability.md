@@ -1,31 +1,42 @@
-# Experimental stability and constraints
+# Stability policy (Phase 8)
 
-Kiro is an experimental language with an intentionally small backend/service focus.
+Kiro remains experimental, but Phase 8 introduces explicit compatibility commitments.
 
-## Supported use cases (current)
+## Intended to remain source-compatible (high stability)
 
-- language frontend development (lexer/parser/formatter/project loading)
-- generated-Go inspection workflows
-- small service-oriented examples and scaffolding patterns
+- core file/module shape (`mod`, `import`, project directory entry with `main.ki`)
+- deterministic formatter behavior
+- declaration-level syntax already in broad use in examples/templates
+- `kiro fmt`, `kiro check`, `kiro inspect go`, `kiro new` command entrypoints
+- compatibility corpus fixture format and execution model
 
-## Unsupported / not goals
+## Stable-ish but still evolving (medium stability)
 
-- native backend
-- browser/JS/WASM targets
-- macro/metaprogramming systems
-- package registry and heavy framework abstractions
+- diagnostics text details (message wording may evolve, key signal substrings should stay meaningful)
+- generated-Go layout (`src/` + `runtime/`) for inspection workflows
+- service template directory structure
+- stdlib helper naming for service-centric modules
 
-## Expected churn
+## Experimental / allowed to change (lower stability)
 
-More likely to change:
+- semantics and type-checking completeness for advanced cases
+- runtime behavior of commands still marked as placeholder (`build`, `run`, `test` in this frontend slice)
+- generated Go as an external API contract (not promised stable)
+- advanced concurrency and generic-heavy patterns not yet locked down by broad acceptance tests
 
-- stdlib naming and helper granularity
-- semantic/codegen completeness
-- runtime behavior of commands still marked placeholder
+## Compatibility matrix (current focus)
 
-Less likely to change:
+Supported well:
 
-- explicit project structure
-- deterministic formatting
-- inspectable generated-Go workflow
-- opinionated small-service philosophy
+- CLI-style tools and small file-processing utilities
+- small HTTP service layout patterns
+- JSON API handler shapes
+- handler-oriented test module structure
+- moderate orchestration patterns using `group` + `spawn` + `await`
+
+Still weak / experimental:
+
+- large multi-package applications
+- complex generic typing edge-cases
+- advanced JSON decoding behavior guarantees
+- portability beyond Linux/macOS

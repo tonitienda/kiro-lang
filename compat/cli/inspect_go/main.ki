@@ -1,0 +1,10 @@
+mod main
+
+import util
+
+const Name = "inspect"
+
+fn main() -> i32 {
+  println(util.msg(Name))
+  return 0
+}
