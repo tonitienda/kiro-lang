@@ -121,6 +121,14 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 
 func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 	p.next()
+	var receiver *ast.Param
+	if p.peekText("(") {
+		r, err := p.parseReceiver()
+		if err != nil {
+			return nil, err
+		}
+		receiver = &r
+	}
 	name, err := p.expect(lexer.TokenIdent)
 	if err != nil {
 		return nil, err
@@ -161,7 +169,7 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 	if p.peekText("=") {
 		p.next()
 		body := p.collectExprBody()
-		return ast.FuncDecl{Name: name.Text, Params: params, ReturnType: ret.Text, Body: body}, nil
+		return ast.FuncDecl{Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, Body: body}, nil
 	}
 	if p.peekText("{") {
 		p.next()
@@ -169,9 +177,30 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ast.FuncDecl{Name: name.Text, Params: params, ReturnType: ret.Text, BlockBody: true, Body: body}, nil
+		return ast.FuncDecl{Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, BlockBody: true, Body: body}, nil
 	}
 	return nil, fmt.Errorf("expected \"=\" or \"{\" at %d:%d", p.peek().Line, p.peek().Column)
+}
+
+func (p *Parser) parseReceiver() (ast.Param, error) {
+	if _, err := p.expectText("("); err != nil {
+		return ast.Param{}, err
+	}
+	name, err := p.expect(lexer.TokenIdent)
+	if err != nil {
+		return ast.Param{}, err
+	}
+	if _, err := p.expectText(":"); err != nil {
+		return ast.Param{}, err
+	}
+	typ, err := p.expect(lexer.TokenIdent)
+	if err != nil {
+		return ast.Param{}, err
+	}
+	if _, err := p.expectText(")"); err != nil {
+		return ast.Param{}, err
+	}
+	return ast.Param{Name: name.Text, Type: typ.Text}, nil
 }
 
 func (p *Parser) collectExprBody() string {

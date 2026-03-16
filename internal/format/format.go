@@ -37,7 +37,11 @@ func Print(file *ast.File) string {
 			}
 			b.WriteString("}")
 		case ast.FuncDecl:
-			fmt.Fprintf(&b, "fn %s(", decl.Name)
+			b.WriteString("fn ")
+			if decl.Receiver != nil {
+				fmt.Fprintf(&b, "(%s:%s) ", decl.Receiver.Name, decl.Receiver.Type)
+			}
+			fmt.Fprintf(&b, "%s(", decl.Name)
 			for pi, p := range decl.Params {
 				if pi > 0 {
 					b.WriteString(", ")
@@ -77,6 +81,7 @@ func normalizeBody(body string) []string {
 		trimmed = strings.ReplaceAll(trimmed, "= =", "==")
 		trimmed = strings.ReplaceAll(trimmed, "= >", "=>")
 		trimmed = strings.ReplaceAll(trimmed, "- >", "->")
+		trimmed = strings.ReplaceAll(trimmed, " . ", ".")
 		if trimmed != "" {
 			out = append(out, trimmed)
 		}

@@ -52,3 +52,27 @@ fn route(path:str) -> Resp {
 		t.Fatalf("unexpected format:\n%s", out)
 	}
 }
+
+func TestSource_Method(t *testing.T) {
+	in := `mod main
+
+type User {name:str}
+
+fn (u:User)display()->str=u.name`
+	out, err := Source(in)
+	if err != nil {
+		t.Fatalf("Source() error = %v", err)
+	}
+	want := `mod main
+
+type User {
+  name:str
+}
+
+fn (u:User) display() -> str =
+  u.name
+`
+	if out != want {
+		t.Fatalf("unexpected format:\n%s", out)
+	}
+}

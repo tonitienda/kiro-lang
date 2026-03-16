@@ -15,3 +15,6 @@ These instructions apply to the full repository.
 ## Testing policy
 - Add or update tests when changing lexer, parser, formatter, or CLI behavior.
 - Run `go test ./...` before finishing.
+
+## Current milestone context
+- Phase 3 has started; use `PHASE3_NOTES.md` for the latest implemented scope and limitations before adding new Phase 3 features.
