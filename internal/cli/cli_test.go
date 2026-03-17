@@ -3,8 +3,25 @@ package cli
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
+
+func TestRunHelp(t *testing.T) {
+	if err := Run([]string{"help"}); err != nil {
+		t.Fatalf("Run(help) error = %v", err)
+	}
+}
+
+func TestRunUnknownCommandIncludesUsage(t *testing.T) {
+	err := Run([]string{"wat"})
+	if err == nil {
+		t.Fatalf("Run(unknown) error = nil, want error")
+	}
+	if !strings.Contains(err.Error(), "usage: kiro") {
+		t.Fatalf("Run(unknown) error = %q, want usage text", err.Error())
+	}
+}
 
 func TestRunCheck(t *testing.T) {
 	dir := t.TempDir()

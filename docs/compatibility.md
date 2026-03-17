@@ -1,78 +1,78 @@
-# Compatibility corpus and acceptance checks
+# Compatibility policy and corpus
 
-Phase 8 formalizes a repository-owned compatibility corpus under `compat/`.
+Kiro maintains a repository-owned compatibility corpus under `compat/`.
 
-## Layout and contract classification
+## Fixture categories
 
 ```text
 compat/
   syntax/
   cli/
   services/
-  concurrency/
   stdlib/
   templates/
   regression/
+  concurrency/
 ```
 
-Phase 9 classifies fixture groups by intended compatibility strength:
+Phase 10 compatibility categories:
 
-- **Stable contract fixtures**: `syntax/`, `cli/`, `services/`, `stdlib/`, `templates/`
-  - represent source-compatibility-sensitive behavior; drift should be deliberate.
-- **Regression fixtures**: `regression/`
-  - lock specific bug fixes or diagnostics.
-- **Experimental fixtures**: currently `concurrency/`
-  - useful for confidence but allowed to evolve faster while semantics continue to harden.
+- **Stable-core fixtures**
+  - currently: `syntax/`, `cli/`, `services/`, `stdlib/`, `templates/`
+  - strongest source-compatibility promise
+- **Compatibility fixtures**
+  - long-lived behavior guards that are still expected to evolve occasionally
+- **Regression-only fixtures**
+  - currently: `regression/`
+  - lock bug fixes and diagnostic regressions
+- **Diagnostics fixtures**
+  - typically represented via `fixture.json` with `expect_success=false` + `error_contains`
+- **Template fixtures**
+  - currently: `templates/`
+  - protect `kiro new` output shape and checks
+- **Codegen fixtures**
+  - fixtures using `inspect_go`/`expected_modules` assertions
+- **Experimental fixtures**
+  - currently: `concurrency/`
+  - valuable, but allowed to evolve faster while semantics mature
 
-Each fixture is a small directory containing at minimum a `main.ki`. Optional `fixture.json` metadata can declare:
+## Fixture metadata
 
-- `expect_success`: whether load/check should pass
-- `error_contains`: required diagnostic substring for expected failures
-- `modes`: limit fixture execution modes (`fmt`, `check`, `inspect`)
-- `inspect_go`: run generated-Go emission check
-- `expected_modules`: required generated module files
-- `entry`: alternate entry path inside the fixture
+Optional `fixture.json` fields:
 
-## Running locally
+- `expect_success`
+- `error_contains`
+- `modes`
+- `inspect_go`
+- `expected_modules`
+- `entry`
+
+## Running the corpus
 
 ```bash
 kiro compat
 ```
 
-or with a custom path/modes:
+or scoped:
 
 ```bash
 kiro compat compat/regression --mode check
 ```
 
-When compatibility fixtures change intentionally, update `PHASE9_NOTES.md` with rationale.
+## Intentional updates
 
-## What is validated
+When intentionally changing fixture behavior:
 
-The compatibility runner currently validates, per fixture:
+1. Update fixture source/metadata.
+2. Keep category intent clear (stable-core vs regression vs experimental).
+3. Update `PHASE10_NOTES.md` (or current active phase notes) with rationale and migration impact.
+4. Update docs/templates/examples if user-visible behavior changed.
 
-- formatter idempotence (`fmt(fmt(src)) == fmt(src)`) on all `.ki` files
-- parser + project load/import resolution (`check` mode)
-- optional generated-Go emission smoke checks (`inspect` mode)
-- expected failure diagnostics for regression fixtures
+## What compatibility protects
 
-## Coverage goals in this corpus
+The corpus validates:
 
-Current fixtures include representative programs for:
-
-- expression and block function bodies
-- `if` / `when`
-- mutable locals and reassignment
-- collections and interpolation
-- struct methods and constants
-- `R[T,E]`, `Ok`, `?`, and `?T`/`nil` usage patterns
-- loops and control flow (`for`/`while`/`break`/`continue`)
-- `defer`
-- imports/modules
-- doc comment placement
-- `spawn`/`await`/`group`
-- env/config and service layout patterns
-- HTTP hello/JSON service shapes
-- `kiro new service` template shape
-- generated-Go inspect workflow smoke coverage
-- diagnostic regressions (for example unresolved imports, invalid doc comment placement)
+- formatter idempotence on `.ki` files
+- parser/project load and module resolution
+- optional inspect-go emission checks
+- expected diagnostics for failure fixtures
