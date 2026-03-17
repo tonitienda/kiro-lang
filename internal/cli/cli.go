@@ -10,6 +10,7 @@ import (
 	"github.com/kiro-lang/kiro/internal/codegen"
 	"github.com/kiro-lang/kiro/internal/compat"
 	"github.com/kiro-lang/kiro/internal/format"
+	"github.com/kiro-lang/kiro/internal/lsp"
 	"github.com/kiro-lang/kiro/internal/project"
 )
 
@@ -20,6 +21,7 @@ Core commands:
   check <entry-or-path>                   Parse and type-check a module/project
   inspect go <entry-or-path> [--out-dir]  Emit generated Go for inspection
   new <hello|service>                     Scaffold a starter project
+  lsp                                     Run language server over stdio
   compat [root] [--mode fmt,check,inspect]
                                           Run compatibility fixture checks
 
@@ -48,6 +50,8 @@ func Run(args []string) error {
 		return runInspect(args[1:])
 	case "new":
 		return runNew(args[1:])
+	case "lsp":
+		return lsp.NewServer().Serve(os.Stdin, os.Stdout)
 	case "build", "run", "test":
 		return fmt.Errorf("%s is not implemented in this frontend-focused slice", args[0])
 	default:

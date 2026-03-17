@@ -1,0 +1,32 @@
+{
+  "name": "kiro-lang",
+  "displayName": "Kiro",
+  "description": "Basic Kiro language support and LSP client",
+  "version": "0.1.0",
+  "publisher": "kiro-lang",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Programming Languages"],
+  "activationEvents": [
+    "onLanguage:kiro"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [{
+      "id": "kiro",
+      "aliases": ["Kiro", "kiro"],
+      "extensions": [".ki"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "kiro",
+      "scopeName": "source.kiro",
+      "path": "./syntax/kiro.tmLanguage.json"
+    }]
+  },
+  "scripts": {
+    "lint:manifest": "node -e \"JSON.parse(require('fs').readFileSync('package.json','utf8'));console.log('ok')\""
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

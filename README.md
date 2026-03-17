@@ -19,7 +19,7 @@ It is designed for small services, CLI tools, and pragmatic backend workflows wh
 
 ## Status
 
-Kiro is in **Phase 10: consolidation and experimental-release readiness**.
+Kiro is in **Phase 11: editor tooling and language-server support**.
 
 - stable experimental core: `docs/stable_core.md`
 - limitations: `docs/limitations.md`
@@ -123,9 +123,11 @@ Use `./kiro help` for command help.
   - `docs/examples.md`
   - `docs/releasing.md`
   - `docs/contributing.md`
+  - `docs/editor_setup.md`
 - History/notes
   - `CHANGELOG.md`
   - `PHASE10_NOTES.md`
+  - `PHASE11_NOTES.md`
 
 ## Development checks
 
