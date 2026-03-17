@@ -1,0 +1,27 @@
+name: editor-tooling
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  lsp-and-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+      - run: go test ./internal/lsp ./internal/cli
+      - run: go build ./cmd/kiro-lsp
+      - run: test -f editors/vscode/package.json
+      - run: test -f editors/vscode/syntax/kiro.tmLanguage.json
+      - run: python - <<'PY'
+          import json
+          json.load(open('editors/vscode/package.json'))
+          json.load(open('editors/vscode/syntax/kiro.tmLanguage.json'))
+          json.load(open('editors/vscode/language-configuration.json'))
+          print('editor json ok')
+        PY

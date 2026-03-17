@@ -21,6 +21,6 @@ These instructions apply to the full repository.
 - When compatibility fixtures change, run `go run ./cmd/kiro compat`.
 
 ## Current milestone context
-- Phase 10 is active: prioritize consolidation, release-shape clarity, compatibility discipline, and documentation coherence over new syntax.
-- Keep `PHASE10_NOTES.md` aligned with implementation decisions and tradeoffs.
+- Phase 11 is active: prioritize editor tooling stability (LSP, syntax highlighting, setup docs) while preserving the Phase 10 stable-core contract.
+- Keep `PHASE11_NOTES.md` and `PHASE10_NOTES.md` aligned with implementation decisions and tradeoffs.
 - Keep `PHASE8_NOTES.md` plus `PHASE6_NOTES.md`, `PHASE5_NOTES.md`, `PHASE4_NOTES.md`, and `PHASE3_NOTES.md` aligned when touching earlier-phase assumptions.

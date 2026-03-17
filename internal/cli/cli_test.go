@@ -23,6 +23,16 @@ func TestRunUnknownCommandIncludesUsage(t *testing.T) {
 	}
 }
 
+func TestUsageIncludesLSP(t *testing.T) {
+	err := Run([]string{"wat"})
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "lsp") {
+		t.Fatalf("usage missing lsp command: %q", err.Error())
+	}
+}
+
 func TestRunCheck(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "main.ki"), `mod main
