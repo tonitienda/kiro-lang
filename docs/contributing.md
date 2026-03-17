@@ -1,60 +1,62 @@
-# Contributing and local verification
+# Contributing and intentional change workflow
 
-This repository prefers reliability-first changes.
+Kiro prioritizes compatibility discipline and readable implementations.
 
 ## Required checks before submitting
-
-Run:
 
 ```bash
 go test ./...
 go run ./cmd/kiro compat
 ```
 
-## Phase 9 workflow expectations
+## Phase 10 expectations
 
-When a change is user-visible or architectural, update docs and notes in the same PR:
+When a change is user-visible or architectural, update docs/notes in the same change:
 
-- `README.md` command/feature surface
+- `README.md`
 - relevant `docs/*` pages
-- `PHASE9_NOTES.md` for decisions/tradeoffs
-- `AGENTS.md` when contributor/agent workflow guidance changes
+- current phase notes (`PHASE10_NOTES.md`)
+- `AGENTS.md` if workflow guidance changes
 
-## Compatibility fixtures
+## Making intentional language/CLI changes
 
-Add new fixtures under `compat/` grouped by theme and contract strength. A fixture should be small and explicit.
+### Syntax or parser behavior
 
-1. Create a directory with `main.ki`.
-2. Add optional `fixture.json` for expected failures or inspect-go assertions.
-3. Ensure formatter idempotence and parser load pass via `kiro compat`.
+- add/update parser/formatter tests
+- add/update compatibility fixtures
+- document behavior in language docs (`docs/language_tour.md`, `docs/stable_core.md`)
 
-Use `compat/regression` fixtures for diagnostics and bug-fix lock-in behavior.
+### Stdlib API changes
 
-## Generated-Go snapshots and diagnostics regressions
+- keep naming consistent with `docs/stdlib_style.md`
+- document migration notes when behavior/spellings shift
+- update examples/templates and compatibility fixtures
 
-For Phase 9 hardening work, prefer a focused set of stable snapshots/regressions over broad brittle coverage.
+### Generated-Go changes
 
-- snapshot only representative codegen shapes
-- avoid snapshots that couple to irrelevant temp-variable churn
-- keep diagnostics assertions stable by signal (`expected/got`, key hint text)
+- preserve readability and origin tracing
+- update inspect-go docs (`docs/debugging_generated_go.md`)
+- adjust codegen fixtures intentionally
 
-## Examples, mini-projects, and templates
+### Deprecations
 
-Examples should remain parse/check healthy because CI runs checks against `examples/`.
+- prefer conservative de-emphasis before removal
+- document rationale and migration path in phase notes
+- keep templates/examples on canonical APIs immediately
 
-When template output changes (`kiro new hello|service`), update tests/docs and ensure scaffolds pass:
+## Updating compatibility fixtures
 
-```bash
-go run ./cmd/kiro new hello
-go run ./cmd/kiro check hello
-```
+1. choose appropriate category (`stable-core`, `regression`, `experimental`, `templates`)
+2. create/update fixture directory with `main.ki`
+3. add/adjust `fixture.json` if needed
+4. run `kiro compat` locally
 
-and similarly for `service`.
+## Stable-core decision check
 
-As mini-project acceptance coverage is added under `projects/`, wire it into CI and keep project docs aligned.
+Before adding surface area, verify:
 
-## If behavior intentionally changes
+1. does it make README/templates/examples materially clearer?
+2. can it be tested cheaply and deterministically?
+3. can we maintain compatibility expectations for it?
 
-- update fixtures and/or regression metadata
-- update docs (`README.md`, `docs/compatibility.md`, `docs/stability.md`, and relevant new docs)
-- document rationale and migration notes in `PHASE9_NOTES.md`
+If not, prefer docs/polish/cleanup over new surface.

@@ -13,11 +13,31 @@ import (
 	"github.com/kiro-lang/kiro/internal/project"
 )
 
+const usageText = `usage: kiro <command> [args]
+
+Core commands:
+  fmt <paths...>                          Format .ki files deterministically
+  check <entry-or-path>                   Parse and type-check a module/project
+  inspect go <entry-or-path> [--out-dir]  Emit generated Go for inspection
+  new <hello|service>                     Scaffold a starter project
+  compat [root] [--mode fmt,check,inspect]
+                                          Run compatibility fixture checks
+
+Placeholders in this repo slice:
+  build <entry>
+  run <entry>
+  test <path>
+
+Use 'kiro help' to print this message.`
+
 func Run(args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: kiro <fmt|check|compat|inspect|new|build|run|test> ...")
+		return errors.New(usageText)
 	}
 	switch args[0] {
+	case "help", "--help", "-h":
+		fmt.Println(usageText)
+		return nil
 	case "fmt":
 		return runFmt(args[1:])
 	case "check":
@@ -31,7 +51,7 @@ func Run(args []string) error {
 	case "build", "run", "test":
 		return fmt.Errorf("%s is not implemented in this frontend-focused slice", args[0])
 	default:
-		return fmt.Errorf("unknown command: %s", args[0])
+		return fmt.Errorf("unknown command: %s\n\n%s", args[0], usageText)
 	}
 }
 

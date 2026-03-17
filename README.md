@@ -1,42 +1,78 @@
 # kiro-lang
 
-Kiro is an experimental, Go-backed server-side language.
+Kiro is an **experimental, Go-backed server-side programming language**.
 
-This repository now contains a **Phase 9 quality/consistency slice** focused on API coherence, diagnostics clarity, compatibility discipline, and maintainable workflows.
+It is designed for small services, CLI tools, and pragmatic backend workflows where generated Go is inspectable.
 
-## Implemented language/tooling surface (current repo)
+## What Kiro is for
 
-- Lexer with line/column token metadata
-- Parser for:
-  - `mod`, `import`, module-level `const`
-  - `type` structs
-  - function declarations with expression (`=`) and block (`{ ... }`) bodies
-  - value-receiver methods (`fn (u:User) ...`)
-  - optional type references in signatures/fields (`?T`)
-  - top-level doc comments (`/// ...`) attached to declarations
-- AST package with receiver-aware declarations and doc comment capture
-- Deterministic formatter (`kiro fmt`) that preserves canonical doc comment placement
-- CLI command surface:
-  - `kiro fmt`
-  - `kiro check`
-  - `kiro compat`
-  - `kiro inspect go`
-  - `kiro new`
-  - `kiro build` (placeholder)
-  - `kiro run` (placeholder)
-  - `kiro test` (placeholder)
-- Project loader with explicit module/import resolution rules
-- Generated Go inspection output with source partitioning (`src/` and `runtime/`) and declaration-origin comments
-- `kiro new service` template aligned to config + handler + test layout
-- Examples for service/CLI/testing/project patterns
+- small HTTP/JSON services
+- CLI and file-processing tools
+- explicit result/optional flow (`R[T,E]`, `?`, `?T`)
+- deterministic formatting and compatibility-driven development
 
-## Build
+## What Kiro is not for (today)
+
+- browser/JS/WASM targets
+- large framework-heavy ecosystems
+- production-stability guarantees
+
+## Status
+
+Kiro is in **Phase 10: consolidation and experimental-release readiness**.
+
+- stable experimental core: `docs/stable_core.md`
+- limitations: `docs/limitations.md`
+- compatibility policy: `docs/compatibility.md`
+
+## Build from source
 
 ```bash
 go build ./cmd/kiro
 ```
 
-## Commands
+This produces a `kiro` binary in the current directory.
+
+## Quick start
+
+```bash
+./kiro new hello
+./kiro fmt hello
+./kiro check hello
+./kiro inspect go hello --out-dir hello/.kiro-gen
+```
+
+## Hello world
+
+`kiro new hello` scaffolds:
+
+```kiro
+mod main
+
+fn main() -> i32 {
+  println("hello")
+  return 0
+}
+```
+
+## Tiny service example
+
+```bash
+./kiro new service
+./kiro fmt service
+./kiro check service
+./kiro inspect go service --out-dir service/.kiro-gen
+```
+
+The service template includes:
+
+- `internal/config` for explicit config loading
+- `app` module for handlers
+- handler-level tests under `test/`
+
+## CLI commands
+
+Canonical commands:
 
 ```bash
 ./kiro fmt <paths...>
@@ -44,41 +80,56 @@ go build ./cmd/kiro
 ./kiro compat [root] [--mode fmt,check,inspect]
 ./kiro inspect go <entry-or-path> [--out-dir <dir>]
 ./kiro new <hello|service>
+```
+
+Additional command stubs currently return placeholder messages in this repository slice:
+
+```bash
 ./kiro build <entry>
 ./kiro run <entry>
 ./kiro test <path>
 ```
 
-## Development
+Use `./kiro help` for command help.
+
+## Project structure (high level)
+
+- `cmd/kiro`: CLI entrypoint
+- `internal/*`: compiler, formatter, project loader, codegen, compat runner
+- `compat/`: compatibility fixtures
+- `examples/`: runnable syntax/service/testing examples
+- `docs/`: language, workflow, compatibility, and release docs
+
+## Docs index
+
+- Language and style
+  - `docs/language_tour.md`
+  - `docs/design_principles.md`
+  - `docs/stable_core.md`
+  - `docs/stability.md`
+  - `docs/limitations.md`
+- Projects and services
+  - `docs/project_layout.md`
+  - `docs/service_structure.md`
+  - `docs/http_json.md`
+  - `docs/config.md`
+  - `docs/concurrency.md`
+- Testing and compatibility
+  - `docs/testing.md`
+  - `docs/testing_services.md`
+  - `docs/compatibility.md`
+- Tooling and process
+  - `docs/debugging_generated_go.md`
+  - `docs/examples.md`
+  - `docs/releasing.md`
+  - `docs/contributing.md`
+- History/notes
+  - `CHANGELOG.md`
+  - `PHASE10_NOTES.md`
+
+## Development checks
 
 ```bash
 go test ./...
+go run ./cmd/kiro compat
 ```
-
-## Docs
-
-- `docs/language_tour.md`
-- `docs/project_layout.md`
-- `docs/packages.md`
-- `docs/service_structure.md`
-- `docs/config.md`
-- `docs/http_json.md`
-- `docs/testing.md`
-- `docs/concurrency.md`
-- `docs/debugging_generated_go.md`
-- `docs/stability.md`
-- `docs/compatibility.md`
-- `docs/contributing.md`
-- `docs/stdlib_style.md`
-- `docs/testing_services.md`
-- `docs/readiness.md`
-- `PHASE8_NOTES.md`
-- `PHASE9_NOTES.md`
-
-## Compatibility / roadmap
-
-Kiro is still experimental.
-
-- Stable enough today: parser/formatter workflow, project/module boundaries, inspect-go workflow, starter templates.
-- Likely to change soon: semantic/type system implementation details, executable backend code generation, stdlib runtime APIs.
-- Near-term roadmap: complete Phase 9 hardening milestones (stdlib consistency, sema/codegen invariants, snapshots, tiny-project acceptance, and contributor workflow polish).
