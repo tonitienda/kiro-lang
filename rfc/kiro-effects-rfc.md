@@ -13,11 +13,11 @@ Add **effect declarations** to Kiro function signatures using a compact postfix 
 ```ki
 fn read_file(path:str) -> R[str, str] !fs
 fn serve(addr:str) -> R[nil, str] !net
-fn app(req:http.Req) -> R[http.Resp, str] !json
+fn app(req:http.Req) -> R[http.Resp, str] !net
 fn pure_add(a:i32, b:i32) -> i32
 ```
 
-Effects are explicit annotations on function declarations that describe externally observable behavior such as file I/O, networking, environment access, logging, process interaction, time, JSON/serialization, or panic-like unsafe runtime behavior.
+Effects are explicit annotations on function declarations that describe externally observable behavior such as file I/O, networking, environment access, logging, process interaction, time, or panic-like unsafe runtime behavior.
 
 The first version should focus on:
 1. syntax
@@ -127,7 +127,6 @@ Recommended built-ins:
 - `env`
 - `fs`
 - `io`
-- `json`
 - `log`
 - `net`
 - `panic`
@@ -136,7 +135,7 @@ Recommended built-ins:
 
 Notes:
 - `fs` can be used instead of folding everything into `io`
-- `http` does not need to be a separate effect if it is already covered by `net` and `json`
+- `http` does not need to be a separate effect if it is already covered by `net`.
 - keep the set small
 - parser may accept any identifier after `!`, but sema should reject unknown effect names in v1
 
