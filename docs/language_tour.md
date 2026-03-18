@@ -7,6 +7,7 @@ Kiro is a small, explicit backend language with a Go backend.
 - Keep syntax small and readable.
 - Use canonical formatting via `kiro fmt`.
 - Prefer explicit results (`R[T,E]`) and optionals (`?T`).
+- Make operational behavior visible with function effects.
 - Use `spawn`, `await`, and `group` for pragmatic concurrency.
 
 ## Minimal shape
@@ -14,7 +15,7 @@ Kiro is a small, explicit backend language with a Go backend.
 ```ki
 mod main
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   println("hello")
   return 0
 }
@@ -22,6 +23,6 @@ fn main() -> i32 {
 
 ## Tooling
 
-- `kiro check <entry-or-path>` validates parse + module/import resolution quickly.
+- `kiro check <entry-or-path>` validates parse, module/import resolution, and effect requirements quickly.
 - `kiro inspect go <entry-or-path>` emits inspectable Go into `.kiro-gen`.
 - `kiro new <hello|service>` scaffolds tiny starter projects.

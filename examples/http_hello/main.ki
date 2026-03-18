@@ -7,7 +7,7 @@ fn app(req:http.Req) -> R[http.Resp, str] =
     "/health" => Ok(http.text(200, "ok"))
     _ => Ok(http.text(404, "not found"))
 
-fn main() -> i32 {
+fn main() -> i32 !net {
   http.serve(":8080", app)?
   return 0
 }

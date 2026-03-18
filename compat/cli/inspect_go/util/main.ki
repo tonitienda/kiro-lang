@@ -1,3 +1,4 @@
 mod util
 
-fn msg(name:str) -> str = "hello ${name}"
+fn msg(name:str) -> str =
+  "hello ${name}"

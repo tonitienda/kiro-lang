@@ -1,13 +1,11 @@
 mod main
 
-fn main() -> i32 {
-  let xs = [1, 2, 3]
+fn main() -> i32 !io {
+  let xs = [ 1 , 2 , 3 ]
   mut sum = 0
-
   for x in xs {
-    sum = sum + x
+  sum = sum + x
   }
-
-  print("done")
+  print ( "done" )
   return 0
 }

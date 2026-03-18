@@ -4,7 +4,8 @@ mod main
 fn greet(name:str) -> str =
   "hello ${name}"
 
-fn main() -> i32 {
-  println(greet("toni"))
+
+fn main() -> i32 !io {
+  println ( greet ( "toni" ) )
   return 0
 }

@@ -7,13 +7,13 @@ type Config {
   mode:?str
 }
 
-fn load() -> R[Config,str] {
-  let addr = env.get_or("ADDR", ":8080")
-  return Ok(Config{addr:addr mode:nil})
+fn load() -> R[Config,str] !env {
+  let addr = env.get_or ( "ADDR" , ":8080" )
+  return Ok ( Config { addr : addr mode : nil } )
 }
 
-fn main() -> i32 {
-  let cfg = load()?
-  println("${cfg.addr}")
+fn main() -> i32 !env !io {
+  let cfg = load ( ) ?
+  println ( "${cfg.addr}" )
   return 0
 }

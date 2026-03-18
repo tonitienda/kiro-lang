@@ -6,7 +6,7 @@ type User {
   email:?str
 }
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   let u = User{id:1 name:"toni" email:nil}
   println("user=${u.name}")
   return 0

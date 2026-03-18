@@ -4,7 +4,7 @@ import fs
 
 type R[T, E] = Ok(T) | Err(E)
 
-fn main() -> i32 {
+fn main() -> i32 !fs !io {
   fs.write_file("out.txt", "hello")?
   let s = fs.read_file("out.txt")?
   print(s)

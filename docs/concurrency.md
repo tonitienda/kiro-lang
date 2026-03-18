@@ -21,3 +21,6 @@ Guidelines:
 - Await every spawned task before leaving the group.
 - Prefer small fan-out/fan-in over deep task trees.
 - When request context exists, pass it explicitly into worker calls.
+
+
+Note: `json.encode`/`json.decode` remain pure in Kiro v1; they do not require an effect declaration by themselves.

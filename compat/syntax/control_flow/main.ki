@@ -1,29 +1,26 @@
 mod main
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   mut total = 0
-  for n in [1, 2, 3] {
-    if n == 2 {
-      continue
-    }
-    total = total + n
+  for n in [ 1 , 2 , 3 ] {
+  if n == 2 {
+  continue
   }
-
+  total = total + n
+  }
   while total < 10 {
-    total = total + 1
-    if total == 8 {
-      break
-    }
+  total = total + 1
+  if total == 8 {
+  break
   }
-
+  }
   when total
-    8 => {
-      println("ok")
-    }
-    _ => {
-      println("other")
-    }
-
-  defer println("done")
+  8 => {
+  println ( "ok" )
+  }
+  _ => {
+  println ( "other" )
+  }
+  defer println ( "done" )
   return 0
 }

@@ -9,6 +9,7 @@ It is designed for small services, CLI tools, and pragmatic backend workflows wh
 - small HTTP/JSON services
 - CLI and file-processing tools
 - explicit result/optional flow (`R[T,E]`, `?`, `?T`)
+- explicit operational effects on function signatures (`!env`, `!fs`, `!io`, `!log`, `!net`, ...)
 - deterministic formatting and compatibility-driven development
 
 ## What Kiro is not for (today)
@@ -49,7 +50,7 @@ This produces a `kiro` binary in the current directory.
 ```kiro
 mod main
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   println("hello")
   return 0
 }
@@ -69,6 +70,7 @@ The service template includes:
 - `internal/config` for explicit config loading
 - `app` module for handlers
 - handler-level tests under `test/`
+- explicit function effect declarations for environment, logging, networking, and I/O boundaries
 
 ## CLI commands
 
@@ -105,6 +107,7 @@ Use `./kiro help` for command help.
 - Language and style
   - `docs/language_tour.md`
   - `docs/design_principles.md`
+  - `docs/effects.md`
   - `docs/stable_core.md`
   - `docs/stability.md`
   - `docs/limitations.md`

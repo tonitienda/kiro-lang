@@ -78,12 +78,7 @@ func symbolFromDecl(d ast.Decl, pos map[string]Position) Symbol {
 	case ast.FuncDecl:
 		s.Name = v.Name
 		s.Kind = 6
-		if v.Receiver != nil {
-			s.Kind = 6
-			s.Sig = fmt.Sprintf("fn (%s:%s) %s", v.Receiver.Name, v.Receiver.Type, v.Name)
-		} else {
-			s.Sig = "fn " + v.Name
-		}
+		s.Sig = v.Signature()
 		s.Doc = strings.Join(v.Doc, "\n")
 	}
 	if p, ok := pos[s.Name]; ok {

@@ -87,6 +87,9 @@ func Load(entry string) (*Project, error) {
 	if err := proj.resolveImports(); err != nil {
 		return nil, err
 	}
+	if err := validateEffects(proj); err != nil {
+		return nil, err
+	}
 
 	return proj, nil
 }

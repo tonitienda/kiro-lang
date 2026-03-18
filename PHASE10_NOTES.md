@@ -4,6 +4,7 @@
 
 - Added `docs/stable_core.md` to explicitly define stable experimental core vs flexible areas.
 - Core includes language constructs already used by templates/examples and canonical CLI workflow (`fmt`, `check`, `inspect go`, `new`, `compat`).
+- Explicit function effect declarations are now part of the stable experimental core for operational behavior.
 
 ## Deprecation/cleanup decisions
 
@@ -20,16 +21,19 @@
 
 - Added top-level help command and unified usage text for discoverability (`kiro help`, `--help`, `-h`).
 - Unknown command errors now include usage guidance.
+- `kiro check` now covers effect declaration validation in addition to parse/import checks.
 
 ## Compatibility/CI decisions
 
 - Updated compatibility docs with explicit fixture categories (stable-core, compatibility, regression, diagnostics, templates, codegen).
 - Stable-core fixtures are the strongest source-compatibility guardrail.
+- Added regression fixtures for missing, duplicate, and unknown effect diagnostics.
 
 ## Known limitations
 
 - `kiro build`, `kiro run`, and `kiro test` remain placeholders in this frontend-focused slice.
 - Generated Go remains a debugging-oriented surface, not a stability guarantee.
+- Effects are declaration-based and conservative; there is no effect polymorphism or general inference.
 
 ## Recommended post-Phase 10 direction
 

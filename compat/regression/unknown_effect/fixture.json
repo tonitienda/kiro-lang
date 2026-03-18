@@ -1,0 +1,4 @@
+{
+  "expect_success": false,
+  "error_contains": "unknown effect \"!database\""
+}

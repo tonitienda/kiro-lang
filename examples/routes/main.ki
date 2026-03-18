@@ -13,7 +13,7 @@ fn route(path:str) -> Resp =
     "/health" => text(200, "ok")
     _ => text(404, "not found")
 
-fn main() -> i32 =
+fn main() -> i32 !io =
   let res = route("/health")
   print(res.body)
   0

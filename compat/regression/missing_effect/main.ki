@@ -1,0 +1,12 @@
+mod main
+
+import env
+
+fn load() -> str !env {
+  return env.get_or("PORT", ":8080")
+}
+
+fn main() -> i32 {
+  let port = load()
+  return 0
+}

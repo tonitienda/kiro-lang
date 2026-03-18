@@ -10,9 +10,11 @@ type Pair {
 }
 
 /// join is expression body for parser coverage.
-fn join(a:str, b:str) -> str = "${a}-${b}"
+fn join(a:str, b:str) -> str =
+  "${a}-${b}"
 
-fn main() -> i32 {
-  println(join(AppName, "doc"))
+
+fn main() -> i32 !io {
+  println ( join ( AppName , "doc" ) )
   return 0
 }

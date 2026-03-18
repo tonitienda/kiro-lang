@@ -4,10 +4,12 @@ type User {
   name:str
 }
 
-fn (u:User) greet(prefix:str) -> str = "${prefix} ${u.name}"
+fn (u:User) greet(prefix:str) -> str =
+  "${prefix} ${u.name}"
 
-fn main() -> i32 {
-  let u = User{name:"kiro"}
-  println(u.greet("hi"))
+
+fn main() -> i32 !io {
+  let u = User { name : "kiro" }
+  println ( u.greet ( "hi" ) )
   return 0
 }

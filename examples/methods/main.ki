@@ -8,7 +8,7 @@ type User {
 fn (u:User) display() -> str =
   u.name
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   let u = User{id:1 name:"toni"}
   println(u.display())
   return 0

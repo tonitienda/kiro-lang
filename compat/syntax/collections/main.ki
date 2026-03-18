@@ -2,9 +2,9 @@ mod main
 
 const Name = "collections"
 
-fn main() -> i32 {
-  let nums = [1, 2, 3]
-  let cfg = {"host":"localhost", "port":8080}
-  println("${Name} ${nums} ${cfg}")
+fn main() -> i32 !io {
+  let nums = [ 1 , 2 , 3 ]
+  let cfg = { "host" : "localhost" , "port" : 8080 }
+  println ( "${Name} ${nums} ${cfg}" )
   return 0
 }

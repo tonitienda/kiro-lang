@@ -1,7 +1,7 @@
 mod main
 
 /// user model
- type User {
+type User {
   name:str
 }
 
@@ -9,8 +9,8 @@ fn greet(name:str) -> str {
   return "hi ${name}"
 }
 
-fn main() -> i32 {
-  let u = User{name:"kiro"}
-  println(greet(u.name))
+fn main() -> i32 !io {
+  let u = User { name : "kiro" }
+  println ( greet ( u.name ) )
   return 0
 }

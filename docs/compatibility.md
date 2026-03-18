@@ -74,5 +74,6 @@ The corpus validates:
 
 - formatter idempotence on `.ki` files
 - parser/project load and module resolution
+- explicit effect declaration parsing and call-site enforcement
 - optional inspect-go emission checks
 - expected diagnostics for failure fixtures
