@@ -37,9 +37,13 @@ fn route(path:str) -> Resp {
 - `const <Name> = <string|int|ident>` (module scoped)
 - `type <Name> { <field>:<type> ... }` (struct form, including optional refs like `?str`)
 - `fn <name>(<params>) -> <type> = <body>`
+- `fn <name>(<params>) -> <type> !effect... = <body>`
 - `fn <name>(<params>) -> <type> { <body> }`
+- `fn <name>(<params>) -> <type> !effect... { <body> }`
 - `fn (<recv>:<Type>) <name>(<params>) -> <type> = <body>`
+- `fn (<recv>:<Type>) <name>(<params>) -> <type> !effect... = <body>`
 - `fn (<recv>:<Type>) <name>(<params>) -> <type> { <body> }`
+- `fn (<recv>:<Type>) <name>(<params>) -> <type> !effect... { <body> }`
 - top-level doc comments (`/// ...`) attached to the next declaration
 
 Function bodies are currently preserved as normalized source text in the AST while the compiler frontend evolves.

@@ -135,7 +135,7 @@ func scaffoldHello() error {
 	}
 	return os.WriteFile("hello/main.ki", []byte(`mod main
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   println("hello")
   return 0
 }
@@ -160,7 +160,7 @@ import internal/config
 import http
 import log
 
-fn main() -> i32 {
+fn main() -> i32 !env !log !net {
   let cfg = config.load()?
   log.info("starting ${cfg.port}")
   http.serve(cfg.port, app.handler)?
@@ -190,7 +190,7 @@ type AppConfig {
   env:str
 }
 
-fn load() -> R[AppConfig, str] {
+fn load() -> R[AppConfig, str] !env {
   let port = env.get_or("PORT", ":8080")
   let app_env = env.get_or("APP_ENV", "dev")
   return Ok(AppConfig{port:port env:app_env})

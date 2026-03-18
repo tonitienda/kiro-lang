@@ -2,8 +2,8 @@ mod main
 
 import cli
 
-fn main() -> i32 {
-  let args = cli.args()
-  println("count ${args}")
+fn main() -> i32 !io !proc {
+  let args = cli.args ( )
+  println ( "count ${args}" )
   return 0
 }

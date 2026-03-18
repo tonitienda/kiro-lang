@@ -1,6 +1,6 @@
 mod main
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   let name = "kiro"
   println("hello ${name}")
   return 0

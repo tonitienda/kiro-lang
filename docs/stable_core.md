@@ -9,6 +9,7 @@ The following areas are source-compatibility sensitive and treated as stable exp
 - module layout and imports (`mod`, `import`, project entry `main.ki`)
 - structs, constants, and value-receiver methods
 - block functions and expression functions
+- explicit function effect declarations (`!env`, `!fs`, `!io`, `!log`, `!net`, `!panic`, `!proc`, `!time`)
 - local bindings and reassignment
 - control flow: `if`, `when`, `for in`, `while`, `break`, `continue`
 - collections: lists and maps

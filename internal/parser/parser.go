@@ -207,11 +207,25 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 	if err != nil {
 		return nil, err
 	}
+	effects, err := p.parseEffects()
+	if err != nil {
+		return nil, err
+	}
 
+	decl := ast.FuncDecl{
+		Doc:        p.takePendingDoc(),
+		Name:       name.Text,
+		Receiver:   receiver,
+		Params:     params,
+		ReturnType: ret.Text,
+		Effects:    effects,
+		Line:       name.Line,
+		Column:     name.Column,
+	}
 	if p.peekText("=") {
 		p.next()
-		body := p.collectExprBody()
-		return ast.FuncDecl{Doc: p.takePendingDoc(), Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, Body: body}, nil
+		decl.Body = p.collectExprBody()
+		return decl, nil
 	}
 	if p.peekText("{") {
 		p.next()
@@ -219,9 +233,24 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ast.FuncDecl{Doc: p.takePendingDoc(), Name: name.Text, Receiver: receiver, Params: params, ReturnType: ret.Text, BlockBody: true, Body: body}, nil
+		decl.BlockBody = true
+		decl.Body = body
+		return decl, nil
 	}
 	return nil, fmt.Errorf("expected \"=\" or \"{\" at %d:%d", p.peek().Line, p.peek().Column)
+}
+
+func (p *Parser) parseEffects() ([]ast.EffectDecl, error) {
+	var effects []ast.EffectDecl
+	for p.peekText("!") {
+		bang := p.next()
+		name, err := p.expect(lexer.TokenIdent)
+		if err != nil {
+			return nil, err
+		}
+		effects = append(effects, ast.EffectDecl{Name: name.Text, Line: bang.Line, Column: bang.Column})
+	}
+	return effects, nil
 }
 
 func (p *Parser) parseReceiver() (ast.Param, error) {

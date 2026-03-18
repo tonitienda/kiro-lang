@@ -1,0 +1,5 @@
+mod main
+
+fn main() -> i32 !database {
+  return 0
+}

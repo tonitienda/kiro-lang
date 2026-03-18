@@ -44,25 +44,15 @@ func Print(file *ast.File) string {
 			}
 			b.WriteString("}")
 		case ast.FuncDecl:
-			b.WriteString("fn ")
-			if decl.Receiver != nil {
-				fmt.Fprintf(&b, "(%s:%s) ", decl.Receiver.Name, decl.Receiver.Type)
-			}
-			fmt.Fprintf(&b, "%s(", decl.Name)
-			for pi, p := range decl.Params {
-				if pi > 0 {
-					b.WriteString(", ")
-				}
-				fmt.Fprintf(&b, "%s:%s", p.Name, p.Type)
-			}
+			b.WriteString(decl.Signature())
 			if decl.BlockBody {
-				fmt.Fprintf(&b, ") -> %s {\n", decl.ReturnType)
+				b.WriteString(" {\n")
 				for _, line := range normalizeBody(decl.Body) {
 					fmt.Fprintf(&b, "  %s\n", line)
 				}
 				b.WriteString("}")
 			} else {
-				fmt.Fprintf(&b, ") -> %s =\n", decl.ReturnType)
+				b.WriteString(" =\n")
 				for _, line := range normalizeBody(decl.Body) {
 					fmt.Fprintf(&b, "  %s\n", line)
 				}

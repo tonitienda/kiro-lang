@@ -8,11 +8,11 @@ type Msg {
 }
 
 fn handler(req:httpReq) -> Resp {
-  let body = Msg{text:"ok"}
-  return Ok(http.json(200, json.encode(body)))
+  let body = Msg { text : "ok" }
+  return Ok ( http.json ( 200 , json.encode ( body ) ) )
 }
 
-fn main() -> i32 {
-  http.serve(":8080", handler)?
+fn main() -> i32 !net {
+  http.serve ( ":8080" , handler ) ?
   return 0
 }

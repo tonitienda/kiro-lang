@@ -21,6 +21,7 @@
 - Added editor setup docs for VS Code, Neovim, and Vim (`docs/editor_setup.md`).
 - Added editor compatibility fixture samples in `compat/editor/lsp`.
 - Added CI workflow for editor tooling checks.
+- Hover and symbol signatures now surface explicit function effects.
 
 ## Reuse of compiler infrastructure
 

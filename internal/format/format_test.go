@@ -57,10 +57,29 @@ fn route(path:str) -> Resp {
 	}
 }
 
+func TestSource_SortsEffects(t *testing.T) {
+	in := `mod main
+
+fn main()->i32!net!env!log{return 0}`
+	out, err := Source(in)
+	if err != nil {
+		t.Fatalf("Source() error = %v", err)
+	}
+	want := `mod main
+
+fn main() -> i32 !env !log !net {
+  return 0
+}
+`
+	if out != want {
+		t.Fatalf("unexpected format:\n%s", out)
+	}
+}
+
 func TestSource_InterpolationStringBody(t *testing.T) {
 	in := `mod main
 
-fn main()->i32{println("kiro ${Version}")
+fn main()->i32!io{println("kiro ${Version}")
 return 0}`
 	out, err := Source(in)
 	if err != nil {
@@ -68,7 +87,7 @@ return 0}`
 	}
 	want := `mod main
 
-fn main() -> i32 {
+fn main() -> i32 !io {
   println ( "kiro ${Version}" )
   return 0
 }

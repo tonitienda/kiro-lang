@@ -112,6 +112,23 @@ fn (u:User) display() -> ?str =
 	}
 }
 
+func TestParseFuncEffects(t *testing.T) {
+	src := `mod main
+
+fn main() -> i32 !net !env !log {
+  return 0
+}
+`
+	file, err := Parse(src)
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	fd := file.Decls[0].(ast.FuncDecl)
+	if got := fd.EffectNames(); len(got) != 3 || got[0] != "net" || got[1] != "env" || got[2] != "log" {
+		t.Fatalf("effects = %#v", got)
+	}
+}
+
 func TestParseDocCommentOnFunc(t *testing.T) {
 	src := `mod main
 

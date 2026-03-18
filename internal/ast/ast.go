@@ -35,14 +35,23 @@ type Field struct {
 	Type string
 }
 
+type EffectDecl struct {
+	Name   string
+	Line   int
+	Column int
+}
+
 type FuncDecl struct {
 	Doc        []string
 	Name       string
 	Receiver   *Param
 	Params     []Param
 	ReturnType string
+	Effects    []EffectDecl
 	BlockBody  bool
 	Body       string
+	Line       int
+	Column     int
 }
 
 func (d FuncDecl) GetDoc() []string { return d.Doc }

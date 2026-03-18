@@ -14,7 +14,7 @@ fn app(req:http.Req) -> R[http.Resp, str] {
     }
 }
 
-fn main() -> i32 {
+fn main() -> i32 !net {
   http.serve(":8080", app)?
   return 0
 }

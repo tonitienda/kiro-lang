@@ -8,7 +8,7 @@ type AppConfig {
   env:str
 }
 
-fn load() -> R[AppConfig, str] {
+fn load() -> R[AppConfig, str] !env {
   let port = env.get_or("PORT", ":8080")
   let app_env = env.get_or("APP_ENV", "dev")
   return Ok(AppConfig{port:port env:app_env})
@@ -20,4 +20,5 @@ Guidelines:
 - Keep config parsing close to startup.
 - Prefer defaults for non-critical values.
 - Return `R[T,E]` for missing/invalid required values.
+- Use `!env` when loading from environment.
 - Avoid reflection-based config loaders.

@@ -31,7 +31,7 @@ If decode support is available in your slice, prefer explicit decoding in handle
 let input = json.decode[CreateReq](req.body)?
 ```
 
-Keep request parsing local to the handler for readability.
+Keep request parsing local to the handler for readability. JSON encode/decode stays pure in Kiro v1, so fallibility remains modeled with `R[T,E]` and `?` rather than an effect annotation.
 
 See examples:
 
