@@ -1,42 +1,18 @@
-# Phase 10 notes
+# Phase 10 Notes - Stable Core Contract
 
-## Stable-core decisions
+## Core contract after the standalone-toolchain follow-up
 
-- Added `docs/stable_core.md` to explicitly define stable experimental core vs flexible areas.
-- Core includes language constructs already used by templates/examples and canonical CLI workflow (`fmt`, `check`, `inspect go`, `new`, `compat`).
-- Explicit function effect declarations are now part of the stable experimental core for operational behavior.
+- Core includes language constructs already used by templates/examples and canonical CLI workflow (`fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`).
+- Generated Go remains part of the trust/debug story even though executable builds now flow through a standalone generated workdir.
+- CLI surface is still conservative; the major change is that `build/run/test` are now real commands instead of placeholders.
 
-## Deprecation/cleanup decisions
+## What remains intentionally narrow
 
-- No hard removals in this milestone.
-- CLI surface kept conservative; placeholder commands (`build/run/test`) remain visible but explicitly marked as not implemented in this repository slice.
+- Stable-core does **not** promise a frozen generated-Go API.
+- Stable-core does **not** claim all experimental examples execute successfully through the current runtime path.
+- Stable-core does promise a boring downstream workflow shape for checking, building, testing, and inspecting projects.
 
-## Release-shape decisions
+## Follow-up implications
 
-- README now presents Kiro as experimental but deliberate, with quick-start and command/docs index.
-- Added release process/checklist in `docs/releasing.md`.
-- Added `CHANGELOG.md` with lightweight milestone history model.
-
-## CLI/workflow decisions
-
-- Added top-level help command and unified usage text for discoverability (`kiro help`, `--help`, `-h`).
-- Unknown command errors now include usage guidance.
-- `kiro check` now covers effect declaration validation in addition to parse/import checks.
-
-## Compatibility/CI decisions
-
-- Updated compatibility docs with explicit fixture categories (stable-core, compatibility, regression, diagnostics, templates, codegen).
-- Stable-core fixtures are the strongest source-compatibility guardrail.
-- Added regression fixtures for missing, duplicate, and unknown effect diagnostics.
-
-## Known limitations
-
-- `kiro build`, `kiro run`, and `kiro test` remain placeholders in this frontend-focused slice.
-- Generated Go remains a debugging-oriented surface, not a stability guarantee.
-- Effects are declaration-based and conservative; there is no effect polymorphism or general inference.
-
-## Recommended post-Phase 10 direction
-
-1. Implement runtime-backed behavior for build/run/test in a disciplined, compatibility-aware way.
-2. Expand stable-core acceptance fixtures and selected codegen snapshots.
-3. Continue diagnostics quality work with targeted regression fixtures.
+- Release packaging must preserve `inspect go` as the debugging backstop.
+- Downstream validation should keep using release bundles, not just source builds.

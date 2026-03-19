@@ -19,6 +19,9 @@ jobs:
       - run: go run ./cmd/kiro check examples/spawn_await
       - run: go run ./cmd/kiro fmt examples/hello examples/service_health examples/spawn_await
       - run: go run ./cmd/kiro inspect go examples/hello --out-dir .kiro-gen-example
+      - run: go run ./cmd/kiro build examples/hello --out ./hello-example
+      - run: ./hello-example
+      - run: go run ./cmd/kiro test examples/test_demo
 
   templates:
     runs-on: ubuntu-latest
@@ -36,10 +39,14 @@ jobs:
           $GITHUB_WORKSPACE/kiro check hello
           $GITHUB_WORKSPACE/kiro fmt hello
           $GITHUB_WORKSPACE/kiro inspect go hello --out-dir .kiro-gen-hello
+          $GITHUB_WORKSPACE/kiro build hello --out ./hello-bin
+          ./hello-bin
       - run: |
           tmpdir="$(mktemp -d)"
           cd "$tmpdir"
           $GITHUB_WORKSPACE/kiro new service
           $GITHUB_WORKSPACE/kiro check service
           $GITHUB_WORKSPACE/kiro fmt service
+          $GITHUB_WORKSPACE/kiro test service
           $GITHUB_WORKSPACE/kiro inspect go service --out-dir .kiro-gen-service
+          $GITHUB_WORKSPACE/kiro build service --out ./service-bin

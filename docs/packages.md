@@ -1,33 +1,14 @@
-# Packages and modules (Phase 7)
+# Packages and project boundaries
 
-Kiro keeps package rules intentionally small and explicit.
+Kiro projects resolve imports through declared module names and predictable path mapping.
 
-## Naming
+## Practical workflow
 
-- Every source file starts with `mod <name>`.
-- Module names should be short lowercase identifiers (for example `main`, `app`, `config`).
-- Prefer one module identity per directory.
+- `kiro check` validates the project graph.
+- `kiro inspect go` preserves relative paths in generated inspection output under `.kiro-gen/src`.
+- `kiro test` runs `test_*` functions through the standalone build path.
+- `kiro build` produces a native executable for the project entrypoint.
 
-## Structure and entrypoints
+## Current guidance
 
-- Entrypoint is a directory containing `main.ki` (or an explicit `.ki` file path).
-- `main` is the composition root: load config, wire handlers, start serving.
-- Keep service logic in non-`main` modules (for example `app`, `internal/config`).
-
-## Import paths
-
-- `import foo` resolves to module `mod foo` under project root.
-- `import internal/config` resolves path-style (`internal/config.ki` or `internal/config/main.ki`).
-- Keep imports acyclic and explicit; avoid wildcard-style behavior.
-
-## Multiple source files
-
-- Loader reads all `.ki` files under project root.
-- `kiro inspect go` preserves relative paths in generated output under `.kiro-gen/src`.
-- Prefer splitting by responsibility, not by tiny helper functions.
-
-## Tests and modules
-
-- Handler-level tests should live near service code (`test/*.ki` is recommended).
-- Tests should call module functions directly instead of booting full servers.
-- Use `kiro test` when runtime lands; meanwhile validate compiler/tooling with `go test ./...`.
+Use `kiro inspect go` when you want to reason about generated source layout, and use `kiro build/run/test` when you want the standalone toolchain workflow that downstream repositories will consume.

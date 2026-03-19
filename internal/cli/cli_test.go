@@ -2,7 +2,9 @@ package cli
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -23,13 +25,15 @@ func TestRunUnknownCommandIncludesUsage(t *testing.T) {
 	}
 }
 
-func TestUsageIncludesLSP(t *testing.T) {
+func TestUsageIncludesRuntimeCommands(t *testing.T) {
 	err := Run([]string{"wat"})
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if !strings.Contains(err.Error(), "lsp") {
-		t.Fatalf("usage missing lsp command: %q", err.Error())
+	for _, cmd := range []string{"lsp", "build", "run", "test"} {
+		if !strings.Contains(err.Error(), cmd) {
+			t.Fatalf("usage missing %s command: %q", cmd, err.Error())
+		}
 	}
 }
 
@@ -109,6 +113,101 @@ func TestRunNewService(t *testing.T) {
 			t.Fatalf("service template file missing %s: %v", p, err)
 		}
 	}
+}
+
+func TestRuntimeBuildAndRun(t *testing.T) {
+	kiro := buildKiroBinary(t)
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "main.ki"), `mod main
+
+fn main() -> i32 !io {
+  println("hello from build")
+  return 0
+}
+`)
+	out := filepath.Join(dir, binaryName("app"))
+	cmd := exec.Command(kiro, "build", dir, "--out", out)
+	cmd.Env = os.Environ()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("kiro build failed: %v\n%s", err, output)
+	}
+	run := exec.Command(out)
+	run.Env = os.Environ()
+	runOut, err := run.CombinedOutput()
+	if err != nil {
+		t.Fatalf("built binary failed: %v\n%s", err, runOut)
+	}
+	if !strings.Contains(string(runOut), "hello from build") {
+		t.Fatalf("built binary output = %q, want greeting", string(runOut))
+	}
+}
+
+func TestRuntimeRunPassesArgs(t *testing.T) {
+	kiro := buildKiroBinary(t)
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "main.ki"), `mod main
+
+import cli
+
+fn main() -> i32 !io !proc {
+  let args = cli.args()
+  println("${args}")
+  return 0
+}
+`)
+	cmd := exec.Command(kiro, "run", dir, "--", "a", "b")
+	cmd.Env = os.Environ()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("kiro run failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(string(output), "[a b]") {
+		t.Fatalf("kiro run output = %q, want forwarded args", string(output))
+	}
+}
+
+func TestRuntimeTestCommand(t *testing.T) {
+	kiro := buildKiroBinary(t)
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "main.ki"), `mod main
+
+import test
+
+fn add(a:i32, b:i32) -> i32 =
+  a + b
+
+fn test_add() -> nil {
+  test.eq(add(2, 3), 5)
+}
+`)
+	cmd := exec.Command(kiro, "test", dir)
+	cmd.Env = os.Environ()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("kiro test failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(string(output), "PASS") {
+		t.Fatalf("kiro test output = %q, want PASS", string(output))
+	}
+}
+
+func buildKiroBinary(t *testing.T) string {
+	t.Helper()
+	out := filepath.Join(t.TempDir(), binaryName("kiro"))
+	cmd := exec.Command("go", "build", "-o", out, filepath.Join("..", "..", "cmd", "kiro"))
+	cmd.Env = os.Environ()
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("go build ./cmd/kiro failed: %v\n%s", err, output)
+	}
+	return out
+}
+
+func binaryName(base string) string {
+	if runtime.GOOS == "windows" {
+		return base + ".exe"
+	}
+	return base
 }
 
 func write(t *testing.T, path, src string) {

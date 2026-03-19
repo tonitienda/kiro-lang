@@ -1,6 +1,6 @@
 # Contributing and intentional change workflow
 
-Kiro prioritizes compatibility discipline and readable implementations.
+Kiro prioritizes compatibility discipline, readable implementations, and honest release behavior.
 
 ## Required checks before submitting
 
@@ -9,47 +9,52 @@ go test ./...
 go run ./cmd/kiro compat
 ```
 
-## Phase 10 expectations
+If you touch the standalone runtime/release path, also run:
 
-When a change is user-visible or architectural, update docs/notes in the same change:
+```bash
+go run ./cmd/kiro build examples/hello --out ./hello-example
+./hello-example
+go run ./cmd/kiro test examples/test_demo
+./scripts/package_release.sh dev 1.22.12 linux amd64
+./scripts/verify_release_bundle.sh dist/kiro-dev-linux-amd64.tar.gz
+```
+
+## Documentation expectations
+
+When a change is user-visible or architectural, update docs and notes in the same change:
 
 - `README.md`
 - relevant `docs/*` pages
-- current phase notes (`PHASE10_NOTES.md`)
+- `RELEASE_TOOLCHAIN_NOTES.md` for runtime/release decisions
+- current phase notes (`PHASE10_NOTES.md`, `PHASE11_NOTES.md`, or newer notes when added)
 - `AGENTS.md` if workflow guidance changes
 
 ## Making intentional language/CLI changes
 
 ### Syntax or parser behavior
 
-- add/update parser/formatter tests
+- add/update parser and formatter tests
 - add/update compatibility fixtures
 - document behavior in language docs (`docs/language_tour.md`, `docs/stable_core.md`)
 
-### Stdlib API changes
+### Build/run/test behavior
 
-- keep naming consistent with `docs/stdlib_style.md`
-- document migration notes when behavior/spellings shift
-- update examples/templates and compatibility fixtures
+- keep `kiro build`, `kiro run`, and `kiro test` boring and explicit
+- preserve `kiro inspect go` as the first-class debugging path
+- keep the bundled-toolchain story honest in docs and release notes
+- validate standalone downstream usage, not just in-repo source builds
 
 ### Generated-Go changes
 
-- preserve readability and origin tracing
-- update inspect-go docs (`docs/debugging_generated_go.md`)
-- adjust codegen fixtures intentionally
+- preserve readability and origin tracing where possible
+- update `docs/debugging_generated_go.md`
+- adjust release/runtime notes if the executable workdir layout changes
 
-### Deprecations
+### Release automation changes
 
-- prefer conservative de-emphasis before removal
-- document rationale and migration path in phase notes
-- keep templates/examples on canonical APIs immediately
-
-## Updating compatibility fixtures
-
-1. choose appropriate category (`stable-core`, `regression`, `experimental`, `templates`)
-2. create/update fixture directory with `main.ki`
-3. add/adjust `fixture.json` if needed
-4. run `kiro compat` locally
+- keep artifact names predictable
+- avoid runtime network downloads in normal CLI commands
+- prefer deterministic packaging/verification scripts over ad hoc release steps
 
 ## Stable-core decision check
 
@@ -58,5 +63,6 @@ Before adding surface area, verify:
 1. does it make README/templates/examples materially clearer?
 2. can it be tested cheaply and deterministically?
 3. can we maintain compatibility expectations for it?
+4. does it keep the standalone release story more reliable rather than more magical?
 
 If not, prefer docs/polish/cleanup over new surface.

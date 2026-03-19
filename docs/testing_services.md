@@ -7,7 +7,7 @@ This guide captures the recommended testing style for small services.
 1. **Pure function tests**: no IO, deterministic inputs/outputs.
 2. **Config loader tests**: env parsing and default behavior.
 3. **HTTP handler tests**: request/response behavior without starting a real server.
-4. **Service logic tests**: orchestration and `R[T,E]` failure paths.
+4. **Service smoke tests**: build or run the service and hit `/health`-style endpoints.
 
 ## Recommended patterns
 
@@ -17,40 +17,21 @@ Put transport glue (`http` request/response mapping) in thin handlers, and keep 
 
 ### 2) Test handlers as functions
 
-Prefer direct handler invocation with request fixtures and response assertions (`status`, headers, JSON body), instead of starting a full listener.
+Prefer direct handler invocation with request fixtures and response assertions instead of starting a full listener for every test.
 
-### 3) Cover failure paths explicitly
-
-When using `R[T,E]`:
-
-- test `Ok` path
-- test `Err` path
-- assert the external mapping (for example, `Err` -> `bad_request` or `not_found`) remains stable
-
-### 4) Keep fixtures tiny and local
-
-Use small input payloads and explicit expected values. Avoid hidden global setup.
-
-## Suggested directory shape
-
-```text
-service/
-  main.ki
-  config.ki
-  handlers.ki
-  handlers_test.ki
-  app.ki
-```
-
-## CI expectations
-
-Service-like examples and templates should pass:
+### 3) Use `kiro test` for module-level tests
 
 ```bash
-kiro fmt <project>
 kiro check <project>
 kiro test <project>
 kiro build <project>
 ```
 
-For now, if command implementations are placeholders, keep tests centered on parser/check/compat + inspect-go workflows until runtime execution is fully wired.
+### 4) Add at least one release-style smoke test for services
+
+For standalone release validation, verify both:
+
+- the produced binary from `kiro build`
+- `kiro run <project>` directly
+
+This repository's release verification script uses the service template and checks `/health` in both modes.
