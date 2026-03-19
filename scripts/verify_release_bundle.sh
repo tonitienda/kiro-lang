@@ -33,6 +33,17 @@ export PATH="/usr/bin:/bin"
 export PORT=":18082"
 cd "${PROJECT_ROOT}"
 
+"${KIRO_BIN}" new hello
+[[ -f "${PROJECT_ROOT}/hello/AGENTS.md" ]] || { echo "hello scaffolded AGENTS.md missing" >&2; exit 1; }
+[[ -f "${PROJECT_ROOT}/hello/.kiro/skill/SKILL.md" ]] || { echo "hello scaffolded SKILL.md missing" >&2; exit 1; }
+"${KIRO_BIN}" check hello
+"${KIRO_BIN}" build hello --out "${PROJECT_ROOT}/hello-bin"
+"${PROJECT_ROOT}/hello-bin" >"${PROJECT_ROOT}/hello.log" 2>"${PROJECT_ROOT}/hello.err"
+grep -q "hello" "${PROJECT_ROOT}/hello.log" || { echo "hello build output mismatch" >&2; exit 1; }
+hello_run_output="$("${KIRO_BIN}" run hello)"
+printf '%s\n' "${hello_run_output}"
+grep -q "hello" <<<"${hello_run_output}" || { echo "kiro run hello output mismatch" >&2; exit 1; }
+
 "${KIRO_BIN}" new service
 [[ -f "${PROJECT_ROOT}/service/AGENTS.md" ]] || { echo "scaffolded AGENTS.md missing" >&2; exit 1; }
 [[ -f "${PROJECT_ROOT}/service/.kiro/skill/SKILL.md" ]] || { echo "scaffolded SKILL.md missing" >&2; exit 1; }

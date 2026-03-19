@@ -16,7 +16,11 @@ type Location struct {
 func Locate() (*Location, error) {
 	if explicit := os.Getenv("KIRO_GO_BIN"); explicit != "" {
 		if stat, err := os.Stat(explicit); err == nil && !stat.IsDir() {
-			return &Location{GoBinary: explicit, Source: "KIRO_GO_BIN"}, nil
+			if probeErr := probeGoBinary(explicit); probeErr == nil {
+				return &Location{GoBinary: explicit, Source: "KIRO_GO_BIN"}, nil
+			} else {
+				return nil, fmt.Errorf("KIRO_GO_BIN=%q is not a usable go binary: %w", explicit, probeErr)
+			}
 		}
 		return nil, fmt.Errorf("KIRO_GO_BIN=%q does not point to a usable go binary", explicit)
 	}
@@ -27,15 +31,19 @@ func Locate() (*Location, error) {
 		}
 		candidate := filepath.Join(dir, "go", "bin", goBinaryName())
 		if stat, err := os.Stat(candidate); err == nil && !stat.IsDir() {
-			return &Location{GoBinary: candidate, Source: dir}, nil
+			if err := probeGoBinary(candidate); err == nil {
+				return &Location{GoBinary: candidate, Source: dir}, nil
+			}
 		}
 	}
 
 	pathGo, err := exec.LookPath(goBinaryName())
 	if err == nil {
-		return &Location{GoBinary: pathGo, Source: "PATH"}, nil
+		if err := probeGoBinary(pathGo); err == nil {
+			return &Location{GoBinary: pathGo, Source: "PATH"}, nil
+		}
 	}
-	return nil, fmt.Errorf("unable to find a bundled or system Go toolchain; set KIRO_GO_BIN or place a Go toolchain under toolchain/go relative to the kiro binary")
+	return nil, fmt.Errorf("unable to find a usable bundled or system Go toolchain; set KIRO_GO_BIN or place a Go toolchain under toolchain/go relative to the kiro binary")
 }
 
 func candidateToolchainDirs() []string {
@@ -59,4 +67,13 @@ func goBinaryName() string {
 		return "go.exe"
 	}
 	return "go"
+}
+
+func probeGoBinary(path string) error {
+	cmd := exec.Command(path, "version")
+	cmd.Env = append(os.Environ(), "GOTOOLCHAIN=local")
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	return nil
 }

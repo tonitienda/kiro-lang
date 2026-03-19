@@ -90,7 +90,7 @@ cat hello/.kiro/version.json
 
 ### Install a pinned release
 
-Use the installer for release bundles that include `kiro`, `kiro-lsp`, and the bundled Go toolchain used by `kiro build`, `kiro run`, and `kiro test`.
+Use the installer for release bundles that include `kiro`, `kiro-lsp`, and the bundled Go toolchain used by `kiro build`, `kiro run`, and `kiro test`. At runtime Kiro probes that bundled `go` binary before using it, and falls back to `go` on `PATH` when the bundled toolchain is missing or unusable on the current machine.
 
 ```bash
 ./scripts/install.sh --version v0.1.0-experimental

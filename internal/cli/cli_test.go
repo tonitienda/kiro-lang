@@ -199,6 +199,50 @@ fn main() -> i32 !io {
 	}
 }
 
+func TestRuntimeBuildFallsBackWhenAdjacentBundledToolchainIsBroken(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("exec-format simulation uses a non-windows executable stub")
+	}
+
+	kiro := buildKiroBinary(t)
+	brokenGo := filepath.Join(filepath.Dir(kiro), "toolchain", "go", "bin", "go")
+	if err := os.MkdirAll(filepath.Dir(brokenGo), 0o755); err != nil {
+		t.Fatalf("mkdir broken toolchain dir: %v", err)
+	}
+	if err := os.WriteFile(brokenGo, []byte("not a real executable"), 0o755); err != nil {
+		t.Fatalf("write broken toolchain go: %v", err)
+	}
+
+	dir := t.TempDir()
+	cmd := exec.Command(kiro, "new", "hello")
+	cmd.Dir = dir
+	cmd.Env = os.Environ()
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("kiro new hello failed: %v\n%s", err, output)
+	}
+
+	out := filepath.Join(dir, binaryName("hello-bin"))
+	build := exec.Command(kiro, "build", filepath.Join(dir, "hello"), "--out", out)
+	build.Env = os.Environ()
+	output, err := build.CombinedOutput()
+	if err != nil {
+		t.Fatalf("kiro build hello with broken adjacent toolchain failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(string(output), "using Go toolchain from PATH") {
+		t.Fatalf("kiro build output = %q, want PATH fallback", string(output))
+	}
+
+	run := exec.Command(out)
+	run.Env = os.Environ()
+	runOut, err := run.CombinedOutput()
+	if err != nil {
+		t.Fatalf("built hello binary failed: %v\n%s", err, runOut)
+	}
+	if !strings.Contains(string(runOut), "hello") {
+		t.Fatalf("built hello binary output = %q, want greeting", string(runOut))
+	}
+}
+
 func TestRuntimeRunPassesArgs(t *testing.T) {
 	kiro := buildKiroBinary(t)
 	dir := t.TempDir()
