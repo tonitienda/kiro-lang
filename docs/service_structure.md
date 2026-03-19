@@ -1,12 +1,17 @@
 # Service structure
 
-The canonical Kiro service has three layers.
+Kiro services should use one boring, explicit shape.
 
-## 1. Entrypoint wiring
-
-`main.ki` owns startup, effect declarations, and server wiring.
+## main.ki owns the shell
 
 ```ki
+mod main
+
+import app
+import internal/config
+import http
+import log
+
 fn main() -> i32 !env !log !net {
   let cfg = config.load()?
   log.info("starting ${cfg.port}")
@@ -15,12 +20,14 @@ fn main() -> i32 !env !log !net {
 }
 ```
 
-## 2. Handler module
-
-`app/main.ki` owns request routing.
+## app/ owns handlers
 
 ```ki
-fn handler(req:http.Req) -> R[http.Resp, str] {
+mod app
+
+import http
+
+fn handler(req:http.Req) -> R[http.Resp,str] {
   when req.path
     "/health" => {
       return Ok(http.text(200, "ok"))
@@ -31,17 +38,13 @@ fn handler(req:http.Req) -> R[http.Resp, str] {
 }
 ```
 
-## 3. Config module
-
-`internal/config/main.ki` owns environment-derived configuration.
+## internal/config owns env reads
 
 ```ki
-fn load() -> R[AppConfig, str] !env {
+fn load() -> R[AppConfig,str] !env {
   let port = env.get_or("PORT", ":8080")
   return Ok(AppConfig{port:port})
 }
 ```
 
-## Testing story
-
-Prefer direct handler tests over booting a real server when possible.
+This pattern keeps the impure shell thin and keeps handlers easy to test.

@@ -1,8 +1,8 @@
 # Testing services
 
-For small services, the preferred pattern is **handler-level testing**.
+Service tests should target handlers directly before testing full process wiring.
 
-## Canonical example
+## Canonical handler test
 
 ```ki
 mod health_test
@@ -18,8 +18,8 @@ fn test_health_handler() -> nil {
 }
 ```
 
-## Why this pattern is preferred
+## Why this style
 
-- no server boot required
-- request and response types stay explicit
-- failures stay close to handler logic
+- easy for models to generate repeatedly
+- keeps assertions close to handler behavior
+- avoids unnecessary network/process setup for most checks

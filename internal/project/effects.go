@@ -14,6 +14,13 @@ var knownEffects = map[string]struct{}{
 	"env": {}, "fs": {}, "io": {}, "log": {}, "net": {}, "panic": {}, "proc": {}, "time": {},
 }
 
+var nonEffectConceptHints = map[string]string{
+	"json":  "json operations are pure transforms; model fallibility with R[T,E], not !json",
+	"parse": "parse operations are pure transforms; model fallibility with R[T,E], not !parse",
+	"http":  "http values are pure data; only network operations require !net",
+	"test":  "tests use ordinary functions plus assertions; there is no !test effect",
+}
+
 var stdlibCallEffects = map[string][]string{
 	"cli.args":      {"proc"},
 	"env.get":       {"env"},
@@ -78,7 +85,7 @@ func validateEffects(p *Project) error {
 					continue
 				}
 				sort.Strings(missing)
-				msg := fmt.Errorf("%d:%d: function %q calls %q which requires effect %q\nhint: add %q to the function signature", fn.Line, fn.Column, fn.Name, call, "!"+missing[0], "!"+missing[0])
+				msg := fmt.Errorf("%d:%d: missing effect declaration: %q calls %q\nexpected: add %q to %s\nhint: effects model operational impurity and must be declared at the caller boundary", fn.Line, fn.Column, fn.Name, call, "!"+missing[0], fn.Signature())
 				return withSourceLocation(file.Path, file.Src, msg)
 			}
 		}
@@ -92,11 +99,15 @@ func validateEffectSignature(file File, fn ast.FuncDecl) (map[string]struct{}, e
 	for _, effect := range fn.Effects {
 		if _, ok := knownEffects[effect.Name]; !ok {
 			known := sortedKnownEffects()
-			msg := fmt.Errorf("%d:%d: unknown effect %q\nknown effects: %s", effect.Line, effect.Column, "!"+effect.Name, strings.Join(known, ", "))
+			if hint, ok := nonEffectConceptHints[effect.Name]; ok {
+				msg := fmt.Errorf("%d:%d: unknown effect %q\nexpected: one of %s\nhint: %s", effect.Line, effect.Column, "!"+effect.Name, strings.Join(known, ", "), hint)
+				return nil, withSourceLocation(file.Path, file.Src, msg)
+			}
+			msg := fmt.Errorf("%d:%d: unknown effect %q\nexpected: one of %s\nhint: declare only built-in operational effects in function signatures", effect.Line, effect.Column, "!"+effect.Name, strings.Join(known, ", "))
 			return nil, withSourceLocation(file.Path, file.Src, msg)
 		}
 		if _, ok := effects[effect.Name]; ok {
-			msg := fmt.Errorf("%d:%d: duplicate effect %q in function signature", effect.Line, effect.Column, "!"+effect.Name)
+			msg := fmt.Errorf("%d:%d: duplicate effect %q in function signature\nhint: keep each effect at most once; `kiro fmt` will sort the remaining effects canonically", effect.Line, effect.Column, "!"+effect.Name)
 			return nil, withSourceLocation(file.Path, file.Src, msg)
 		}
 		effects[effect.Name] = struct{}{}

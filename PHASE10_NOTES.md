@@ -4,6 +4,7 @@
 
 - stable-core now assumes **block-only function bodies**
 - effects remain explicit and operational
+- pseudo-effects such as `!json` are rejected with repair-oriented diagnostics
 - result propagation (`?`) stays separate from optionality (`?T`)
 - structured concurrency stays explicit with `group`, `spawn`, and `await`
 - canonical CLI workflow remains `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`, `lsp`

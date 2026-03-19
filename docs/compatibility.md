@@ -1,30 +1,25 @@
-# Compatibility corpus
+# Compatibility fixtures
 
-Kiro uses compatibility fixtures to protect the intended core language and workflow.
+Kiro's compatibility corpus protects the **redesigned language core**, not historical accidents.
 
-## What the corpus is for
+## Fixture classes
 
-Fixtures are used to protect:
+- `stable_core/` for canonical successful programs
+- `diagnostics/` for stable repair-oriented failures
+- `regression/` for semantic guarantees that must stay true
 
-- canonical formatting
-- parser + project loading behavior
-- diagnostics for important mistakes
-- template shape
-- inspect-go/codegen regressions
+## Current focus
 
-## Current fixture themes
+The corpus should verify at least:
 
-The repository is converging on these categories:
+- formatter idempotence
+- project loading and import resolution
+- effect diagnostics
+- pure JSON/parse semantics
+- generated-Go inspectability for canonical projects
 
-- `compat/syntax/` — stable core syntax
-- `compat/services/` — canonical service shapes
-- `compat/templates/` — `kiro new` outputs
-- `compat/cli/` — inspect-go and CLI workflow checks
-- `compat/concurrency/` — structured concurrency patterns
-- `compat/diagnostics/` and `compat/regression/` — repair-focused failures and regressions
+## Command
 
-## Optimization-pass focus
-
-The corpus now prioritizes the **new canonical core**, not preservation of every historical syntax form.
-
-That means obsolete forms should move into diagnostics fixtures only when they still help repair loops.
+```bash
+go run ./cmd/kiro compat
+```
