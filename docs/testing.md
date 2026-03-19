@@ -1,51 +1,31 @@
-# Testing in Kiro
+# Testing
 
-Kiro now has both Go-level compiler tests and an experimental runtime test command.
+Kiro keeps testing simple.
 
-## Compiler/tooling checks
+## Canonical test shape
 
-Run the repository test suite:
+```ki
+mod math_test
 
-```bash
-go test ./...
-```
+import test
 
-This validates lexer, parser, formatter, project resolution, codegen layout, build orchestration, toolchain lookup, and CLI wiring.
+fn add(a:i32, b:i32) -> i32 {
+  return a + b
+}
 
-## Kiro test command
-
-`kiro test <entry-or-path>` discovers `fn test_*()` functions and runs them through the same generated-Go + native toolchain path used by `kiro build` and `kiro run`.
-
-Example:
-
-```bash
-kiro test examples/test_demo
-```
-
-Example test style:
-
-```kiro
 fn test_add() -> nil {
   test.eq(add(2, 3), 5)
 }
 ```
 
-## Handler-level test style
+## Rules
 
-Use request constructors and direct function calls instead of full server boot when possible:
+- test functions are named `test_*`
+- handler and helper tests should call functions directly when possible
+- prefer small, local tests over broad integration harnesses
 
-```kiro
-let req = http.test_req("GET", "/health", "")
-let res = app(req)?
-test.eq(res.code, 200)
+## Run tests
+
+```bash
+kiro test .
 ```
-
-See `examples/test_http_handlers`.
-
-## Current limits
-
-The test runner is intentionally small in this phase:
-
-- test discovery is prefix-based (`test_*`)
-- reporting is readable but minimal
-- coverage centers on the current template/service workflows rather than a large custom testing runtime

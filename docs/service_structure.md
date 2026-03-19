@@ -1,27 +1,47 @@
-# Service structure: the Kiro way (Phase 7)
+# Service structure
 
-Recommended tiny service layout:
+The canonical Kiro service has three layers.
 
-```text
-service/
-  main.ki
-  app/main.ki
-  internal/config/main.ki
-  test/health.ki
+## 1. Entrypoint wiring
+
+`main.ki` owns startup, effect declarations, and server wiring.
+
+```ki
+fn main() -> i32 !env !log !net {
+  let cfg = config.load()?
+  log.info("starting ${cfg.port}")
+  http.serve(cfg.port, app.handler)?
+  return 0
+}
 ```
 
-## Responsibilities
+## 2. Handler module
 
-- `main.ki`: startup flow only.
-- `app/*`: handlers and service behavior.
-- `internal/config/*`: explicit env/config loading.
-- `test/*`: handler-focused tests.
+`app/main.ki` owns request routing.
 
-## Startup pattern
+```ki
+fn handler(req:http.Req) -> R[http.Resp, str] {
+  when req.path
+    "/health" => {
+      return Ok(http.text(200, "ok"))
+    }
+    _ => {
+      return Ok(http.not_found())
+    }
+}
+```
 
-1. Load config.
-2. Log startup address/environment.
-3. Build handler function.
-4. Serve HTTP.
+## 3. Config module
 
-This keeps operational behavior obvious and avoids framework gravity.
+`internal/config/main.ki` owns environment-derived configuration.
+
+```ki
+fn load() -> R[AppConfig, str] !env {
+  let port = env.get_or("PORT", ":8080")
+  return Ok(AppConfig{port:port})
+}
+```
+
+## Testing story
+
+Prefer direct handler tests over booting a real server when possible.

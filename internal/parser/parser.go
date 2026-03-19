@@ -223,9 +223,8 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		Column:     name.Column,
 	}
 	if p.peekText("=") {
-		p.next()
-		decl.Body = p.collectExprBody()
-		return decl, nil
+		eq := p.next()
+		return nil, fmt.Errorf("%d:%d: expression-bodied functions were removed\nhint: replace \"=\" with \"{\" and use an explicit return", eq.Line, eq.Column)
 	}
 	if p.peekText("{") {
 		p.next()
@@ -237,7 +236,7 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		decl.Body = body
 		return decl, nil
 	}
-	return nil, fmt.Errorf("expected \"=\" or \"{\" at %d:%d", p.peek().Line, p.peek().Column)
+	return nil, fmt.Errorf("expected \"{\" to start function body at %d:%d", p.peek().Line, p.peek().Column)
 }
 
 func (p *Parser) parseEffects() ([]ast.EffectDecl, error) {
@@ -272,28 +271,6 @@ func (p *Parser) parseReceiver() (ast.Param, error) {
 		return ast.Param{}, err
 	}
 	return ast.Param{Name: name.Text, Type: typ.Text}, nil
-}
-
-func (p *Parser) collectExprBody() string {
-	var parts []string
-	for !p.isEOF() {
-		t := p.peek()
-		if t.Kind == lexer.TokenKeyword && t.Column == 1 && (t.Text == "fn" || t.Text == "type" || t.Text == "import" || t.Text == "const") {
-			break
-		}
-		p.next()
-		if t.Kind == lexer.TokenEOF {
-			break
-		}
-		if t.Kind == lexer.TokenNewline {
-			parts = append(parts, "\n")
-			continue
-		}
-		parts = append(parts, renderToken(t))
-	}
-	body := strings.TrimSpace(strings.Join(parts, " "))
-	body = strings.ReplaceAll(body, "\n ", "\n")
-	return body
 }
 
 func (p *Parser) collectBlockBody() (string, error) {
@@ -341,7 +318,16 @@ func (p *Parser) parseTypeRef() (lexer.Token, error) {
 	if err != nil {
 		return lexer.Token{}, err
 	}
-	text := base.Text
+	parts := []string{base.Text}
+	for p.peekText(".") {
+		p.next()
+		part, err := p.expect(lexer.TokenIdent)
+		if err != nil {
+			return lexer.Token{}, err
+		}
+		parts = append(parts, part.Text)
+	}
+	text := strings.Join(parts, ".")
 	if p.peekText("[") {
 		parts := []string{text, "["}
 		p.next()

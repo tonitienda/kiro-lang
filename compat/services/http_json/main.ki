@@ -7,9 +7,10 @@ type Msg {
   text:str
 }
 
-fn handler(req:httpReq) -> Resp {
+fn handler(req:http.Req) -> R[http.Resp,str] {
+  let _ = req
   let body = Msg { text : "ok" }
-  return Ok ( http.json ( 200 , json.encode ( body ) ) )
+  return Ok ( http.json ( 200 , json.encode ( body ) ? ) )
 }
 
 fn main() -> i32 !net {

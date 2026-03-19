@@ -1,14 +1,21 @@
-# HTTP + JSON style
+# HTTP + JSON
 
-Kiro Phase 7 keeps HTTP ergonomics small and explicit.
+Kiro treats HTTP as operational and JSON as pure.
 
 ## Canonical handler shape
 
 ```ki
-fn app(req:httpReq) -> Resp {
+fn handler(req:http.Req) -> R[http.Resp, str]
+```
+
+## Example
+
+```ki
+fn handler(req:http.Req) -> R[http.Resp, str] {
   when req.path
     "/health" => {
-      return Ok(http.text(200, "ok"))
+      let body = json.encode(Status{status:"ok"})?
+      return Ok(http.json(200, body))
     }
     _ => {
       return Ok(http.not_found())
@@ -16,25 +23,8 @@ fn app(req:httpReq) -> Resp {
 }
 ```
 
-## Recommended helpers/patterns
+## Semantic split
 
-- `http.text(code, body)` for plain responses.
-- `http.json(code, body)` for JSON responses.
-- `http.not_found()` for default misses.
-- `http.test_req(method, path, body)` in handler tests.
-
-## JSON request bodies
-
-If decode support is available in your slice, prefer explicit decoding in handlers:
-
-```ki
-let input = json.decode[CreateReq](req.body)?
-```
-
-Keep request parsing local to the handler for readability. JSON encode/decode stays pure in Kiro v1, so fallibility remains modeled with `R[T,E]` and `?` rather than an effect annotation.
-
-See examples:
-
-- `examples/service_health`
-- `examples/request_json`
-- `examples/test_http_handlers`
+- `http.serve` is `!net`
+- request handling may return `R[http.Resp, str]`
+- `json.encode` and `json.decode` remain pure

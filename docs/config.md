@@ -1,8 +1,14 @@
-# Config pattern (Phase 7)
+# Configuration
 
-Kiro recommends explicit config loading from env.
+Kiro encourages explicit configuration loading through a dedicated module.
+
+## Canonical pattern
 
 ```ki
+mod config
+
+import env
+
 type AppConfig {
   port:str
   env:str
@@ -15,10 +21,8 @@ fn load() -> R[AppConfig, str] !env {
 }
 ```
 
-Guidelines:
+## Why this pattern is preferred
 
-- Keep config parsing close to startup.
-- Prefer defaults for non-critical values.
-- Return `R[T,E]` for missing/invalid required values.
-- Use `!env` when loading from environment.
-- Avoid reflection-based config loaders.
+- environment access is isolated behind `!env`
+- startup wiring remains simple
+- tests can exercise config loading separately

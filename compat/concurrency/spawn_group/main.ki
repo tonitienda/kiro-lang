@@ -1,7 +1,7 @@
 mod main
 
 fn main() -> i32 !io {
-  group g {
+  group {
   let t1 = spawn work ( "a" )
   let t2 = spawn work ( "b" )
   await t1

@@ -1,37 +1,47 @@
 # Project layout
 
-Phase 7 defines clearer service-oriented layout and module boundaries.
+Kiro encourages one obvious project shape.
 
-## Rules
+## Tiny CLI tool
 
-- Entry can be a directory or a `.ki` file.
-- Directory entries must include `main.ki`.
-- Project root is the entry directory (or file parent directory).
-- Every `.ki` file under root is parsed and checked.
-- Imports resolve by:
-  - module name (`mod util` supports `import util`)
-  - path mapping (`import api/user` -> `api/user.ki` or `api/user/main.ki`)
+```text
+hello/
+  main.ki
+```
 
-## Recommended service structure
+Canonical entrypoint:
+
+```ki
+mod main
+
+fn main() -> i32 !io {
+  println("hello")
+  return 0
+}
+```
+
+## Tiny service
 
 ```text
 service/
   main.ki
-  app/main.ki
-  internal/config/main.ki
-  test/health.ki
+  app/
+    main.ki
+  internal/
+    config/
+      main.ki
+  test/
+    health.ki
 ```
 
-- `main` is composition root.
-- `app` contains handlers.
-- `internal/config` owns env/config mapping.
-- `test` keeps handler-level tests close.
+## Layout rules
 
-## Generated Go mapping
+- keep `main.ki` at the entry root
+- keep request handlers in `app/`
+- keep env/config loading in `internal/config/`
+- keep tests in `test/`
+- prefer module names that match paths predictably
 
-`kiro inspect go <entry>` writes files to `.kiro-gen` by default:
+## Why this matters
 
-- source modules under `.kiro-gen/src`
-- runtime partition under `.kiro-gen/runtime`
-- `x.ki` -> `.kiro-gen/src/x.go`
-- `dir/main.ki` -> `.kiro-gen/src/dir/module.go`
+Stable layout conventions help both humans and LLMs generate coherent projects without inventing competing repository shapes.

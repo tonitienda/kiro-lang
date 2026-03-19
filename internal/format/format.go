@@ -45,18 +45,11 @@ func Print(file *ast.File) string {
 			b.WriteString("}")
 		case ast.FuncDecl:
 			b.WriteString(decl.Signature())
-			if decl.BlockBody {
-				b.WriteString(" {\n")
-				for _, line := range normalizeBody(decl.Body) {
-					fmt.Fprintf(&b, "  %s\n", line)
-				}
-				b.WriteString("}")
-			} else {
-				b.WriteString(" =\n")
-				for _, line := range normalizeBody(decl.Body) {
-					fmt.Fprintf(&b, "  %s\n", line)
-				}
+			b.WriteString(" {\n")
+			for _, line := range normalizeBody(decl.Body) {
+				fmt.Fprintf(&b, "  %s\n", line)
 			}
+			b.WriteString("}")
 		}
 		if i < len(file.Decls)-1 {
 			b.WriteString("\n\n")

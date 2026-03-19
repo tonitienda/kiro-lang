@@ -9,14 +9,14 @@ type AppConfig {
   env:str
 }
 
-fn load_config() -> R[AppConfig, str] !env {
-  let port = env.get_or("PORT", DefaultPort)
-  let app_env = env.get_or("APP_ENV", "dev")
-  return Ok(AppConfig{port:port env:app_env})
+fn load_config() -> R[AppConfig,str] !env {
+  let port = env.get_or ( "PORT" , DefaultPort )
+  let app_env = env.get_or ( "APP_ENV" , "dev" )
+  return Ok ( AppConfig { port : port env : app_env } )
 }
 
 fn main() -> i32 !env !io {
-  let cfg = load_config()?
-  println("starting ${cfg.port} (${cfg.env})")
+  let cfg = load_config ( ) ?
+  println ( "starting ${cfg.port} (${cfg.env})" )
   return 0
 }

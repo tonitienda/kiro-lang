@@ -527,7 +527,7 @@ func (ctx *execContext) evalUnwrap(node *unwrapExpr) (value, error) {
 		}
 		return res.Value, nil
 	}
-	return v, nil
+	return nil, fmt.Errorf("invalid ? on non-result value\nhint: use ? only with R[T,E] values")
 }
 
 func (ctx *execContext) evalSpawn(node *spawnExpr) (value, error) {
@@ -546,7 +546,7 @@ func (ctx *execContext) evalAwait(node *awaitExpr) (value, error) {
 	}
 	future, ok := v.(*futureValue)
 	if !ok {
-		return nil, fmt.Errorf("await requires a spawned task")
+		return nil, fmt.Errorf("await requires a spawned task\nhint: call spawn first and await the returned task")
 	}
 	result := <-future.ch
 	return result.val, result.err
@@ -665,7 +665,7 @@ func builtinModuleFunc(module, name string) builtinFn {
 			}
 			return out, nil
 		}
-	case "fs.read", "fs.read_file":
+	case "fs.read_file":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
 			body, err := os.ReadFile(fmt.Sprint(toPlain(args[0])))
 			if err != nil {
