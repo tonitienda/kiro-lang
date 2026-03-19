@@ -1,59 +1,80 @@
 # Editor setup (Phase 11)
 
-Kiro now ships a small language-server implementation and a basic VS Code extension.
+Kiro ships a language server and a packaged VS Code extension for normal users.
 
 ## Features in scope
 
 Current editor support intentionally focuses on:
 
-- diagnostics (reusing parser/check pipeline)
+- diagnostics (reusing the parser/check pipeline)
 - hover on declarations in the current document
-- go-to-definition for local/top-level symbols in the current document
-- formatting via canonical `kiro fmt` formatter implementation
+- go-to-definition for local and top-level symbols in the current document
+- formatting via the canonical `kiro fmt` formatter implementation
 - document symbols (outline)
 - basic completion
+- TextMate syntax highlighting for `.ki` files in VS Code
 
 Deferred features are listed in `PHASE11_NOTES.md`.
 
-## Install `kiro-lsp`
+## Recommended VS Code workflow
 
-### Build from source
+The normal user setup is:
+
+1. install `kiro` from a release with `./scripts/install.sh --version vX.Y.Z`
+2. download the matching `kiro-vscode-vX.Y.Z.vsix` release asset
+3. in VS Code, use **Extensions → Install from VSIX...**
+4. open a Kiro project or a folder containing `.ki` files
+
+Expected features in VS Code:
+
+- syntax highlighting
+- diagnostics
+- formatting
+- hover
+- go to definition
+- document symbols
+- basic completion
+
+## How VS Code finds the language server
+
+The packaged extension uses the supported production entrypoint:
+
+- command: `kiro`
+- args: `lsp`
+
+That means a normal user only needs the `kiro` binary on `PATH`.
+
+Advanced overrides exist for unusual setups:
+
+- VS Code setting `kiro.lsp.path`
+- VS Code setting `kiro.lsp.args`
+- environment variable `KIRO_LSP_BIN`
+
+These are optional and mainly intended for development or compatibility work.
+
+## Packaging the VS Code extension
+
+From the repository root:
 
 ```bash
-go build ./cmd/kiro-lsp
+./scripts/package_vscode_extension.sh v0.1.0
 ```
 
-This produces a `kiro-lsp` binary in the current directory.
+That produces a normal installable artifact such as `dist/kiro-vscode-v0.1.0.vsix`.
 
-### Install from a release bundle
-
-Pinned release installs also install `kiro-lsp` when it is present in the release artifact:
+For a release-quality smoke check, run:
 
 ```bash
-./scripts/install.sh --version v0.1.0-experimental
-./scripts/install.sh --version v0.1.0-experimental --bin-dir ./bin
+./scripts/verify_vscode_extension.sh v0.1.0
 ```
 
-That is the recommended path for downstream repos and editor-specific setup guides that want a stable version pin.
+## Other editors
 
-## VS Code setup
+The language server stays a stdio server. Other editors can launch either `kiro lsp` or a direct `kiro-lsp` binary.
 
-Extension source lives in `editors/vscode/`.
+### Neovim setup (native LSP)
 
-### Development install
-
-1. Install `kiro-lsp` from a release bundle or build it from source and make it available on `PATH`.
-2. If `kiro-lsp` is not on `PATH`, set `KIRO_LSP_BIN` in the VS Code extension host environment.
-3. Open `editors/vscode` in VS Code.
-4. Run `npm install` in that folder.
-5. Press `F5` (Run Extension) to start an Extension Development Host.
-6. Open a `.ki` file.
-
-You should get syntax highlighting, diagnostics, formatting, hover, definition, symbols, and basic completion.
-
-## Neovim setup (native LSP)
-
-Use `nvim-lspconfig` with `kiro-lsp` over stdio.
+Use `nvim-lspconfig` with `kiro lsp` over stdio.
 
 ```lua
 local lspconfig = require('lspconfig')
@@ -62,7 +83,7 @@ vim.filetype.add({ extension = { ki = 'kiro' } })
 
 lspconfig.kiro = {
   default_config = {
-    cmd = { 'kiro-lsp' },
+    cmd = { 'kiro', 'lsp' },
     filetypes = { 'kiro' },
     root_dir = function(fname)
       return lspconfig.util.root_pattern('main.ki', '.git')(fname) or vim.loop.cwd()
@@ -81,7 +102,7 @@ vim.keymap.set('n', '<leader>kf', function()
 end)
 ```
 
-## Vim setup (coc.nvim)
+### Vim setup (coc.nvim)
 
 For Vim users with `coc.nvim`, configure filetype and language server:
 
@@ -89,7 +110,8 @@ For Vim users with `coc.nvim`, configure filetype and language server:
 {
   "languageserver": {
     "kiro": {
-      "command": "kiro-lsp",
+      "command": "kiro",
+      "args": ["lsp"],
       "filetypes": ["kiro"]
     }
   }

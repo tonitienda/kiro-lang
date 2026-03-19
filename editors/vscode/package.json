@@ -1,30 +1,84 @@
 {
-  "name": "kiro-lang",
+  "name": "kiro-vscode",
   "displayName": "Kiro",
-  "description": "Basic Kiro language support and LSP client",
+  "description": "Installable VS Code support for Kiro with syntax highlighting, diagnostics, hover, definitions, symbols, completion, and formatting via `kiro lsp`.",
   "version": "0.1.0",
   "publisher": "kiro-lang",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Programming Languages"],
+  "homepage": "https://github.com/kiro-lang/kiro",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiro-lang/kiro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kiro-lang/kiro/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "keywords": [
+    "kiro",
+    "lsp",
+    "formatter",
+    "language server"
+  ],
   "activationEvents": [
     "onLanguage:kiro"
   ],
   "main": "./extension.js",
+  "files": [
+    "extension.js",
+    "language-configuration.json",
+    "syntax/**",
+    "README.md"
+  ],
   "contributes": {
-    "languages": [{
-      "id": "kiro",
-      "aliases": ["Kiro", "kiro"],
-      "extensions": [".ki"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "kiro",
-      "scopeName": "source.kiro",
-      "path": "./syntax/kiro.tmLanguage.json"
-    }]
+    "languages": [
+      {
+        "id": "kiro",
+        "aliases": [
+          "Kiro",
+          "kiro"
+        ],
+        "extensions": [
+          ".ki"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kiro",
+        "scopeName": "source.kiro",
+        "path": "./syntax/kiro.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Kiro",
+      "properties": {
+        "kiro.lsp.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Optional path override for the Kiro language server executable. Leave empty for the supported default: run `kiro lsp`. Advanced users can point this at a custom `kiro` binary or a direct `kiro-lsp` binary."
+        },
+        "kiro.lsp.args": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Optional extra argument override for advanced setups. Leave empty to use the built-in defaults: `[\"lsp\"]` for `kiro`, or `[]` for a direct `kiro-lsp` override."
+        }
+      }
+    }
   },
   "scripts": {
-    "lint:manifest": "node -e \"JSON.parse(require('fs').readFileSync('package.json','utf8'));console.log('ok')\""
+    "lint:manifest": "node -e \"const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); if(pkg.name!=='kiro-vscode') throw new Error('unexpected package name'); if(!pkg.contributes?.configuration?.properties?.['kiro.lsp.path']) throw new Error('missing kiro.lsp.path setting'); console.log('manifest ok')\"",
+    "package:vsix": "python3 ../../scripts/build_vsix.py . ../../dist/kiro-vscode-local.vsix",
+    "verify:lsp-entrypoint": "node -e \"const fs=require('fs'); const src=fs.readFileSync('extension.js','utf8'); if(!/command: 'kiro'/.test(src) || !/args: \\\\['lsp'\\\\]/.test(src)) throw new Error('default kiro lsp entrypoint missing'); console.log('lsp entrypoint ok')\""
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"

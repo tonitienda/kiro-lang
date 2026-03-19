@@ -37,8 +37,9 @@ Release artifacts must use these names:
 - `kiro-vX.Y.Z-darwin-amd64.tar.gz`
 - `kiro-vX.Y.Z-darwin-arm64.tar.gz`
 - `kiro-vX.Y.Z-checksums.txt`
+- `kiro-vscode-vX.Y.Z.vsix`
 
-The installer depends on this shape.
+The installer depends on the tarball names, and the editor install flow depends on the VS Code artifact name.
 
 ## Build release bundles locally
 
@@ -60,6 +61,20 @@ Using `KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)"` reuses the already-installe
 - `kiro-dev-darwin-amd64.tar.gz`
 - `kiro-dev-darwin-arm64.tar.gz`
 - `kiro-dev-checksums.txt`
+
+## Package the VS Code extension locally
+
+```bash
+./scripts/package_vscode_extension.sh v0.1.0
+```
+
+For a packaging smoke test plus doc/workflow validation:
+
+```bash
+./scripts/verify_vscode_extension.sh v0.1.0
+```
+
+The packaged artifact is written to `dist/kiro-vscode-v0.1.0.vsix`.
 
 ## Validate a release bundle locally
 
@@ -104,11 +119,12 @@ This script:
 It:
 
 1. builds release bundles for all four target tuples
-2. uploads them as workflow artifacts
-3. verifies the linux/amd64 bundle in a downstream-style smoke test
-4. aggregates release checksums into `kiro-<version>-checksums.txt`
-5. verifies the installer flow against the produced artifacts
-6. uploads tarballs and the checksum file to GitHub Releases for tagged `v*` pushes using workflow-level `contents: write` permission
+2. packages the VS Code extension as `kiro-vscode-<version>.vsix`
+3. uploads tarballs and the `.vsix` as workflow artifacts
+4. verifies the linux/amd64 bundle in a downstream-style smoke test
+5. aggregates release checksums into `kiro-<version>-checksums.txt`, including the `.vsix`
+6. verifies the installer flow against the produced artifacts
+7. uploads tarballs, the `.vsix`, and the checksum file to GitHub Releases for tagged `v*` pushes using workflow-level `contents: write` permission
 
 ## Pre-release checklist
 
@@ -120,5 +136,7 @@ It:
 6. Run `scripts/verify_release_bundle.sh` against the native bundle.
 7. Run `scripts/verify_install.sh <version>`.
 8. Confirm the release workflow still has `permissions: contents: write` before tagging.
-9. Update `README.md`, install/release docs, editor setup docs, contributing docs, `INSTALL_AND_SKILL_NOTES.md`, and `RELEASE_TOOLCHAIN_NOTES.md`.
-10. Update relevant phase notes before tagging.
+9. Package and verify the VS Code extension with `scripts/verify_vscode_extension.sh <version>`.
+10. Confirm the release page will include the matching `kiro-vscode-vX.Y.Z.vsix` artifact.
+11. Update `README.md`, install/release docs, editor setup docs, contributing docs, `INSTALL_AND_SKILL_NOTES.md`, and `RELEASE_TOOLCHAIN_NOTES.md`.
+12. Update relevant phase notes before tagging.

@@ -88,6 +88,8 @@ go build ./cmd/kiro-lsp
 cat hello/.kiro/version.json
 ```
 
+Building from source is the right choice for contributors working inside `kiro-lang`. Normal users should prefer the installer plus the packaged VS Code extension.
+
 ### Install a pinned release
 
 Use the installer for release bundles that include `kiro`, `kiro-lsp`, and the bundled Go toolchain used by `kiro build`, `kiro run`, and `kiro test`. At runtime Kiro probes that bundled `go` binary before using it, and falls back to `go` on `PATH` when the bundled toolchain is missing or unusable on the current machine.
@@ -104,8 +106,20 @@ Artifact naming is predictable and version-pinned:
 - `kiro-vX.Y.Z-darwin-amd64.tar.gz`
 - `kiro-vX.Y.Z-darwin-arm64.tar.gz`
 - `kiro-vX.Y.Z-checksums.txt`
+- `kiro-vscode-vX.Y.Z.vsix`
 
 See `docs/install.md` and `docs/releasing.md` for the full release/install workflow.
+
+## VS Code
+
+The supported VS Code workflow for normal users is:
+
+1. install `kiro` with the normal release installer
+2. install the matching `kiro-vscode-vX.Y.Z.vsix` from a release
+3. open a folder containing `.ki` files
+4. use syntax highlighting, diagnostics, hover, go to definition, document symbols, formatting, and basic completion through `kiro lsp`
+
+The extension treats Kiro as a black-box CLI install and starts the language server with `kiro lsp`. Advanced overrides remain available, but they are optional and not part of the normal install path.
 
 ## Quick start
 

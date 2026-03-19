@@ -1,25 +1,57 @@
-# Kiro VS Code extension (Phase 11 baseline)
+# Kiro for Visual Studio Code
 
-This extension provides:
+The Kiro VS Code extension is packaged as a normal installable `.vsix` artifact.
 
-- `.ki` language registration
-- TextMate syntax highlighting
-- language configuration (comments/brackets/autoclose)
-- LSP client wiring to `kiro-lsp`
+It provides:
 
-## Development
+- `.ki` file association and syntax highlighting
+- diagnostics from the Kiro parser/check pipeline
+- hover, go to definition, and document symbols
+- formatting through the canonical `kiro fmt` implementation
+- basic completion from the language server
+
+The extension talks to the language server over stdio and uses the supported production entrypoint:
+
+- command: `kiro`
+- args: `lsp`
+
+## Install as a normal user
+
+1. Install the `kiro` CLI with the normal installer from a Kiro release.
+2. Download the matching VS Code artifact named `kiro-vscode-vX.Y.Z.vsix` from the same release.
+3. In VS Code, open **Extensions** and choose **Install from VSIX...**.
+4. Open a Kiro project or any folder containing `.ki` files.
+
+If `kiro` is on `PATH`, the extension starts automatically when you open a `.ki` file.
+
+## How the extension finds Kiro
+
+The supported default is to run `kiro lsp` from your `PATH`.
+
+Advanced overrides are available if you need them:
+
+- VS Code setting `kiro.lsp.path`
+- environment variable `KIRO_LSP_BIN`
+- VS Code setting `kiro.lsp.args` for custom arguments
+
+These overrides are optional and are mainly for development or unusual installations.
+
+## Packaging the `.vsix`
+
+From the repository root:
 
 ```bash
-cd editors/vscode
-npm install
+./scripts/package_vscode_extension.sh v0.1.0
 ```
 
-Build `kiro-lsp` from repo root:
+That writes `dist/kiro-vscode-v0.1.0.vsix`.
+
+## Development notes
+
+The extension source still lives in `editors/vscode/`, but users do not need to open that folder or build it manually.
+
+Contributors can package and validate the extension with:
 
 ```bash
-go build ./cmd/kiro-lsp
+./scripts/verify_vscode_extension.sh dev
 ```
-
-Then launch extension development host in VS Code (`F5`).
-
-If `kiro-lsp` is not on `PATH`, set `KIRO_LSP_BIN` in the extension host environment.
