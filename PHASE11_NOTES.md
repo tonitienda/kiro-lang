@@ -39,3 +39,4 @@ The standalone-toolchain phase intentionally preserves editor tooling assumption
 - `kiro inspect go` remains the debugging backstop for runtime/codegen issues
 - the LSP still depends on the same parser/formatter stack, not the runtime path
 - release packaging should not introduce editor-specific forks of compiler behavior
+- tagged release automation now requires explicit workflow `contents: write` permission so CLI bundles can publish to GitHub Releases without manual intervention

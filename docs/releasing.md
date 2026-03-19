@@ -67,7 +67,7 @@ It:
 1. builds release bundles for all four target tuples
 2. uploads them as workflow artifacts
 3. verifies the linux/amd64 bundle in a downstream-style smoke test
-4. uploads assets to GitHub Releases for tagged `v*` pushes
+4. uploads assets to GitHub Releases for tagged `v*` pushes using workflow-level `contents: write` permission
 
 ## Pre-release checklist
 
@@ -76,5 +76,6 @@ It:
 3. Verify `kiro build`, `kiro run`, `kiro test`, and `kiro inspect go` locally.
 4. Build at least one standalone release bundle with `scripts/package_release.sh`.
 5. Run `scripts/verify_release_bundle.sh` against the native bundle.
-6. Update `README.md`, release docs, limitations, contributing docs, and `RELEASE_TOOLCHAIN_NOTES.md`.
-7. Update relevant phase notes before tagging.
+6. Confirm the release workflow still has `permissions: contents: write` before tagging.
+7. Update `README.md`, release docs, limitations, contributing docs, and `RELEASE_TOOLCHAIN_NOTES.md`.
+8. Update relevant phase notes before tagging.

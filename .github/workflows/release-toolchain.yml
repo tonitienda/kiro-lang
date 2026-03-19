@@ -11,6 +11,9 @@ on:
 env:
   GO_VERSION: '1.22.12'
 
+permissions:
+  contents: write
+
 jobs:
   package-bundles:
     runs-on: ubuntu-latest
@@ -31,7 +34,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22.12'
-          cache: true
+          cache: false
       - name: Compute release label
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
