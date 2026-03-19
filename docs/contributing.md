@@ -28,6 +28,7 @@ When a change is user-visible or architectural, update docs and notes in the sam
 - `README.md`
 - relevant `docs/*` pages
 - `docs/llm/KIRO_SKILL.md` and `docs/llm/kiro.json` when syntax, stdlib guidance, project conventions, or canonical examples change
+- `kiro new` scaffolding and `.kiro/` vendored skill snapshot behavior when downstream LLM/editor handoff changes
 - `RELEASE_TOOLCHAIN_NOTES.md` for runtime/release decisions
 - `INSTALL_AND_SKILL_NOTES.md` for the compact installer + skill handoff story
 - current phase notes (`PHASE10_NOTES.md`, `PHASE11_NOTES.md`, or newer notes when added)
@@ -48,6 +49,12 @@ When a change is user-visible or architectural, update docs and notes in the sam
 - preserve `kiro inspect go` as the first-class debugging path
 - keep the bundled-toolchain story honest in docs and release notes
 - validate standalone downstream usage, not just in-repo source builds
+
+### Scaffolding and downstream handoff
+
+- keep `kiro new` deterministic and easy to inspect
+- vendor the canonical compact skill bundle into `.kiro/skill/` rather than inventing per-template copies
+- keep `.kiro/version.json` tied to the built/released CLI version so downstream repos know what they were scaffolded with
 
 ### Generated-Go changes
 

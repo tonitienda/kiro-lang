@@ -155,6 +155,7 @@ Canonical shape:
 - `main.ki` declares `mod main`
 - `fn main() -> i32 !io` or another explicit effect set
 - small helpers stay in the same file until structure is clearly needed
+- scaffolded projects may also include `.kiro/skill/` plus `.kiro/version.json` as the pinned compact language handoff
 
 ### Tiny service
 
@@ -175,6 +176,7 @@ Canonical responsibilities:
 - `app/`: request handlers
 - `internal/config/`: environment/config loading
 - `test/`: handler-level tests
+- `.kiro/skill/`: vendored compact Kiro skill snapshot for repo-local LLM/editor guidance
 
 ## Canonical testing style
 
@@ -260,7 +262,7 @@ fn load_port() -> R[str,str] !env {
 - `kiro fmt <paths...>`
 - `kiro check <entry-or-path>`
 - `kiro inspect go <entry-or-path> [--out-dir <dir>]`
-- `kiro new <hello|service>`
+- `kiro new <hello|service> [--no-skill]`
 - `kiro build <entry-or-path> [--out <file>] [--keep-gen]`
 - `kiro run <entry-or-path> [--keep-gen] [-- <program args...>]`
 - `kiro test <entry-or-path> [--keep-gen]`

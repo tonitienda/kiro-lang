@@ -10,6 +10,7 @@
 - canonical CLI workflow remains `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`, `lsp`
 - generated Go remains part of the trust/debug story
 - the compact `docs/llm/` package is part of the stable-core communication contract for downstream repos and automation
+- generated projects now carry a project-local `.kiro/skill/` snapshot and `.kiro/version.json` by default so that contract can travel with downstream repos
 
 ## What remains intentionally narrow
 

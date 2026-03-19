@@ -17,6 +17,7 @@ These instructions apply to the full repository.
 - Keep agent-facing guidance and milestone notes (`AGENTS.md`, `PHASE*_NOTES.md`) aligned with workflow changes.
 - Keep `docs/llm/KIRO_SKILL.md`, `docs/llm/kiro.json`, and `docs/llm/examples/` aligned with the stable core whenever syntax, stdlib guidance, or canonical project conventions change.
 - Keep installer and release docs aligned with artifact naming, checksum generation, and the bundled-toolchain layout.
+- Keep `kiro new` templates plus the project-local `.kiro/` skill snapshot aligned with `docs/llm/` and release versioning.
 
 ## Testing policy
 - Add or update tests when changing lexer, parser, formatter, project resolution, or CLI behavior.

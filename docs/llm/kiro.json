@@ -38,14 +38,14 @@
     "kiro fmt <paths...>",
     "kiro check <entry-or-path>",
     "kiro inspect go <entry-or-path> [--out-dir <dir>]",
-    "kiro new <hello|service>",
+    "kiro new <hello|service> [--no-skill]",
     "kiro build <entry-or-path> [--out <file>] [--keep-gen]",
     "kiro run <entry-or-path> [--keep-gen] [-- <program args...>]",
     "kiro test <entry-or-path> [--keep-gen]"
   ],
   "project_conventions": {
-    "tiny_cli": ["main.ki", "mod main", "explicit main effects"],
-    "tiny_service": ["main.ki", "app/", "internal/config/", "test/"],
+    "tiny_cli": ["main.ki", "mod main", "explicit main effects", ".kiro/skill/ (optional scaffolded snapshot)"],
+    "tiny_service": ["main.ki", "app/", "internal/config/", "test/", ".kiro/skill/"],
     "tests": ["test_* functions", "http.test_req", "test.eq", "return nil"]
   },
   "experimental_areas": [
