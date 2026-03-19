@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -8,12 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	llmassets "github.com/kiro-lang/kiro/docs/llm"
+
 	"github.com/kiro-lang/kiro/internal/buildsys"
 	"github.com/kiro-lang/kiro/internal/codegen"
 	"github.com/kiro-lang/kiro/internal/compat"
 	"github.com/kiro-lang/kiro/internal/format"
 	"github.com/kiro-lang/kiro/internal/lsp"
 	"github.com/kiro-lang/kiro/internal/project"
+	"github.com/kiro-lang/kiro/internal/version"
 )
 
 const usageText = `usage: kiro <command> [args]
@@ -28,7 +32,7 @@ Core commands:
                                           Build and execute a Kiro program
   test <entry-or-path> [--keep-gen]
                                           Build and run Kiro tests discovered via test_* functions
-  new <hello|service>                     Scaffold a starter project
+  new <hello|service> [--no-skill]        Scaffold a starter project
   lsp                                     Run language server over stdio
   compat [root] [--mode fmt,check,inspect]
                                           Run compatibility fixture checks
@@ -280,34 +284,67 @@ func runInspect(args []string) error {
 	return nil
 }
 
+type newOptions struct {
+	template    string
+	vendorSkill bool
+}
+
 func runNew(args []string) error {
-	if len(args) != 1 {
-		return errors.New("usage: kiro new <hello|service>")
+	opts, err := parseNewArgs(args)
+	if err != nil {
+		return err
 	}
-	switch args[0] {
+	switch opts.template {
 	case "hello":
-		return scaffoldHello()
+		return scaffoldHello(opts.vendorSkill)
 	case "service":
-		return scaffoldService()
+		return scaffoldService(opts.vendorSkill)
 	default:
 		return errors.New("unknown template: use hello or service")
 	}
 }
 
-func scaffoldHello() error {
+func parseNewArgs(args []string) (newOptions, error) {
+	opts := newOptions{vendorSkill: true}
+	for _, arg := range args {
+		switch arg {
+		case "--no-skill":
+			opts.vendorSkill = false
+		case "hello", "service":
+			if opts.template != "" {
+				return newOptions{}, errors.New("usage: kiro new <hello|service> [--no-skill]")
+			}
+			opts.template = arg
+		default:
+			return newOptions{}, errors.New("usage: kiro new <hello|service> [--no-skill]")
+		}
+	}
+	if opts.template == "" {
+		return newOptions{}, errors.New("usage: kiro new <hello|service> [--no-skill]")
+	}
+	return opts, nil
+}
+
+func scaffoldHello(vendorSkill bool) error {
 	if err := os.MkdirAll("hello", 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile("hello/main.ki", []byte(`mod main
+	if err := os.WriteFile("hello/main.ki", []byte(`mod main
 
 fn main() -> i32 !io {
   println("hello")
   return 0
 }
-`), 0o644)
+`), 0o644); err != nil {
+		return err
+	}
+	if !vendorSkill {
+		return nil
+	}
+	return writeScaffoldSkillBundle("hello")
 }
 
-func scaffoldService() error {
+func scaffoldService(vendorSkill bool) error {
 	if err := os.MkdirAll("service/app", 0o755); err != nil {
 		return err
 	}
@@ -382,6 +419,7 @@ This template shows the canonical LLM-oriented Kiro service shape:
 - handler-level test via ` + "`http.test_req`" + ` style helpers
 - one explicit effect boundary in ` + "`main.ki`" + `
 - real ` + "`kiro check`" + `, ` + "`kiro build`" + `, ` + "`kiro run`" + `, and ` + "`kiro test`" + ` commands
+- vendored .kiro/skill/ snapshot for downstream LLM/editor handoff
 
 Suggested workflow:
 
@@ -405,7 +443,46 @@ kiro inspect go . --out-dir .kiro-gen
 	if err := os.WriteFile("service/test/health.ki", []byte(testFile), 0o644); err != nil {
 		return err
 	}
-	return os.WriteFile("service/README.md", []byte(readme), 0o644)
+	if err := os.WriteFile("service/README.md", []byte(readme), 0o644); err != nil {
+		return err
+	}
+	if !vendorSkill {
+		return nil
+	}
+	return writeScaffoldSkillBundle("service")
+}
+
+type scaffoldVersionMetadata struct {
+	KiroVersion  string `json:"kiro_version"`
+	SkillVersion string `json:"skill_version"`
+}
+
+func writeScaffoldSkillBundle(root string) error {
+	skillDir := filepath.Join(root, ".kiro", "skill")
+	if err := os.MkdirAll(skillDir, 0o755); err != nil {
+		return err
+	}
+	for _, name := range []string{"KIRO_SKILL.md", "kiro.json"} {
+		content, err := llmassets.Files.ReadFile(name)
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(skillDir, name), content, 0o644); err != nil {
+			return err
+		}
+	}
+	meta, err := json.MarshalIndent(scaffoldVersionMetadata{
+		KiroVersion:  version.KiroVersion,
+		SkillVersion: version.KiroVersion,
+	}, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(root, ".kiro", "version.json"), append(meta, '\n'), 0o644); err != nil {
+		return err
+	}
+	readme := "# Project-local Kiro skill snapshot\n\n- read `.kiro/skill/KIRO_SKILL.md` before editing `.ki` files\n- use canonical Kiro formatting\n- prefer stable-core syntax\n- run `kiro check` after edits\n"
+	return os.WriteFile(filepath.Join(root, ".kiro", "README.md"), []byte(readme), 0o644)
 }
 
 func runFmt(paths []string) error {

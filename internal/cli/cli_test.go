@@ -1,12 +1,15 @@
 package cli
 
 import (
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/kiro-lang/kiro/internal/version"
 )
 
 func TestRunHelp(t *testing.T) {
@@ -94,6 +97,22 @@ func TestRunNewHello(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "hello", "main.ki")); err != nil {
 		t.Fatalf("hello template missing: %v", err)
 	}
+	assertScaffoldSkillBundle(t, filepath.Join(dir, "hello"))
+}
+
+func TestRunNewHelloNoSkill(t *testing.T) {
+	dir := t.TempDir()
+	prev, _ := os.Getwd()
+	defer os.Chdir(prev)
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	if err := Run([]string{"new", "hello", "--no-skill"}); err != nil {
+		t.Fatalf("Run(new hello --no-skill) error = %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "hello", ".kiro")); !os.IsNotExist(err) {
+		t.Fatalf("hello .kiro presence err = %v, want not exists", err)
+	}
 }
 
 func TestRunNewService(t *testing.T) {
@@ -116,6 +135,30 @@ func TestRunNewService(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(dir, p)); err != nil {
 			t.Fatalf("service template file missing %s: %v", p, err)
 		}
+	}
+	assertScaffoldSkillBundle(t, filepath.Join(dir, "service"))
+}
+
+func TestRuntimeNewUsesEmbeddedVersion(t *testing.T) {
+	const taggedVersion = "v9.9.9-test"
+	kiro := buildKiroBinaryWithVersion(t, taggedVersion)
+	dir := t.TempDir()
+	cmd := exec.Command(kiro, "new", "hello")
+	cmd.Dir = dir
+	cmd.Env = os.Environ()
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("kiro new hello failed: %v\n%s", err, output)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "hello", ".kiro", "version.json"))
+	if err != nil {
+		t.Fatalf("read version.json: %v", err)
+	}
+	var meta scaffoldVersionFile
+	if err := json.Unmarshal(data, &meta); err != nil {
+		t.Fatalf("unmarshal version.json: %v", err)
+	}
+	if meta.KiroVersion != taggedVersion || meta.SkillVersion != taggedVersion {
+		t.Fatalf("version metadata = %+v, want both %q", meta, taggedVersion)
 	}
 }
 
@@ -199,8 +242,14 @@ fn test_add() -> nil {
 
 func buildKiroBinary(t *testing.T) string {
 	t.Helper()
+	return buildKiroBinaryWithVersion(t, version.KiroVersion)
+}
+
+func buildKiroBinaryWithVersion(t *testing.T, kiroVersion string) string {
+	t.Helper()
 	out := filepath.Join(t.TempDir(), binaryName("kiro"))
-	cmd := exec.Command("go", "build", "-o", out, filepath.Join("..", "..", "cmd", "kiro"))
+	ldflags := "-X github.com/kiro-lang/kiro/internal/version.KiroVersion=" + kiroVersion
+	cmd := exec.Command("go", "build", "-ldflags", ldflags, "-o", out, filepath.Join("..", "..", "cmd", "kiro"))
 	cmd.Env = os.Environ()
 	if output, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("go build ./cmd/kiro failed: %v\n%s", err, output)
@@ -219,5 +268,52 @@ func write(t *testing.T, path, src string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(src), 0o644); err != nil {
 		t.Fatalf("write %s: %v", path, err)
+	}
+}
+
+type scaffoldVersionFile struct {
+	KiroVersion  string `json:"kiro_version"`
+	SkillVersion string `json:"skill_version"`
+}
+
+func assertScaffoldSkillBundle(t *testing.T, projectRoot string) {
+	t.Helper()
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime.Caller(0) failed")
+	}
+	repoRoot := filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", ".."))
+	for _, name := range []string{"KIRO_SKILL.md", "kiro.json"} {
+		want, err := os.ReadFile(filepath.Join(repoRoot, "docs", "llm", name))
+		if err != nil {
+			t.Fatalf("read canonical %s: %v", name, err)
+		}
+		got, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "skill", name))
+		if err != nil {
+			t.Fatalf("read scaffolded %s: %v", name, err)
+		}
+		if string(got) != string(want) {
+			t.Fatalf("scaffolded %s did not match canonical copy", name)
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "version.json"))
+	if err != nil {
+		t.Fatalf("read version.json: %v", err)
+	}
+	var meta scaffoldVersionFile
+	if err := json.Unmarshal(data, &meta); err != nil {
+		t.Fatalf("unmarshal version.json: %v", err)
+	}
+	if meta.KiroVersion != version.KiroVersion || meta.SkillVersion != version.KiroVersion {
+		t.Fatalf("version metadata = %+v, want both %q", meta, version.KiroVersion)
+	}
+	readme, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "README.md"))
+	if err != nil {
+		t.Fatalf("read .kiro/README.md: %v", err)
+	}
+	for _, needle := range []string{"KIRO_SKILL.md", "kiro check"} {
+		if !strings.Contains(string(readme), needle) {
+			t.Fatalf(".kiro/README.md missing %q", needle)
+		}
 	}
 }

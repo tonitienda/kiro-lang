@@ -85,6 +85,7 @@ go build ./cmd/kiro-lsp
 ./kiro fmt hello
 ./kiro check hello
 ./kiro inspect go hello --out-dir hello/.kiro-gen
+cat hello/.kiro/version.json
 ```
 
 ### Install a pinned release
@@ -108,16 +109,20 @@ See `docs/install.md` and `docs/releasing.md` for the full release/install workf
 
 ## Quick start
 
-`kiro new hello` scaffolds:
+`kiro new hello` scaffolds the entrypoint plus a project-local compact skill snapshot under `.kiro/`:
 
-```ki
-mod main
-
-fn main() -> i32 !io {
-  println("hello")
-  return 0
-}
+```text
+hello/
+  main.ki
+  .kiro/
+    README.md
+    version.json
+    skill/
+      KIRO_SKILL.md
+      kiro.json
 ```
+
+`version.json` pins the Kiro/skill version used for scaffolding, and `.kiro/skill/` is copied from the canonical compact package bundled with the installed CLI. Pass `--no-skill` only if you explicitly do not want that snapshot.
 
 ## Canonical service shape
 
@@ -145,7 +150,7 @@ Use the compact package in `docs/llm/`:
 - `docs/llm/kiro.json` — compact machine-readable manifest
 - `docs/llm/examples/` — short canonical examples aligned to the stable core
 
-This package is the intended handoff for repos such as `kiro-playground`. Keep it in sync whenever syntax, stdlib guidance, project layout, or formatting expectations change.
+`kiro new <hello|service>` now vendors a project-local snapshot of that package into `.kiro/skill/` together with `.kiro/version.json`, so downstream repos such as `kiro-playground` can keep LLM/editor guidance pinned to the installed Kiro version. Keep the source package in sync whenever syntax, stdlib guidance, project layout, or formatting expectations change.
 
 ## CLI commands
 
@@ -157,7 +162,7 @@ This package is the intended handoff for repos such as `kiro-playground`. Keep i
 ./kiro run <entry-or-path> [--keep-gen] [-- <program args...>]
 ./kiro test <entry-or-path> [--keep-gen]
 ./kiro compat [root] [--mode fmt,check,inspect]
-./kiro new <hello|service>
+./kiro new <hello|service> [--no-skill]
 ./kiro lsp
 ```
 

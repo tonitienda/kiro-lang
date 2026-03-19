@@ -47,9 +47,35 @@ For a repo such as `kiro-playground`:
 
 1. pin a release with `scripts/install.sh --version <tag> --bin-dir ./.kiro/bin`
 2. add `./.kiro/bin` to `PATH`
-3. give `docs/llm/KIRO_SKILL.md` and `docs/llm/kiro.json` to the model
-4. keep local project files and diagnostics small and focused
-5. run `kiro check` in CI today, then `kiro build`, `kiro run`, and `kiro test` as that repo adopts the bundled release flow
+3. scaffold projects with `kiro new hello` or `kiro new service` so the repo gets a project-local `.kiro/skill/` snapshot plus `.kiro/version.json`
+4. give `.kiro/skill/KIRO_SKILL.md` and `.kiro/skill/kiro.json` to the model first; they are pinned to the installed Kiro version used for scaffolding
+5. keep local project files and diagnostics small and focused
+6. run `kiro check` in CI today, then `kiro build`, `kiro run`, and `kiro test` as that repo adopts the bundled release flow
+
+## `kiro new` vendored skill snapshot
+
+`kiro new` now vendors a small project-local snapshot by default:
+
+```text
+.kiro/
+  README.md
+  version.json
+  skill/
+    KIRO_SKILL.md
+    kiro.json
+```
+
+Why this helps:
+
+- downstream repos keep a compact Kiro language handoff next to the code they want an LLM to edit
+- editors, agents, and CI prompts can read `.kiro/skill/` without cloning `kiro-lang`
+- `.kiro/version.json` records which Kiro version produced the scaffold, which keeps language guidance and release behavior aligned
+
+Current limitations and likely follow-up ideas:
+
+- the vendored snapshot is created at scaffold time; updating it later still means re-running `kiro new` in a fresh project or copying forward manually
+- only the compact canonical bundle is vendored today; extra examples stay in the main repo to avoid noisy new-project scaffolds
+- `--no-skill` is available for the rare case where a consumer wants to skip the snapshot entirely
 
 ## Known limitations
 

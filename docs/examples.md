@@ -18,3 +18,13 @@ The examples directory is meant to teach the canonical Kiro style.
 - explicit effect boundaries
 - separation of `R[T,E]`, `?`, `?T`, and `nil`
 - structured concurrency with local task lifecycles
+
+## Scaffolded projects and local skill snapshots
+
+`kiro new hello` and `kiro new service` now also write a small `.kiro/` directory into the generated project:
+
+- `.kiro/skill/KIRO_SKILL.md` and `.kiro/skill/kiro.json` are canonical copies from `docs/llm/`
+- `.kiro/version.json` pins the Kiro version used to scaffold the repo
+- `.kiro/README.md` is the minimal human/agent reminder for editing `.ki` files
+
+This keeps fresh example repos and downstream playgrounds self-contained for LLM/editor workflows without requiring the whole `kiro-lang` repo checkout.

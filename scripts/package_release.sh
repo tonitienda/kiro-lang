@@ -23,8 +23,9 @@ KIRO_LSP_BIN_NAME="kiro-lsp"
 rm -rf "${STAGE_DIR}"
 mkdir -p "${STAGE_DIR}/bin" "${TOOLCHAIN_ROOT}" "${CACHE_DIR}"
 
-GOOS="${TARGET_OS}" GOARCH="${TARGET_ARCH}" CGO_ENABLED=0 go build -o "${STAGE_DIR}/bin/${KIRO_BIN_NAME}" ./cmd/kiro
-GOOS="${TARGET_OS}" GOARCH="${TARGET_ARCH}" CGO_ENABLED=0 go build -o "${STAGE_DIR}/bin/${KIRO_LSP_BIN_NAME}" ./cmd/kiro-lsp
+LDFLAGS="-X github.com/kiro-lang/kiro/internal/version.KiroVersion=${VERSION}"
+GOOS="${TARGET_OS}" GOARCH="${TARGET_ARCH}" CGO_ENABLED=0 go build -ldflags "${LDFLAGS}" -o "${STAGE_DIR}/bin/${KIRO_BIN_NAME}" ./cmd/kiro
+GOOS="${TARGET_OS}" GOARCH="${TARGET_ARCH}" CGO_ENABLED=0 go build -ldflags "${LDFLAGS}" -o "${STAGE_DIR}/bin/${KIRO_LSP_BIN_NAME}" ./cmd/kiro-lsp
 cp README.md "${STAGE_DIR}/README.md"
 cp RELEASE_TOOLCHAIN_NOTES.md "${STAGE_DIR}/RELEASE_TOOLCHAIN_NOTES.md"
 printf '%s\n' "${VERSION}" > "${STAGE_DIR}/VERSION"
