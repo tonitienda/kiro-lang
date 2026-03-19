@@ -71,6 +71,10 @@ The downstream-style verification script extracts a bundle, strips `PATH` to avo
 
 The script checks:
 
+- `kiro new hello`
+- `kiro check hello`
+- `kiro build hello`
+- `kiro run hello`
 - `kiro new service`
 - `kiro check service`
 - `kiro test service`

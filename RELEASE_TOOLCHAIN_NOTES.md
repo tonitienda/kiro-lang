@@ -42,6 +42,8 @@ The CLI locates its Go toolchain in this order:
 3. `toolchain/go/bin/go` relative to the `kiro` executable
 4. `go` on `PATH` as a developer fallback
 
+Each candidate is probed with `go version` before Kiro accepts it. That keeps `kiro build`, `kiro run`, and `kiro test` from failing later with a raw `exec format error` when a bundled toolchain does not match the current host architecture.
+
 ## Runtime/build strategy
 
 `kiro build`, `kiro run`, and `kiro test` generate a temporary Go work directory that contains:
