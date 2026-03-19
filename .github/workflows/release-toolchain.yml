@@ -42,7 +42,7 @@ jobs:
           else
             echo "RELEASE_LABEL=dev-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
           fi
-      - run: ./scripts/package_release.sh "${RELEASE_LABEL}" "${GO_VERSION}" "${{ matrix.goos }}" "${{ matrix.goarch }}"
+      - run: KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)" ./scripts/package_release.sh "${RELEASE_LABEL}" "${GO_VERSION}" "${{ matrix.goos }}" "${{ matrix.goarch }}"
       - uses: actions/upload-artifact@v4
         with:
           name: kiro-${{ matrix.goos }}-${{ matrix.goarch }}
@@ -70,3 +70,52 @@ jobs:
           name: kiro-linux-amd64
           path: dist
       - run: ./scripts/verify_release_bundle.sh dist/kiro-${RELEASE_LABEL}-linux-amd64.tar.gz
+
+  checksums:
+    runs-on: ubuntu-latest
+    needs: package-bundles
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute release label
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "RELEASE_LABEL=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_LABEL=dev-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: kiro-*
+          path: dist
+          merge-multiple: true
+      - run: ./scripts/write_release_checksums.sh "${RELEASE_LABEL}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiro-checksums
+          path: dist/kiro-${{ env.RELEASE_LABEL }}-checksums.txt
+      - name: Upload release checksums
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/kiro-${{ env.RELEASE_LABEL }}-checksums.txt
+
+  install-verify:
+    runs-on: ubuntu-latest
+    needs:
+      - package-bundles
+      - checksums
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute release label
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "RELEASE_LABEL=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_LABEL=dev-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: kiro-*
+          path: dist
+          merge-multiple: true
+      - run: ./scripts/verify_install.sh "${RELEASE_LABEL}"

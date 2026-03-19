@@ -1,0 +1,56 @@
+{
+  "language": "Kiro",
+  "version": "phase11-stable-core",
+  "extensions": [".ki"],
+  "stable_core": {
+    "function_form": "block_only",
+    "results": "R[T,E] with ? propagation",
+    "optional": "?T with nil",
+    "concurrency": ["group", "spawn", "await"],
+    "formatting": "kiro fmt"
+  },
+  "keywords": [
+    "mod",
+    "import",
+    "type",
+    "fn",
+    "let",
+    "return",
+    "if",
+    "when",
+    "group",
+    "spawn",
+    "await",
+    "nil"
+  ],
+  "effects": ["env", "fs", "io", "log", "net", "panic", "proc", "time"],
+  "stdlib_modules": {
+    "env": ["get", "get_or"],
+    "fs": ["read", "write"],
+    "http": ["serve", "text", "json", "not_found", "test_req"],
+    "json": ["encode", "decode"],
+    "log": ["info", "error"],
+    "parse": ["i32"],
+    "test": ["eq", "ok", "fail"],
+    "time": ["now"]
+  },
+  "canonical_commands": [
+    "kiro fmt <paths...>",
+    "kiro check <entry-or-path>",
+    "kiro inspect go <entry-or-path> [--out-dir <dir>]",
+    "kiro new <hello|service>",
+    "kiro build <entry-or-path> [--out <file>] [--keep-gen]",
+    "kiro run <entry-or-path> [--keep-gen] [-- <program args...>]",
+    "kiro test <entry-or-path> [--keep-gen]"
+  ],
+  "project_conventions": {
+    "tiny_cli": ["main.ki", "mod main", "explicit main effects"],
+    "tiny_service": ["main.ki", "app/", "internal/config/", "test/"],
+    "tests": ["test_* functions", "http.test_req", "test.eq", "return nil"]
+  },
+  "experimental_areas": [
+    "generated-Go API stability",
+    "runtime coverage beyond documented examples",
+    "editor tooling breadth beyond the current LSP baseline"
+  ]
+}

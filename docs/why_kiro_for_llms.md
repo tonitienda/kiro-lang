@@ -58,6 +58,18 @@ This matters especially for:
 
 Kiro keeps generated Go visible so that both humans and models can debug what the compiler emitted.
 
+## Compact downstream package
+
+Downstream repositories should not have to ship the full `kiro-lang` repo into every prompt.
+
+Use the compact package in `docs/llm/` instead:
+
+- `docs/llm/KIRO_SKILL.md` for concise prompt-ready language guidance
+- `docs/llm/kiro.json` for machine-readable conventions
+- `docs/llm/examples/` for short canonical examples
+
+This package is intentionally smaller than the full docs. It should stay in sync with the stable core and canonical stdlib/project guidance.
+
 ## What Kiro deliberately avoids
 
 To stay machine-friendly, Kiro avoids or limits:

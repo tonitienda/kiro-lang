@@ -1,0 +1,32 @@
+mod main
+
+import json
+
+type Pair {
+  left:str
+  right:str
+}
+
+fn fetch_left() -> str {
+  return "A"
+}
+
+fn fetch_right() -> str {
+  return "B"
+}
+
+fn load_pair() -> R[Pair,str] {
+  group {
+  let left_task = spawn fetch_left ( )
+  let right_task = spawn fetch_right ( )
+  let left = await left_task
+  let right = await right_task
+  return Ok ( Pair { left : left right : right } )
+  }
+}
+
+fn main() -> i32 !io {
+  let pair = load_pair ( ) ?
+  println ( json.encode ( pair ) ? )
+  return 0
+}

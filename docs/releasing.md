@@ -1,6 +1,6 @@
 # Releasing Kiro bundles
 
-Kiro release artifacts are now **standalone CLI bundles** rather than just raw binaries.
+Kiro release artifacts are standalone CLI bundles with deterministic names and release-level checksums.
 
 ## Supported release targets
 
@@ -17,29 +17,49 @@ Each archive contains:
 
 ```text
 kiro-<version>-<os>-<arch>/
-  bin/kiro
+  bin/
+    kiro
+    kiro-lsp
   toolchain/go/...
   README.md
   RELEASE_TOOLCHAIN_NOTES.md
+  VERSION
 ```
 
 The bundled `toolchain/go` directory is what allows downstream users to run `kiro build`, `kiro run`, and `kiro test` without separately installing the `go` CLI.
 
+## Artifact naming
+
+Release artifacts must use these names:
+
+- `kiro-vX.Y.Z-linux-amd64.tar.gz`
+- `kiro-vX.Y.Z-linux-arm64.tar.gz`
+- `kiro-vX.Y.Z-darwin-amd64.tar.gz`
+- `kiro-vX.Y.Z-darwin-arm64.tar.gz`
+- `kiro-vX.Y.Z-checksums.txt`
+
+The installer depends on this shape.
+
 ## Build release bundles locally
 
 ```bash
-./scripts/package_release.sh dev 1.22.12 linux amd64
-./scripts/package_release.sh dev 1.22.12 linux arm64
-./scripts/package_release.sh dev 1.22.12 darwin amd64
-./scripts/package_release.sh dev 1.22.12 darwin arm64
+KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)" ./scripts/package_release.sh dev 1.22.12 linux amd64
+KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)" ./scripts/package_release.sh dev 1.22.12 linux arm64
+KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)" ./scripts/package_release.sh dev 1.22.12 darwin amd64
+KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)" ./scripts/package_release.sh dev 1.22.12 darwin arm64
+./scripts/write_release_checksums.sh dev
 ```
 
 Artifacts are written to `dist/` using names such as:
+
+Using `KIRO_TOOLCHAIN_SOURCE_DIR="$(go env GOROOT)"` reuses the already-installed Go toolchain instead of downloading another copy during local packaging or CI.
+
 
 - `kiro-dev-linux-amd64.tar.gz`
 - `kiro-dev-linux-arm64.tar.gz`
 - `kiro-dev-darwin-amd64.tar.gz`
 - `kiro-dev-darwin-arm64.tar.gz`
+- `kiro-dev-checksums.txt`
 
 ## Validate a release bundle locally
 
@@ -58,6 +78,21 @@ The script checks:
 - running the produced service binary and hitting `/health`
 - `kiro run service` and hitting `/health`
 
+## Validate the installer locally
+
+Use the installer verification script to exercise argument parsing, artifact resolution, checksum verification, and install layout against local release assets.
+
+```bash
+./scripts/verify_install.sh dev
+```
+
+This script:
+
+- writes `kiro-dev-checksums.txt`
+- installs from local `file://` URLs using `scripts/install.sh --version dev`
+- verifies `kiro`, `kiro-lsp`, and the bundled toolchain land in the expected locations
+- runs the installed `kiro` against a generated hello project
+
 ## GitHub Actions workflow
 
 `.github/workflows/release-toolchain.yml` is the canonical automation for this phase.
@@ -67,15 +102,19 @@ It:
 1. builds release bundles for all four target tuples
 2. uploads them as workflow artifacts
 3. verifies the linux/amd64 bundle in a downstream-style smoke test
-4. uploads assets to GitHub Releases for tagged `v*` pushes using workflow-level `contents: write` permission
+4. aggregates release checksums into `kiro-<version>-checksums.txt`
+5. verifies the installer flow against the produced artifacts
+6. uploads tarballs and the checksum file to GitHub Releases for tagged `v*` pushes using workflow-level `contents: write` permission
 
 ## Pre-release checklist
 
 1. Run `go test ./...`.
 2. Run `go run ./cmd/kiro compat`.
 3. Verify `kiro build`, `kiro run`, `kiro test`, and `kiro inspect go` locally.
-4. Build at least one standalone release bundle with `scripts/package_release.sh`.
-5. Run `scripts/verify_release_bundle.sh` against the native bundle.
-6. Confirm the release workflow still has `permissions: contents: write` before tagging.
-7. Update `README.md`, release docs, limitations, contributing docs, and `RELEASE_TOOLCHAIN_NOTES.md`.
-8. Update relevant phase notes before tagging.
+4. Build all expected release artifacts with `scripts/package_release.sh`.
+5. Run `scripts/write_release_checksums.sh <version>`.
+6. Run `scripts/verify_release_bundle.sh` against the native bundle.
+7. Run `scripts/verify_install.sh <version>`.
+8. Confirm the release workflow still has `permissions: contents: write` before tagging.
+9. Update `README.md`, install/release docs, editor setup docs, contributing docs, `INSTALL_AND_SKILL_NOTES.md`, and `RELEASE_TOOLCHAIN_NOTES.md`.
+10. Update relevant phase notes before tagging.

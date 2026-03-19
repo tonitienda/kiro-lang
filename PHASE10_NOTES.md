@@ -9,6 +9,7 @@
 - structured concurrency stays explicit with `group`, `spawn`, and `await`
 - canonical CLI workflow remains `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`, `lsp`
 - generated Go remains part of the trust/debug story
+- the compact `docs/llm/` package is part of the stable-core communication contract for downstream repos and automation
 
 ## What remains intentionally narrow
 

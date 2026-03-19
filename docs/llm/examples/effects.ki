@@ -1,0 +1,14 @@
+mod main
+
+import env
+import log
+
+fn load_port() -> R[str,str] !env {
+  return Ok ( env.get_or ( "PORT" , ":8080" ) )
+}
+
+fn main() -> i32 !env !log {
+  let port = load_port ( ) ?
+  log.info ( "port ${port}" )
+  return 0
+}

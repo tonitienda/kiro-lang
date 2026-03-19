@@ -15,11 +15,14 @@ These instructions apply to the full repository.
 - Keep examples runnable and aligned with implemented syntax.
 - If command behavior changes, update command docs in `README.md` and related docs pages.
 - Keep agent-facing guidance and milestone notes (`AGENTS.md`, `PHASE*_NOTES.md`) aligned with workflow changes.
+- Keep `docs/llm/KIRO_SKILL.md`, `docs/llm/kiro.json`, and `docs/llm/examples/` aligned with the stable core whenever syntax, stdlib guidance, or canonical project conventions change.
+- Keep installer and release docs aligned with artifact naming, checksum generation, and the bundled-toolchain layout.
 
 ## Testing policy
 - Add or update tests when changing lexer, parser, formatter, project resolution, or CLI behavior.
 - Run `go test ./...` before finishing.
 - When compatibility fixtures change, run `go run ./cmd/kiro compat`.
+- When changing the release installer or bundle layout, run `scripts/write_release_checksums.sh` plus `scripts/verify_install.sh` against a local artifact.
 
 ## Current milestone context
 - Phase 11 is active: prioritize editor tooling stability (LSP, syntax highlighting, setup docs) while preserving the Phase 10 stable-core contract.
