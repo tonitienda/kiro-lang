@@ -19,7 +19,6 @@ var stdlibCallEffects = map[string][]string{
 	"env.get":       {"env"},
 	"env.get_or":    {"env"},
 	"env.require":   {"env"},
-	"fs.read":       {"fs"},
 	"fs.read_file":  {"fs"},
 	"fs.write_file": {"fs"},
 	"http.serve":    {"net"},

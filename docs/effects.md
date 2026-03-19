@@ -1,26 +1,28 @@
 # Kiro effects
 
-Kiro v1 uses **explicit function effect declarations** for operational, external, or non-deterministic behavior.
+Kiro uses **explicit function effect declarations** for operational, external, or non-deterministic behavior.
 
-## Syntax
+## Canonical syntax
 
 Effects appear after the return type in function or method signatures.
 
 ```ki
-fn load_config() -> R[Config, str] !env
-fn main() -> i32 !env !io !log !net {
+fn load_config() -> R[Config, str] !env {
+  let port = env.get_or("PORT", ":8080")
+  return Ok(Config{port:port})
+}
+
+fn main() -> i32 !env !log !net {
   let cfg = load_config()?
   log.info("starting ${cfg.port}")
-  http.serve(cfg.port, app)?
+  http.serve(cfg.port, app.handler)?
   return 0
 }
 ```
 
-Functions with no `!effect` markers are treated as pure.
+Functions with no `!effect` markers are pure.
 
 ## Built-in effects
-
-Kiro currently recognizes this fixed set of built-in effects:
 
 - `!env`
 - `!fs`
@@ -31,15 +33,16 @@ Kiro currently recognizes this fixed set of built-in effects:
 - `!proc`
 - `!time`
 
-Unknown effect names are rejected by `kiro check`.
+Unknown effect names are rejected.
 
 ## Core rule
 
 If function `A` calls function `B`, `A` must declare every effect required by `B`.
 
 ```ki
-fn read_port() -> str !env =
-  env.get_or("PORT", ":8080")
+fn read_port() -> str !env {
+  return env.get_or("PORT", ":8080")
+}
 
 fn main() -> i32 !env !io {
   let port = read_port()
@@ -48,35 +51,30 @@ fn main() -> i32 !env !io {
 }
 ```
 
-This checking is intentionally conservative and explicit.
+## What counts as an effect
 
-## What counts as an effect in v1
-
-Effects are for external or operational behavior such as:
+Effects are for operational behavior such as:
 
 - environment access
 - filesystem access
-- console/stdout/stderr I/O
+- console I/O
 - logging
 - networking
 - process interaction
 - time access or sleeping
-- explicit panic-like runtime escape hatches
 
-## What does **not** count as an effect in v1
+## What is not an effect
 
-Fallible computation is still modeled with `R[T,E]` and `?`.
+Fallibility is **not** an effect.
 
-That means these remain **pure** even when they can fail:
+These remain pure even though they may return `R[T,E]`:
 
 - `json.encode`
 - `json.decode`
-- parsing/formatting helpers such as `parse.i32`
-- serialization/validation that does not itself perform external operations
+- `parse.i32`
+- validation/serialization that does not touch external state
 
-In other words, **JSON is not an effect** in Kiro v1.
-
-## Canonical formatting
+## Formatter behavior
 
 `kiro fmt` canonicalizes effect order lexicographically.
 
@@ -96,12 +94,9 @@ fn main() -> i32 !env !log !net {
 }
 ```
 
-## Current limitations
-
-Kiro v1 effect checking is deliberately small:
+## Intentional limitations
 
 - no effect polymorphism
-- no user-defined effect names
-- no effect inference engine
-- no effect annotations on variables or blocks
-- no special async effect separate from the callee effects used by `spawn`/`await`
+- no user-defined effects yet
+- no effect inference
+- no block-local effect annotations

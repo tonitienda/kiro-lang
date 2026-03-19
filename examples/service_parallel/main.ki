@@ -8,23 +8,32 @@ type Msg {
   b:str
 }
 
-fn slow_a() -> str = "A"
-fn slow_b() -> str = "B"
+fn slow_a() -> str {
+  return "A"
+}
 
-fn app(req:httpReq) -> Resp {
+fn slow_b() -> str {
+  return "B"
+}
+
+fn app(req:http.Req) -> R[http.Resp,str] {
+  when req.path
+  "/parallel" => {
   group {
-    let ta = spawn slow_a()
-    let tb = spawn slow_b()
-
-    let a = await ta
-    let b = await tb
-
-    let body = json.encode(Msg{a:a b:b})?
-    return Ok(http.json(200, body))
+  let ta = spawn slow_a ( )
+  let tb = spawn slow_b ( )
+  let a = await ta
+  let b = await tb
+  let body = json.encode ( Msg { a : a b : b } ) ?
+  return Ok ( http.json ( 200 , body ) )
+  }
+  }
+  _ => {
+  return Ok ( http.not_found ( ) )
   }
 }
 
 fn main() -> i32 !net {
-  http.serve(":8080", app)?
+  http.serve ( ":8080" , app ) ?
   return 0
 }

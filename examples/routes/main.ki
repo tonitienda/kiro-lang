@@ -5,15 +5,22 @@ type Resp {
   body:str
 }
 
-fn text(code:i32, body:str) -> Resp =
-  Resp{code:code body:body}
+fn text(code:i32, body:str) -> Resp {
+  return Resp { code : code body : body }
+}
 
-fn route(path:str) -> Resp =
+fn route(path:str) -> Resp {
   when path
-    "/health" => text(200, "ok")
-    _ => text(404, "not found")
+  "/health" => {
+  return text ( 200 , "ok" )
+  }
+  _ => {
+  return text ( 404 , "not found" )
+  }
+}
 
-fn main() -> i32 !io =
-  let res = route("/health")
-  print(res.body)
-  0
+fn main() -> i32 !io {
+  let res = route ( "/health" )
+  print ( res.body )
+  return 0
+}

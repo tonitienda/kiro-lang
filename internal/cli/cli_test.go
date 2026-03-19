@@ -41,7 +41,9 @@ func TestRunCheck(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "main.ki"), `mod main
 
-fn main() -> i32 = 0
+fn main() -> i32 {
+  return 0
+}
 `)
 	if err := Run([]string{"check", dir}); err != nil {
 		t.Fatalf("Run(check) error = %v", err)
@@ -70,7 +72,9 @@ func TestRunCompat(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "main.ki"), `mod main
 
-fn main() -> i32 = 0
+fn main() -> i32 {
+  return 0
+}
 `)
 	if err := Run([]string{"compat", dir, "--mode", "fmt,check"}); err != nil {
 		t.Fatalf("Run(compat) error = %v", err)
@@ -174,8 +178,9 @@ func TestRuntimeTestCommand(t *testing.T) {
 
 import test
 
-fn add(a:i32, b:i32) -> i32 =
-  a + b
+fn add(a:i32, b:i32) -> i32 {
+  return a + b
+}
 
 fn test_add() -> nil {
   test.eq(add(2, 3), 5)

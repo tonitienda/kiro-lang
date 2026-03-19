@@ -2,19 +2,18 @@ mod main
 
 import http
 
-fn app(req:http.Req) -> R[http.Resp, str] {
-  let name = http.query(req, "name")
-
+fn app(req:http.Req) -> R[http.Resp,str] {
+  let name = http.query ( req , "name" )
   when name
-    nil => {
-      return Ok(http.text(200, "hello stranger"))
-    }
-    _ => {
-      return Ok(http.text(200, "hello"))
-    }
+  nil => {
+  return Ok ( http.text ( 200 , "hello stranger" ) )
+  }
+  _ => {
+  return Ok ( http.text ( 200 , "hello" ) )
+  }
 }
 
 fn main() -> i32 !net {
-  http.serve(":8080", app)?
+  http.serve ( ":8080" , app ) ?
   return 0
 }

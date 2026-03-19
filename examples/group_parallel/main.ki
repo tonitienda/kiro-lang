@@ -10,14 +10,11 @@ fn slow_b() -> str {
 
 fn main() -> i32 !io {
   group {
-    let a = spawn slow_a()
-    let b = spawn slow_b()
-
-    let ra = await a
-    let rb = await b
-
-    println("${ra}-${rb}")
+  let a = spawn slow_a ( )
+  let b = spawn slow_b ( )
+  let ra = await a
+  let rb = await b
+  println ( "${ra}-${rb}" )
   }
-
   return 0
 }

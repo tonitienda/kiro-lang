@@ -2,13 +2,13 @@ mod main
 
 import http
 
-fn app(req:http.Req) -> R[http.Resp, str] {
-  let resp = http.text(200, "ok")
-  let resp2 = http.with_header(resp, "x-app", "kiro")
-  return Ok(resp2)
+fn app(req:http.Req) -> R[http.Resp,str] {
+  let resp = http.text ( 200 , "ok" )
+  let resp2 = http.with_header ( resp , "x-app" , "kiro" )
+  return Ok ( resp2 )
 }
 
 fn main() -> i32 !net {
-  http.serve(":8080", app)?
+  http.serve ( ":8080" , app ) ?
   return 0
 }

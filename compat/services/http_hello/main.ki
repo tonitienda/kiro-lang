@@ -2,12 +2,7 @@ mod main
 
 import http
 
-fn main() -> i32 !net {
-  http.serve ( ":8080" , handler ) ?
-  return 0
-}
-
-fn handler(req:httpReq) -> Resp {
+fn handler(req:http.Req) -> R[http.Resp,str] {
   when req.path
   "/" => {
   return Ok ( http.text ( 200 , "hello" ) )
@@ -15,4 +10,9 @@ fn handler(req:httpReq) -> Resp {
   _ => {
   return Ok ( http.not_found ( ) )
   }
+}
+
+fn main() -> i32 !net {
+  http.serve ( ":8080" , handler ) ?
+  return 0
 }

@@ -3,7 +3,7 @@ mod main
 import parse
 
 fn main() -> i32 !io {
-  let n = parse.i32("42")?
-  println("${n}")
+  let n = parse.i32 ( "42" ) ?
+  println ( "${n}" )
   return 0
 }

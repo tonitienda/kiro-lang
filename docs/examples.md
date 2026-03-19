@@ -1,26 +1,20 @@
-# Flagship examples and templates
+# Examples
 
-This page lists the primary examples/templates that represent the current Kiro way.
+The examples directory is meant to teach the canonical Kiro style.
 
-## Templates
+## Recommended starting points
 
-- `kiro new hello`
-  - minimal entry project
-- `kiro new service`
-  - tiny service layout with config + handler + handler test
+- `examples/hello/` — tiny CLI entrypoint
+- `examples/http_hello/` — canonical HTTP handler shape
+- `examples/http_json/` — pure JSON encode/decode with `R[T,E]`
+- `examples/service_parallel/` — structured concurrency with `group`
+- `examples/service_config/` — explicit environment-based config loading
+- `examples/test_demo/` — canonical direct tests with `test.eq`
 
-## Flagship examples
+## What examples should demonstrate
 
-- Tiny CLI example: `examples/cli_counter/`
-- Tiny HTTP JSON service: `examples/http_json/`
-- Handler testing example: `examples/test_http_handlers/`
-- Concurrency/group example: `examples/group_parallel/`
-
-## Validation expectations
-
-For flagships and templates, maintainers should verify:
-
-- `kiro fmt` succeeds and is idempotent
-- `kiro check` succeeds
-- template outputs stay aligned with README/docs
-- compatibility fixtures continue to reflect canonical style
+- block-only function bodies
+- explicit `return`
+- explicit effect boundaries
+- separation of `R[T,E]`, `?`, `?T`, and `nil`
+- structured concurrency with local task lifecycles

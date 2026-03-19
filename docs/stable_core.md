@@ -1,23 +1,27 @@
-# Stable experimental core
+# Stable core
 
-The stable-core promise in this repository slice is intentionally narrow.
+The stable core is intentionally narrow.
 
-## Included in the current stable core
+## Included
 
-- deterministic lexer/parser/formatter behavior for the documented syntax slice
-- project/module resolution rules
-- canonical CLI workflow: `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`
-- explicit effect annotations in function signatures
-- generated-Go visibility as part of the developer workflow
+- deterministic lexer/parser/formatter behavior for the documented syntax
+- block-only function declarations
+- explicit effects in signatures
+- explicit result/optional separation
+- structured concurrency with `group`, `spawn`, and `await`
+- predictable project/module resolution
+- canonical CLI workflow: `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`, `lsp`
+- generated-Go visibility as part of the workflow
 
-## Stable-core expectations
+## Protected by the repository
 
-- command names and the broad workflow are intended to stay recognizable
-- formatting and project layout rules should remain predictable
-- generated Go remains a debugging/trust-building tool, not a frozen public API
+- Go tests across parser/formatter/project/build/LSP layers
+- compatibility fixtures
+- examples and template verification
+- formatter idempotence through compatibility checks
 
-## Still experimental around the core
+## Intentionally not promised
 
-- the exact standalone execution workdir used by `kiro build/run/test`
-- release bundle structure details beyond the current documented `bin/kiro` + `toolchain/go` shape
-- breadth of execution coverage across all experimental examples
+- a frozen generated-Go API
+- broad runtime coverage for every experimental example
+- effect polymorphism or large-scale type inference

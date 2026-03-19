@@ -15,9 +15,11 @@ jobs:
           go-version: '1.22'
           cache: true
       - run: go run ./cmd/kiro check examples/hello
+      - run: go run ./cmd/kiro check examples/http_hello
+      - run: go run ./cmd/kiro check examples/http_json
       - run: go run ./cmd/kiro check examples/service_health
       - run: go run ./cmd/kiro check examples/spawn_await
-      - run: go run ./cmd/kiro fmt examples/hello examples/service_health examples/spawn_await
+      - run: go run ./cmd/kiro fmt examples/hello examples/http_hello examples/http_json examples/service_health examples/spawn_await
       - run: go run ./cmd/kiro inspect go examples/hello --out-dir .kiro-gen-example
       - run: go run ./cmd/kiro build examples/hello --out ./hello-example
       - run: ./hello-example

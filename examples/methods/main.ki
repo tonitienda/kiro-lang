@@ -5,11 +5,12 @@ type User {
   name:str
 }
 
-fn (u:User) display() -> str =
-  u.name
+fn (u:User) display() -> str {
+  return u.name
+}
 
 fn main() -> i32 !io {
-  let u = User{id:1 name:"toni"}
-  println(u.display())
+  let u = User { id : 1 name : "toni" }
+  println ( u.display ( ) )
   return 0
 }
