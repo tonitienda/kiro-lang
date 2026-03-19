@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,7 +33,7 @@ Core commands:
                                           Build and execute a Kiro program
   test <entry-or-path> [--keep-gen]
                                           Build and run Kiro tests discovered via test_* functions
-  new <hello|service> [--no-skill]        Scaffold a starter project
+  new <hello|service> [--no-skill]        Scaffold a starter project with local AGENTS/skill guidance
   lsp                                     Run language server over stdio
   compat [root] [--mode fmt,check,inspect]
                                           Run compatibility fixture checks
@@ -338,10 +339,18 @@ fn main() -> i32 !io {
 `), 0o644); err != nil {
 		return err
 	}
-	if !vendorSkill {
+	if err := writeScaffoldAgentGuidance("hello", "hello", vendorSkill); err != nil {
+		return err
+	}
+	if vendorSkill {
+		if err := writeScaffoldSkillBundle("hello"); err != nil {
+			return err
+		}
+		fmt.Println("scaffolded hello project in ./hello with AGENTS.md and .kiro/skill/")
 		return nil
 	}
-	return writeScaffoldSkillBundle("hello")
+	fmt.Println("scaffolded hello project in ./hello with AGENTS.md")
+	return nil
 }
 
 func scaffoldService(vendorSkill bool) error {
@@ -419,11 +428,12 @@ This template shows the canonical LLM-oriented Kiro service shape:
 - handler-level test via ` + "`http.test_req`" + ` style helpers
 - one explicit effect boundary in ` + "`main.ki`" + `
 - real ` + "`kiro check`" + `, ` + "`kiro build`" + `, ` + "`kiro run`" + `, and ` + "`kiro test`" + ` commands
-- vendored .kiro/skill/ snapshot for downstream LLM/editor handoff
+- root ` + "`AGENTS.md`" + ` plus vendored ` + "`.kiro/skill/`" + ` for downstream Codex/agent handoff
 
 Suggested workflow:
 
 ` + "```bash" + `
+kiro fmt .
 kiro check .
 kiro test .
 kiro build . --out ./service-bin
@@ -446,10 +456,18 @@ kiro inspect go . --out-dir .kiro-gen
 	if err := os.WriteFile("service/README.md", []byte(readme), 0o644); err != nil {
 		return err
 	}
-	if !vendorSkill {
+	if err := writeScaffoldAgentGuidance("service", "service", vendorSkill); err != nil {
+		return err
+	}
+	if vendorSkill {
+		if err := writeScaffoldSkillBundle("service"); err != nil {
+			return err
+		}
+		fmt.Println("scaffolded service project in ./service with AGENTS.md and .kiro/skill/")
 		return nil
 	}
-	return writeScaffoldSkillBundle("service")
+	fmt.Println("scaffolded service project in ./service with AGENTS.md")
+	return nil
 }
 
 type scaffoldVersionMetadata struct {
@@ -462,14 +480,24 @@ func writeScaffoldSkillBundle(root string) error {
 	if err := os.MkdirAll(skillDir, 0o755); err != nil {
 		return err
 	}
-	for _, name := range []string{"KIRO_SKILL.md", "kiro.json"} {
-		content, err := llmassets.Files.ReadFile(name)
+	if err := fs.WalkDir(llmassets.Files, ".", func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if d.IsDir() {
+			return nil
+		}
+		content, err := llmassets.Files.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(filepath.Join(skillDir, name), content, 0o644); err != nil {
+		target := filepath.Join(skillDir, filepath.FromSlash(path))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			return err
 		}
+		return os.WriteFile(target, content, 0o644)
+	}); err != nil {
+		return err
 	}
 	meta, err := json.MarshalIndent(scaffoldVersionMetadata{
 		KiroVersion:  version.KiroVersion,
@@ -481,8 +509,55 @@ func writeScaffoldSkillBundle(root string) error {
 	if err := os.WriteFile(filepath.Join(root, ".kiro", "version.json"), append(meta, '\n'), 0o644); err != nil {
 		return err
 	}
-	readme := "# Project-local Kiro skill snapshot\n\n- read `.kiro/skill/KIRO_SKILL.md` before editing `.ki` files\n- use canonical Kiro formatting\n- prefer stable-core syntax\n- run `kiro check` after edits\n"
+	readme := "# Project-local Kiro metadata\n\nThis hidden directory keeps the vendored Kiro skill snapshot that was copied into the project when `kiro new` ran.\n\n- read `.kiro/skill/SKILL.md` before editing `.ki` files\n- use `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n- `.kiro/version.json` records which Kiro version produced this scaffold\n- run `kiro fmt` and `kiro check` after edits\n"
 	return os.WriteFile(filepath.Join(root, ".kiro", "README.md"), []byte(readme), 0o644)
+}
+
+func writeScaffoldAgentGuidance(root, template string, vendorSkill bool) error {
+	var body string
+	switch {
+	case vendorSkill && template == "service":
+		body = "# Kiro project guidance\n\n" +
+			"This repository contains Kiro source files.\n\n" +
+			"Before editing any `.ki` files:\n" +
+			"1. Read `.kiro/skill/SKILL.md`\n" +
+			"2. Treat `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n" +
+			"3. Follow only the canonical syntax and stable-core rules described there\n\n" +
+			"After changes:\n" +
+			"- run `kiro fmt .`\n" +
+			"- run `kiro check .`\n" +
+			"- run `kiro test .`\n" +
+			"- run the service build/run flow documented in `README.md`\n"
+	case vendorSkill:
+		body = "# Kiro project guidance\n\n" +
+			"This repository contains Kiro source files.\n\n" +
+			"Before editing any `.ki` files:\n" +
+			"1. Read `.kiro/skill/SKILL.md`\n" +
+			"2. Treat `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n" +
+			"3. Follow only the canonical syntax and stable-core rules described there\n\n" +
+			"After changes:\n" +
+			"- run `kiro fmt .`\n" +
+			"- run `kiro check .`\n" +
+			"- run the project tests/build steps documented in this repository\n"
+	case template == "service":
+		body = "# Kiro project guidance\n\n" +
+			"This repository contains Kiro source files.\n\n" +
+			"This scaffold was created with `--no-skill`, so there is no vendored Kiro skill snapshot in `.kiro/skill/`.\n" +
+			"Before editing `.ki` files, read the local README and use the stable-core Kiro syntax documented by the installed Kiro release.\n\n" +
+			"After changes:\n" +
+			"- run `kiro fmt .`\n" +
+			"- run `kiro check .`\n" +
+			"- run `kiro test .`\n"
+	default:
+		body = "# Kiro project guidance\n\n" +
+			"This repository contains Kiro source files.\n\n" +
+			"This scaffold was created with `--no-skill`, so there is no vendored Kiro skill snapshot in `.kiro/skill/`.\n" +
+			"Before editing `.ki` files, use the stable-core Kiro syntax documented by the installed Kiro release.\n\n" +
+			"After changes:\n" +
+			"- run `kiro fmt .`\n" +
+			"- run `kiro check .`\n"
+	}
+	return os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte(body), 0o644)
 }
 
 func runFmt(paths []string) error {

@@ -35,9 +35,9 @@ Each archive contains:
 
 It contains:
 
-- `KIRO_SKILL.md` — concise canonical syntax, semantics, project layout, testing style, mistakes, and examples
-- `kiro.json` — compact machine-readable summary of the stable core
-- `examples/` — short `.ki` examples for hello, service shape, effects, results/optionals, and concurrency
+- `SKILL.md` — Codex-native skill entry with YAML frontmatter
+- `references/kiro.json` — compact machine-readable summary of the stable core
+- `references/examples/` — short `.ki` examples for hello, service shape, effects, results/optionals, and concurrency
 
 This is intentionally not a replacement for the full repo docs. It is the small high-signal package to hand to an LLM first.
 
@@ -48,9 +48,10 @@ For a repo such as `kiro-playground`:
 1. pin a release with `scripts/install.sh --version <tag> --bin-dir ./.kiro/bin`
 2. add `./.kiro/bin` to `PATH`
 3. scaffold projects with `kiro new hello` or `kiro new service` so the repo gets a project-local `.kiro/skill/` snapshot plus `.kiro/version.json`
-4. give `.kiro/skill/KIRO_SKILL.md` and `.kiro/skill/kiro.json` to the model first; they are pinned to the installed Kiro version used for scaffolding
-5. keep local project files and diagnostics small and focused
-6. run `kiro check` in CI today, then `kiro build`, `kiro run`, and `kiro test` as that repo adopts the bundled release flow
+4. give `.kiro/skill/SKILL.md` and `.kiro/skill/references/kiro.json` to the model first; they are pinned to the installed Kiro version used for scaffolding
+5. keep the scaffolded root `AGENTS.md` committed so Codex/agents are told to read that vendored skill before editing `.ki` files
+6. keep local project files and diagnostics small and focused
+7. run `kiro check` in CI today, then `kiro build`, `kiro run`, and `kiro test` as that repo adopts the bundled release flow
 
 ## `kiro new` vendored skill snapshot
 
@@ -61,20 +62,29 @@ For a repo such as `kiro-playground`:
   README.md
   version.json
   skill/
-    KIRO_SKILL.md
-    kiro.json
+    SKILL.md
+    references/
+      kiro.json
+      examples/
+        hello.ki
+        service.ki
+        effects.ki
+        result_optional.ki
+        concurrency.ki
+AGENTS.md
 ```
 
 Why this helps:
 
 - downstream repos keep a compact Kiro language handoff next to the code they want an LLM to edit
 - editors, agents, and CI prompts can read `.kiro/skill/` without cloning `kiro-lang`
+- root `AGENTS.md` gives Codex/agents an explicit repo-level pointer to that vendored skill bundle
 - `.kiro/version.json` records which Kiro version produced the scaffold, which keeps language guidance and release behavior aligned
 
 Current limitations and likely follow-up ideas:
 
 - the vendored snapshot is created at scaffold time; updating it later still means re-running `kiro new` in a fresh project or copying forward manually
-- only the compact canonical bundle is vendored today; extra examples stay in the main repo to avoid noisy new-project scaffolds
+- the vendored bundle stays intentionally compact; it includes only `SKILL.md`, `references/kiro.json`, and a few canonical examples rather than the full docs tree
 - `--no-skill` is available for the rare case where a consumer wants to skip the snapshot entirely
 
 ## Known limitations

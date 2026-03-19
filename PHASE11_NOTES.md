@@ -8,7 +8,7 @@
 - diagnostics now use a more repair-oriented shape for missing effects, pseudo-effects, and unresolved imports
 - editor setup docs remain valid because syntax changes were normalized in the shared parser/formatter layers
 - release bundles and the installer now carry `kiro-lsp` alongside `kiro` so downstream editor setup can pin one release version
-- scaffolded projects now vendor a `.kiro/skill/` snapshot plus `.kiro/version.json` so downstream repos can hand editors/LLMs a repo-local, version-pinned language bundle
+- scaffolded projects now vendor a `.kiro/skill/` snapshot, root `AGENTS.md`, and `.kiro/version.json` so downstream repos can hand editors/LLMs a repo-local, version-pinned language bundle with an explicit Codex/agent entry point
 
 ## Preserved assumptions
 

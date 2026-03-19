@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	llmassets "github.com/kiro-lang/kiro/docs/llm"
 	"github.com/kiro-lang/kiro/internal/version"
 )
 
@@ -112,6 +114,13 @@ func TestRunNewHelloNoSkill(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "hello", ".kiro")); !os.IsNotExist(err) {
 		t.Fatalf("hello .kiro presence err = %v, want not exists", err)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "hello", "AGENTS.md"))
+	if err != nil {
+		t.Fatalf("read hello/AGENTS.md: %v", err)
+	}
+	if !strings.Contains(string(data), "--no-skill") {
+		t.Fatalf("hello/AGENTS.md missing no-skill guidance")
 	}
 }
 
@@ -278,23 +287,27 @@ type scaffoldVersionFile struct {
 
 func assertScaffoldSkillBundle(t *testing.T, projectRoot string) {
 	t.Helper()
-	_, thisFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("runtime.Caller(0) failed")
-	}
-	repoRoot := filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", ".."))
-	for _, name := range []string{"KIRO_SKILL.md", "kiro.json"} {
-		want, err := os.ReadFile(filepath.Join(repoRoot, "docs", "llm", name))
-		if err != nil {
-			t.Fatalf("read canonical %s: %v", name, err)
+	if err := fs.WalkDir(llmassets.Files, ".", func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
 		}
-		got, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "skill", name))
+		if d.IsDir() {
+			return nil
+		}
+		want, err := llmassets.Files.ReadFile(path)
 		if err != nil {
-			t.Fatalf("read scaffolded %s: %v", name, err)
+			t.Fatalf("read canonical %s: %v", path, err)
+		}
+		got, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "skill", filepath.FromSlash(path)))
+		if err != nil {
+			t.Fatalf("read scaffolded %s: %v", path, err)
 		}
 		if string(got) != string(want) {
-			t.Fatalf("scaffolded %s did not match canonical copy", name)
+			t.Fatalf("scaffolded %s did not match canonical copy", path)
 		}
+		return nil
+	}); err != nil {
+		t.Fatalf("walk embedded skill bundle: %v", err)
 	}
 	data, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "version.json"))
 	if err != nil {
@@ -311,9 +324,30 @@ func assertScaffoldSkillBundle(t *testing.T, projectRoot string) {
 	if err != nil {
 		t.Fatalf("read .kiro/README.md: %v", err)
 	}
-	for _, needle := range []string{"KIRO_SKILL.md", "kiro check"} {
+	for _, needle := range []string{"SKILL.md", "references/kiro.json", "version.json", "kiro check"} {
 		if !strings.Contains(string(readme), needle) {
 			t.Fatalf(".kiro/README.md missing %q", needle)
+		}
+	}
+	agents, err := os.ReadFile(filepath.Join(projectRoot, "AGENTS.md"))
+	if err != nil {
+		t.Fatalf("read AGENTS.md: %v", err)
+	}
+	for _, needle := range []string{".kiro/skill/SKILL.md", ".kiro/skill/references/kiro.json", "Before editing any `.ki` files"} {
+		if !strings.Contains(string(agents), needle) {
+			t.Fatalf("AGENTS.md missing %q", needle)
+		}
+	}
+	if strings.HasSuffix(projectRoot, "service") && !strings.Contains(string(agents), "kiro test .") {
+		t.Fatalf("service AGENTS.md missing test guidance")
+	}
+	skill, err := os.ReadFile(filepath.Join(projectRoot, ".kiro", "skill", "SKILL.md"))
+	if err != nil {
+		t.Fatalf("read scaffolded SKILL.md: %v", err)
+	}
+	for _, needle := range []string{"---\nname:", "description:", "references/kiro.json"} {
+		if !strings.Contains(string(skill), needle) {
+			t.Fatalf("SKILL.md missing %q", needle)
 		}
 	}
 }

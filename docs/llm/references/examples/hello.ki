@@ -1,6 +1,6 @@
 mod main
 
 fn main() -> i32 !io {
-  println ( "hello" )
+  println("hello")
   return 0
 }

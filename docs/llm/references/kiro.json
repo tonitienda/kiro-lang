@@ -1,6 +1,7 @@
 {
   "language": "Kiro",
   "version": "phase11-stable-core",
+  "skill_format": "codex-skill-v1",
   "extensions": [".ki"],
   "stable_core": {
     "function_form": "block_only",
@@ -44,9 +45,14 @@
     "kiro test <entry-or-path> [--keep-gen]"
   ],
   "project_conventions": {
-    "tiny_cli": ["main.ki", "mod main", "explicit main effects", ".kiro/skill/ (optional scaffolded snapshot)"],
-    "tiny_service": ["main.ki", "app/", "internal/config/", "test/", ".kiro/skill/"],
+    "tiny_cli": ["main.ki", "mod main", "explicit main effects", "AGENTS.md", ".kiro/skill/", ".kiro/version.json"],
+    "tiny_service": ["main.ki", "app/", "internal/config/", "test/", "AGENTS.md", ".kiro/skill/", ".kiro/version.json"],
     "tests": ["test_* functions", "http.test_req", "test.eq", "return nil"]
+  },
+  "agent_handoff": {
+    "read_first": [".kiro/skill/SKILL.md", ".kiro/skill/references/kiro.json", "AGENTS.md"],
+    "edit_scope": "Read the vendored skill before editing .ki files.",
+    "version_pin": ".kiro/version.json records the Kiro version that produced the scaffold."
   },
   "experimental_areas": [
     "generated-Go API stability",

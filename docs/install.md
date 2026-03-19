@@ -80,7 +80,9 @@ That layout matches the runtime toolchain lookup rules used by the CLI.
 
 ```bash
 ./scripts/install.sh --version v0.1.0-experimental --bin-dir ./.kiro/bin
-PATH="$PWD/.kiro/bin:$PATH" kiro check .
+PATH="$PWD/.kiro/bin:$PATH" kiro new hello
+PATH="$PWD/.kiro/bin:$PATH" kiro check hello
+cat hello/AGENTS.md
 ```
 
 ## Notes
@@ -88,3 +90,4 @@ PATH="$PWD/.kiro/bin:$PATH" kiro check .
 - `--version` is the first-class interface; pinned installs are the intended downstream workflow.
 - `--version latest` is accepted as a convenience, but explicit tags are preferred for reproducible CI.
 - release installs are for consumers; building Kiro itself from source still requires Go.
+- `kiro new` from an installed release vendors a project-local skill snapshot and root `AGENTS.md`, both pinned to that installed Kiro version.

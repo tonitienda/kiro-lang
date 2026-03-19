@@ -24,6 +24,9 @@ KIRO_INSTALL_BASE_URL="file://$(cd "$DIST_DIR" && pwd)" ./scripts/install.sh --v
 
 cd "$PROJECT_ROOT"
 PATH="$INSTALL_ROOT/bin:/usr/bin:/bin" "$INSTALL_ROOT/bin/kiro" new hello
+[[ -f "$PROJECT_ROOT/hello/AGENTS.md" ]] || { echo "scaffolded AGENTS.md missing" >&2; exit 1; }
+[[ -f "$PROJECT_ROOT/hello/.kiro/skill/SKILL.md" ]] || { echo "scaffolded SKILL.md missing" >&2; exit 1; }
+[[ -f "$PROJECT_ROOT/hello/.kiro/skill/references/kiro.json" ]] || { echo "scaffolded kiro.json missing" >&2; exit 1; }
 PATH="$INSTALL_ROOT/bin:/usr/bin:/bin" "$INSTALL_ROOT/bin/kiro" check hello
 PATH="$INSTALL_ROOT/bin:/usr/bin:/bin" "$INSTALL_ROOT/bin/kiro" build hello --out "$PROJECT_ROOT/hello-bin"
 "$PROJECT_ROOT/hello-bin" > "$PROJECT_ROOT/hello.out"
