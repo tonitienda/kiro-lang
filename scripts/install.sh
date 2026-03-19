@@ -101,7 +101,7 @@ require_cmd tar
 require_cmd install
 require_cmd mktemp
 
-REPO="${KIRO_INSTALL_REPO:-kiro-lang/kiro}"
+REPO="${KIRO_INSTALL_REPO:-tonitienda/kiro-lang}"
 API_URL="${KIRO_INSTALL_API_URL:-https://api.github.com/repos/${REPO}/releases/latest}"
 if [[ "$VERSION" == "latest" ]]; then
   VERSION="$(resolve_latest_version "$API_URL")"
