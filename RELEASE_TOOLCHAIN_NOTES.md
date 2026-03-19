@@ -19,12 +19,20 @@ Each release archive is shaped like this:
 kiro-vX.Y.Z-<os>-<arch>/
   bin/
     kiro
+    kiro-lsp
   toolchain/
     go/
       bin/go
       ...
   README.md
   RELEASE_TOOLCHAIN_NOTES.md
+  VERSION
+```
+
+Each release also publishes a release-level checksum file:
+
+```text
+kiro-vX.Y.Z-checksums.txt
 ```
 
 The CLI locates its Go toolchain in this order:
@@ -44,6 +52,15 @@ The CLI locates its Go toolchain in this order:
 
 This keeps the normal end-user workflow standalone while preserving a debuggable Go boundary.
 
+## Installer expectation
+
+`scripts/install.sh` installs `kiro` and `kiro-lsp` into the chosen binary directory and places the bundled toolchain in a sibling `toolchain/` directory so the runtime lookup remains deterministic.
+
+Examples:
+
+- `--bin-dir /usr/local/bin` -> `/usr/local/toolchain/go/bin/go`
+- `--bin-dir ./bin` -> `./toolchain/go/bin/go`
+
 ## Current limitations
 
 - The new runtime path is **pragmatic, not fully feature-complete**. It supports the template/hello/service/test workflows targeted in this phase, but it is not yet a complete implementation of every experimental Kiro example.
@@ -56,4 +73,4 @@ This keeps the normal end-user workflow standalone while preserving a debuggable
 1. Converge more of the execution backend and `inspect go` story so one generated-Go model covers both inspection and executable output.
 2. Expand runtime coverage across more example programs before widening compatibility claims.
 3. Add richer `kiro test` reporting once a more formal test runtime exists.
-4. Introduce version reporting and checksum/signing steps in the release workflow.
+4. Keep checksum publication, installer behavior, and release asset naming aligned.

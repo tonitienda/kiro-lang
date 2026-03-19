@@ -15,7 +15,9 @@ Current editor support intentionally focuses on:
 
 Deferred features are listed in `PHASE11_NOTES.md`.
 
-## Build `kiro-lsp`
+## Install `kiro-lsp`
+
+### Build from source
 
 ```bash
 go build ./cmd/kiro-lsp
@@ -23,17 +25,29 @@ go build ./cmd/kiro-lsp
 
 This produces a `kiro-lsp` binary in the current directory.
 
+### Install from a release bundle
+
+Pinned release installs also install `kiro-lsp` when it is present in the release artifact:
+
+```bash
+./scripts/install.sh --version v0.1.0-experimental
+./scripts/install.sh --version v0.1.0-experimental --bin-dir ./bin
+```
+
+That is the recommended path for downstream repos and editor-specific setup guides that want a stable version pin.
+
 ## VS Code setup
 
 Extension source lives in `editors/vscode/`.
 
 ### Development install
 
-1. Build `kiro-lsp` and make it available on `PATH`, or set `KIRO_LSP_BIN` in the VS Code extension host environment.
-2. Open `editors/vscode` in VS Code.
-3. Run `npm install` in that folder.
-4. Press `F5` (Run Extension) to start an Extension Development Host.
-5. Open a `.ki` file.
+1. Install `kiro-lsp` from a release bundle or build it from source and make it available on `PATH`.
+2. If `kiro-lsp` is not on `PATH`, set `KIRO_LSP_BIN` in the VS Code extension host environment.
+3. Open `editors/vscode` in VS Code.
+4. Run `npm install` in that folder.
+5. Press `F5` (Run Extension) to start an Extension Development Host.
+6. Open a `.ki` file.
 
 You should get syntax highlighting, diagnostics, formatting, hover, definition, symbols, and basic completion.
 

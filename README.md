@@ -74,15 +74,39 @@ Pure transforms are **not** effects, even when they return `R[T,E]`:
 - `json.decode`
 - `parse.i32`
 
-## Quick start
+## Install Kiro
+
+### Build from source
 
 ```bash
 go build ./cmd/kiro
+go build ./cmd/kiro-lsp
 ./kiro new hello
 ./kiro fmt hello
 ./kiro check hello
 ./kiro inspect go hello --out-dir hello/.kiro-gen
 ```
+
+### Install a pinned release
+
+Use the installer for release bundles that include `kiro`, `kiro-lsp`, and the bundled Go toolchain used by `kiro build`, `kiro run`, and `kiro test`.
+
+```bash
+./scripts/install.sh --version v0.1.0-experimental
+./scripts/install.sh --version v0.1.0-experimental --bin-dir ./bin
+```
+
+Artifact naming is predictable and version-pinned:
+
+- `kiro-vX.Y.Z-linux-amd64.tar.gz`
+- `kiro-vX.Y.Z-linux-arm64.tar.gz`
+- `kiro-vX.Y.Z-darwin-amd64.tar.gz`
+- `kiro-vX.Y.Z-darwin-arm64.tar.gz`
+- `kiro-vX.Y.Z-checksums.txt`
+
+See `docs/install.md` and `docs/releasing.md` for the full release/install workflow.
+
+## Quick start
 
 `kiro new hello` scaffolds:
 
@@ -110,6 +134,18 @@ See:
 - `docs/service_structure.md`
 - `docs/testing_services.md`
 - `docs/http_json.md`
+
+## Compact LLM package
+
+Downstream repositories do not need to feed the whole Kiro repo into a prompt.
+
+Use the compact package in `docs/llm/`:
+
+- `docs/llm/KIRO_SKILL.md` — concise canonical language guidance for prompts and automation
+- `docs/llm/kiro.json` — compact machine-readable manifest
+- `docs/llm/examples/` — short canonical examples aligned to the stable core
+
+This package is the intended handoff for repos such as `kiro-playground`. Keep it in sync whenever syntax, stdlib guidance, project layout, or formatting expectations change.
 
 ## CLI commands
 
@@ -141,6 +177,14 @@ Kiro treats both as first-class trust mechanisms:
 - `docs/language_tour.md`
 - `docs/effects.md`
 - `docs/stdlib_style.md`
+- `docs/llm/KIRO_SKILL.md`
+
+### Install and release
+
+- `docs/install.md`
+- `docs/releasing.md`
+- `RELEASE_TOOLCHAIN_NOTES.md`
+- `INSTALL_AND_SKILL_NOTES.md`
 
 ### Projects
 
@@ -149,6 +193,7 @@ Kiro treats both as first-class trust mechanisms:
 - `docs/testing.md`
 - `docs/testing_services.md`
 - `docs/http_json.md`
+- `docs/editor_setup.md`
 
 ### Rationale and process
 
@@ -156,6 +201,7 @@ Kiro treats both as first-class trust mechanisms:
 - `docs/compatibility.md`
 - `docs/migration.md`
 - `LLM_REDESIGN_NOTES.md`
+- `docs/contributing.md`
 
 ## Development checks
 

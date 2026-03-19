@@ -18,13 +18,16 @@ GO_ARCHIVE="go${GO_VERSION}.${TARGET_OS}-${TARGET_ARCH}.tar.gz"
 GO_URL="https://dl.google.com/go/${GO_ARCHIVE}"
 CACHE_DIR="${DIST_DIR}/downloads"
 KIRO_BIN_NAME="kiro"
+KIRO_LSP_BIN_NAME="kiro-lsp"
 
 rm -rf "${STAGE_DIR}"
 mkdir -p "${STAGE_DIR}/bin" "${TOOLCHAIN_ROOT}" "${CACHE_DIR}"
 
 GOOS="${TARGET_OS}" GOARCH="${TARGET_ARCH}" CGO_ENABLED=0 go build -o "${STAGE_DIR}/bin/${KIRO_BIN_NAME}" ./cmd/kiro
+GOOS="${TARGET_OS}" GOARCH="${TARGET_ARCH}" CGO_ENABLED=0 go build -o "${STAGE_DIR}/bin/${KIRO_LSP_BIN_NAME}" ./cmd/kiro-lsp
 cp README.md "${STAGE_DIR}/README.md"
 cp RELEASE_TOOLCHAIN_NOTES.md "${STAGE_DIR}/RELEASE_TOOLCHAIN_NOTES.md"
+printf '%s\n' "${VERSION}" > "${STAGE_DIR}/VERSION"
 
 if [[ -n "${KIRO_TOOLCHAIN_SOURCE_DIR:-}" ]]; then
   rm -rf "${TOOLCHAIN_ROOT}/go"
@@ -35,7 +38,7 @@ else
   fi
   tar -xzf "${CACHE_DIR}/${GO_ARCHIVE}" -C "${TOOLCHAIN_ROOT}"
 fi
-chmod +x "${STAGE_DIR}/bin/${KIRO_BIN_NAME}" "${TOOLCHAIN_ROOT}/go/bin/go"
+chmod +x "${STAGE_DIR}/bin/${KIRO_BIN_NAME}" "${STAGE_DIR}/bin/${KIRO_LSP_BIN_NAME}" "${TOOLCHAIN_ROOT}/go/bin/go"
 
 tar -C "${DIST_DIR}" -czf "${DIST_DIR}/${ARTIFACT_NAME}.tar.gz" "${ARTIFACT_NAME}"
 echo "created ${DIST_DIR}/${ARTIFACT_NAME}.tar.gz"
