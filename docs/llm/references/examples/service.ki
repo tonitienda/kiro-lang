@@ -1,0 +1,25 @@
+mod main
+
+import http
+import log
+
+type App {
+  port:str
+}
+
+fn handler(req:http.Req) -> R[http.Resp, str] {
+  when req.path
+    "/health" => {
+      return Ok(http.text(200, "ok"))
+    }
+    _ => {
+      return Ok(http.not_found())
+    }
+}
+
+fn main() -> i32 !log !net {
+  let app = App{port:":8080"}
+  log.info("starting ${app.port}")
+  http.serve(app.port, handler)?
+  return 0
+}

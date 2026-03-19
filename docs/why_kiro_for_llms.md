@@ -64,9 +64,9 @@ Downstream repositories should not have to ship the full `kiro-lang` repo into e
 
 Use the compact package in `docs/llm/` instead:
 
-- `docs/llm/KIRO_SKILL.md` for concise prompt-ready language guidance
-- `docs/llm/kiro.json` for machine-readable conventions
-- `docs/llm/examples/` for short canonical examples
+- `docs/llm/SKILL.md` for concise Codex-native language guidance
+- `docs/llm/references/kiro.json` for machine-readable conventions
+- `docs/llm/references/examples/` for short canonical examples
 
 This package is intentionally smaller than the full docs. It should stay in sync with the stable core and canonical stdlib/project guidance.
 

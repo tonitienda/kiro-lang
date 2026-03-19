@@ -23,8 +23,9 @@ The examples directory is meant to teach the canonical Kiro style.
 
 `kiro new hello` and `kiro new service` now also write a small `.kiro/` directory into the generated project:
 
-- `.kiro/skill/KIRO_SKILL.md` and `.kiro/skill/kiro.json` are canonical copies from `docs/llm/`
+- `.kiro/skill/SKILL.md`, `.kiro/skill/references/kiro.json`, and `.kiro/skill/references/examples/` are canonical copies from `docs/llm/`
 - `.kiro/version.json` pins the Kiro version used to scaffold the repo
-- `.kiro/README.md` is the minimal human/agent reminder for editing `.ki` files
+- `AGENTS.md` tells Codex/agents to read the vendored skill before editing `.ki` files
+- `.kiro/README.md` explains the hidden metadata directory
 
-This keeps fresh example repos and downstream playgrounds self-contained for LLM/editor workflows without requiring the whole `kiro-lang` repo checkout.
+This keeps fresh example repos and downstream playgrounds self-contained for LLM/editor workflows without requiring the whole `kiro-lang` repo checkout, and gives repo-local agents an explicit entry point instead of assuming they will inspect `.kiro/` on their own.

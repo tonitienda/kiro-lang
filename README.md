@@ -118,11 +118,19 @@ hello/
     README.md
     version.json
     skill/
-      KIRO_SKILL.md
-      kiro.json
+      SKILL.md
+      references/
+        kiro.json
+        examples/
+          hello.ki
+          service.ki
+          effects.ki
+          result_optional.ki
+          concurrency.ki
+  AGENTS.md
 ```
 
-`version.json` pins the Kiro/skill version used for scaffolding, and `.kiro/skill/` is copied from the canonical compact package bundled with the installed CLI. Pass `--no-skill` only if you explicitly do not want that snapshot.
+`version.json` pins the Kiro/skill version used for scaffolding, `.kiro/skill/` is copied from the canonical compact package bundled with the installed CLI, and a root `AGENTS.md` tells Codex/agents to read that vendored skill before editing `.ki` files. Pass `--no-skill` only if you explicitly do not want that snapshot.
 
 ## Canonical service shape
 
@@ -146,11 +154,11 @@ Downstream repositories do not need to feed the whole Kiro repo into a prompt.
 
 Use the compact package in `docs/llm/`:
 
-- `docs/llm/KIRO_SKILL.md` — concise canonical language guidance for prompts and automation
-- `docs/llm/kiro.json` — compact machine-readable manifest
-- `docs/llm/examples/` — short canonical examples aligned to the stable core
+- `docs/llm/SKILL.md` — Codex-native skill entry with YAML frontmatter
+- `docs/llm/references/kiro.json` — compact machine-readable manifest
+- `docs/llm/references/examples/` — short canonical examples aligned to the stable core
 
-`kiro new <hello|service>` now vendors a project-local snapshot of that package into `.kiro/skill/` together with `.kiro/version.json`, so downstream repos such as `kiro-playground` can keep LLM/editor guidance pinned to the installed Kiro version. Keep the source package in sync whenever syntax, stdlib guidance, project layout, or formatting expectations change.
+`kiro new <hello|service>` now vendors a project-local snapshot of that package into `.kiro/skill/`, writes `.kiro/version.json`, and generates a root `AGENTS.md`. Downstream repos such as `kiro-playground` can keep LLM/editor guidance pinned to the installed Kiro version without cloning `kiro-lang`. Keep the source package in sync whenever syntax, stdlib guidance, project layout, or formatting expectations change.
 
 ## CLI commands
 
@@ -182,7 +190,7 @@ Kiro treats both as first-class trust mechanisms:
 - `docs/language_tour.md`
 - `docs/effects.md`
 - `docs/stdlib_style.md`
-- `docs/llm/KIRO_SKILL.md`
+- `docs/llm/SKILL.md`
 
 ### Install and release
 

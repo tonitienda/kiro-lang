@@ -34,6 +34,9 @@ export PORT=":18082"
 cd "${PROJECT_ROOT}"
 
 "${KIRO_BIN}" new service
+[[ -f "${PROJECT_ROOT}/service/AGENTS.md" ]] || { echo "scaffolded AGENTS.md missing" >&2; exit 1; }
+[[ -f "${PROJECT_ROOT}/service/.kiro/skill/SKILL.md" ]] || { echo "scaffolded SKILL.md missing" >&2; exit 1; }
+[[ -f "${PROJECT_ROOT}/service/.kiro/skill/references/kiro.json" ]] || { echo "scaffolded kiro.json missing" >&2; exit 1; }
 "${KIRO_BIN}" check service
 "${KIRO_BIN}" test service
 "${KIRO_BIN}" build service --out "${PROJECT_ROOT}/service-bin"
