@@ -1,53 +1,23 @@
-# Stable experimental core (Phase 10)
+# Stable experimental core
 
-This page defines the **stable experimental core** for early Kiro adopters.
+The stable-core promise in this repository slice is intentionally narrow.
 
-## What is stable-enough now
+## Included in the current stable core
 
-The following areas are source-compatibility sensitive and treated as stable experimental core:
+- deterministic lexer/parser/formatter behavior for the documented syntax slice
+- project/module resolution rules
+- canonical CLI workflow: `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`
+- explicit effect annotations in function signatures
+- generated-Go visibility as part of the developer workflow
 
-- module layout and imports (`mod`, `import`, project entry `main.ki`)
-- structs, constants, and value-receiver methods
-- block functions and expression functions
-- explicit function effect declarations (`!env`, `!fs`, `!io`, `!log`, `!net`, `!panic`, `!proc`, `!time`)
-- local bindings and reassignment
-- control flow: `if`, `when`, `for in`, `while`, `break`, `continue`
-- collections: lists and maps
-- result and optional patterns: `R[T,E]`, `?`, `?T`, `nil`
-- string interpolation
-- doc comments attached to declarations
-- `defer`
-- tiny structured concurrency: `spawn`, `await`, `group`
-- canonical CLI workflow: `fmt`, `check`, `inspect go`, `new`, `compat`
-- core server stdlib modules used by templates/examples (`http`, `json`, `env`, `log`, `test`, `ctx`, `parse`, `fs`)
+## Stable-core expectations
 
-## Experimental or likely to change
+- command names and the broad workflow are intended to stay recognizable
+- formatting and project layout rules should remain predictable
+- generated Go remains a debugging/trust-building tool, not a frozen public API
 
-These areas are intentionally still more flexible:
+## Still experimental around the core
 
-- exact diagnostics wording (signal should stay stable)
-- full semantic edge-case coverage for advanced type interactions
-- generated Go internals and helper/runtime file details
-- placeholder command behavior (`kiro build`, `kiro run`, `kiro test`) in this repository slice
-- less-common stdlib helpers not used by stable examples/templates
-
-## Intentionally out of scope
-
-Kiro Phase 10 does **not** target:
-
-- non-Go backend targets (JS/WASM/native codegen)
-- self-hosting compiler work
-- ownership/borrow systems
-- macros
-- package registry/distribution system
-- trait/typeclass style abstractions
-- large framework surface expansion
-
-## How to decide if a change belongs in the core
-
-A change belongs in stable core only when it is:
-
-1. needed for README/template/example coherence,
-2. covered by compatibility/tests,
-3. documented in user-facing docs, and
-4. expected to remain useful across phases.
+- the exact standalone execution workdir used by `kiro build/run/test`
+- release bundle structure details beyond the current documented `bin/kiro` + `toolchain/go` shape
+- breadth of execution coverage across all experimental examples

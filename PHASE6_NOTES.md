@@ -1,6 +1,6 @@
 # Phase 6 Notes
 
-## What changed
+## What changed in the original phase
 
 - Added `kiro check <entry-or-path>` for fast parse + import/module validation.
 - Added `kiro inspect go <entry-or-path> [--out-dir <dir>]` to emit inspectable Go.
@@ -9,25 +9,12 @@
 - Added explicit project/module resolution rules and documentation.
 - Added production-shaped example directories for service/CLI/file/testing workflows.
 
-## Naming / stdlib consistency decisions
+## Historical note
 
-This frontend slice does not execute stdlib behavior yet. Examples and docs now consistently show `env.get_or` and `http.text` patterns while larger stdlib API normalization remains Phase 7 follow-up.
+The original Phase 6 limitation that `kiro build`, `kiro run`, and `kiro test` were placeholders is no longer true. Those commands are now implemented through the standalone release/runtime path documented in `RELEASE_TOOLCHAIN_NOTES.md`.
 
-## Project/module decisions
+## Enduring decisions
 
 - Directory entry requires `main.ki`.
 - Imports resolve via declared module names and predictable path mapping.
-- Generated Go mirrors source file layout into `.kiro-gen` (or custom out dir).
-
-## Known limitations
-
-- `kiro build`, `kiro run`, and `kiro test` are still placeholders.
-- Generated Go is a debug-oriented stub, not production compilation output.
-- Semantic/type diagnostics are limited to parser/import-level checks in this slice.
-
-## Recommended Phase 7 scope
-
-- Implement semantic checking and richer type diagnostics behind `kiro check`.
-- Upgrade Go backend from stubs to executable translation.
-- Add real `kiro test` runner and output formatting.
-- Continue stdlib consistency pass once runtime behavior is active.
+- `kiro inspect go` remains the explicit inspection path.

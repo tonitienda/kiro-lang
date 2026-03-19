@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/kiro-lang/kiro/internal/buildsys"
 	"github.com/kiro-lang/kiro/internal/codegen"
 	"github.com/kiro-lang/kiro/internal/compat"
 	"github.com/kiro-lang/kiro/internal/format"
@@ -20,17 +22,30 @@ Core commands:
   fmt <paths...>                          Format .ki files deterministically
   check <entry-or-path>                   Parse and type-check a module/project
   inspect go <entry-or-path> [--out-dir]  Emit generated Go for inspection
+  build <entry-or-path> [--out <file>] [--keep-gen]
+                                          Build a native executable from Kiro source
+  run <entry-or-path> [--keep-gen] [-- <program args...>]
+                                          Build and execute a Kiro program
+  test <entry-or-path> [--keep-gen]
+                                          Build and run Kiro tests discovered via test_* functions
   new <hello|service>                     Scaffold a starter project
   lsp                                     Run language server over stdio
   compat [root] [--mode fmt,check,inspect]
                                           Run compatibility fixture checks
 
-Placeholders in this repo slice:
-  build <entry>
-  run <entry>
-  test <path>
-
 Use 'kiro help' to print this message.`
+
+type ExitError struct {
+	Code int
+	Err  error
+}
+
+func (e *ExitError) Error() string {
+	if e == nil || e.Err == nil {
+		return fmt.Sprintf("process exited with code %d", e.Code)
+	}
+	return e.Err.Error()
+}
 
 func Run(args []string) error {
 	if len(args) == 0 {
@@ -52,11 +67,161 @@ func Run(args []string) error {
 		return runNew(args[1:])
 	case "lsp":
 		return lsp.NewServer().Serve(os.Stdin, os.Stdout)
-	case "build", "run", "test":
-		return fmt.Errorf("%s is not implemented in this frontend-focused slice", args[0])
+	case "build":
+		return runBuild(args[1:])
+	case "run":
+		return runRun(args[1:])
+	case "test":
+		return runTest(args[1:])
 	default:
 		return fmt.Errorf("unknown command: %s\n\n%s", args[0], usageText)
 	}
+}
+
+func runBuild(args []string) error {
+	entry, out, keepGen, err := parseBuildArgs(args, false)
+	if err != nil {
+		return err
+	}
+	result, err := buildsys.Build(buildsys.Options{Entry: entry, Out: out, KeepGen: keepGen, Mode: buildsys.ModeBuild, Stdout: os.Stdout, Stderr: os.Stderr})
+	if err != nil {
+		return err
+	}
+	fmt.Printf("built %s using Go toolchain from %s\n", result.Binary, result.GoSource)
+	if keepGen {
+		fmt.Printf("kept generated Go workdir at %s\n", result.WorkDir)
+	} else {
+		_ = os.RemoveAll(result.WorkDir)
+	}
+	return nil
+}
+
+func runRun(args []string) error {
+	entry, _, keepGen, programArgs, err := parseExecArgs(args, "usage: kiro run <entry-or-path> [--keep-gen] [-- <program args...>]")
+	if err != nil {
+		return err
+	}
+	workDir, err := os.MkdirTemp("", "kiro-run-*")
+	if err != nil {
+		return err
+	}
+	out := filepath.Join(workDir, "kiro-runner")
+	result, err := buildsys.Build(buildsys.Options{Entry: entry, Out: out, KeepGen: keepGen, Mode: buildsys.ModeRun, WorkDir: workDir, Stdout: os.Stdout, Stderr: os.Stderr})
+	if err != nil {
+		if !keepGen {
+			_ = os.RemoveAll(workDir)
+		}
+		return err
+	}
+	cmd := exec.Command(result.Binary, programArgs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Env = os.Environ()
+	err = cmd.Run()
+	if keepGen {
+		fmt.Printf("kept generated Go workdir at %s\n", result.WorkDir)
+	} else {
+		defer os.RemoveAll(result.WorkDir)
+	}
+	if err == nil {
+		return nil
+	}
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		return &ExitError{Code: exitErr.ExitCode(), Err: err}
+	}
+	return err
+}
+
+func runTest(args []string) error {
+	entry, _, keepGen, _, err := parseExecArgs(args, "usage: kiro test <entry-or-path> [--keep-gen]")
+	if err != nil {
+		return err
+	}
+	workDir, err := os.MkdirTemp("", "kiro-test-*")
+	if err != nil {
+		return err
+	}
+	out := filepath.Join(workDir, "kiro-test-runner")
+	result, err := buildsys.Build(buildsys.Options{Entry: entry, Out: out, KeepGen: keepGen, Mode: buildsys.ModeTest, WorkDir: workDir, Stdout: os.Stdout, Stderr: os.Stderr})
+	if err != nil {
+		if !keepGen {
+			_ = os.RemoveAll(workDir)
+		}
+		return err
+	}
+	cmd := exec.Command(result.Binary)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	cmd.Env = os.Environ()
+	err = cmd.Run()
+	if keepGen {
+		fmt.Printf("kept generated Go workdir at %s\n", result.WorkDir)
+	} else {
+		defer os.RemoveAll(result.WorkDir)
+	}
+	if err == nil {
+		return nil
+	}
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		return &ExitError{Code: exitErr.ExitCode(), Err: err}
+	}
+	return err
+}
+
+func parseBuildArgs(args []string, allowProgramArgs bool) (entry, out string, keepGen bool, err error) {
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--out":
+			if i+1 >= len(args) {
+				return "", "", false, errors.New("usage: kiro build <entry-or-path> [--out <file>] [--keep-gen]")
+			}
+			out = args[i+1]
+			i++
+		case "--keep-gen":
+			keepGen = true
+		case "--":
+			if allowProgramArgs {
+				continue
+			}
+			return "", "", false, errors.New("usage: kiro build <entry-or-path> [--out <file>] [--keep-gen]")
+		default:
+			if entry != "" {
+				return "", "", false, errors.New("usage: kiro build <entry-or-path> [--out <file>] [--keep-gen]")
+			}
+			entry = args[i]
+		}
+	}
+	if entry == "" {
+		return "", "", false, errors.New("usage: kiro build <entry-or-path> [--out <file>] [--keep-gen]")
+	}
+	return entry, out, keepGen, nil
+}
+
+func parseExecArgs(args []string, usage string) (entry, out string, keepGen bool, programArgs []string, err error) {
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--keep-gen":
+			keepGen = true
+		case "--":
+			if entry == "" {
+				return "", "", false, nil, errors.New(usage)
+			}
+			return entry, out, keepGen, append([]string(nil), args[i+1:]...), nil
+		default:
+			if entry != "" {
+				return "", "", false, nil, errors.New(usage)
+			}
+			entry = args[i]
+		}
+	}
+	if entry == "" {
+		return "", "", false, nil, errors.New(usage)
+	}
+	return entry, out, keepGen, nil, nil
 }
 
 func runCompat(args []string) error {
@@ -210,16 +375,19 @@ fn test_health_handler() -> nil {
 `
 	readme := `# Kiro service template
 
-This template shows the Phase 7 service shape:
+This template shows the Phase 12 standalone-toolchain shape:
 
 - ` + "`internal/config`" + ` for explicit config loading
 - ` + "`app`" + ` module for handler composition
 - handler-level test via ` + "`http.test_req`" + ` style helpers
+- real ` + "`kiro check`" + `, ` + "`kiro build`" + `, ` + "`kiro run`" + `, and ` + "`kiro test`" + ` commands
 
-Check and inspect generated Go:
+Suggested workflow:
 
 ` + "```bash" + `
 kiro check .
+kiro test .
+kiro build . --out ./service-bin
 kiro inspect go . --out-dir .kiro-gen
 ` + "```" + `
 `

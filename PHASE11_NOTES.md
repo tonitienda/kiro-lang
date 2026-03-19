@@ -25,20 +25,17 @@
 
 ## Reuse of compiler infrastructure
 
-The LSP implementation reuses existing compiler layers:
+The LSP implementation still reuses existing compiler layers:
 
 - parsing/lexing are from `internal/parser` and `internal/lexer`
 - formatting calls the canonical formatter (`internal/format`)
 
 No second parser/type-checker stack was introduced for editor support.
 
-## Current limitations (intentional)
+## Relationship to release/runtime work
 
-- Hover/definition/completion are document-scoped and declaration-oriented.
-- No workspace-wide references, rename, code actions, inlay hints, or semantic tokens.
-- No debugger/DAP integration.
-- No editor-specific deep plugin ecosystem beyond baseline VS Code + standard LSP client docs.
+The standalone-toolchain phase intentionally preserves editor tooling assumptions:
 
-## Recommended next step
-
-Before experimental release packaging, tighten symbol-resolution fidelity for cross-file/workspace references while preserving the current single-source-of-truth compiler pipeline.
+- `kiro inspect go` remains the debugging backstop for runtime/codegen issues
+- the LSP still depends on the same parser/formatter stack, not the runtime path
+- release packaging should not introduce editor-specific forks of compiler behavior
