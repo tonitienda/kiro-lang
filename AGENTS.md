@@ -6,6 +6,7 @@ These instructions apply to the full repository.
 ## Implementation expectations
 - Follow `docs/phase1-spec.md` for foundation and `docs/roadmap-phase2.md` for incremental history.
 - For current language direction and limits, read `PHASE6_NOTES.md` first.
+- For the current LLM-focused cleanup decisions, read `LLM_REDESIGN_NOTES.md` before changing syntax, diagnostics, templates, or public docs.
 - Prefer straightforward, readable Go over abstractions.
 - Keep parser/formatter behavior deterministic.
 
@@ -22,5 +23,6 @@ These instructions apply to the full repository.
 
 ## Current milestone context
 - Phase 11 is active: prioritize editor tooling stability (LSP, syntax highlighting, setup docs) while preserving the Phase 10 stable-core contract.
+- The active redesign direction favors a smaller stricter language for LLM generation over compatibility with older prototype forms.
 - Keep `PHASE11_NOTES.md` and `PHASE10_NOTES.md` aligned with implementation decisions and tradeoffs.
 - Keep `PHASE8_NOTES.md` plus `PHASE6_NOTES.md`, `PHASE5_NOTES.md`, `PHASE4_NOTES.md`, and `PHASE3_NOTES.md` aligned when touching earlier-phase assumptions.

@@ -1,16 +1,14 @@
-# Stdlib style
+# Standard library style
 
-Kiro's stdlib surface is intentionally small and regular.
+Kiro's stdlib surface is intentionally narrow and regular.
 
-## Core rules
+## Naming policy
 
-### Naming
+- use short module names with clear semantic ownership: `env`, `fs`, `http`, `json`, `log`, `parse`, `test`, `time`
+- use verb-oriented helpers for actions: `read_file`, `write_file`, `get_or`, `require`
+- keep constructors and pure transforms explicit
 
-- prefer short lower_snake names
-- prefer one public name per operation
-- remove aliases that do not pay for themselves
-
-### Effects
+## Effect policy
 
 Operational APIs carry effects; pure transforms do not.
 
@@ -21,42 +19,22 @@ Examples:
 - `http.serve` -> `!net`
 - `log.info` -> `!log`
 - `json.encode` -> pure `R[T,E]`
+- `json.decode` -> pure `R[T,E]`
 - `parse.i32` -> pure `R[T,E]`
 
-### Result and optional shape
+## Result/optional policy
 
-- use `R[T,E]` for recoverable failure
-- use `?T` for optional values
-- use `nil` only for optional absence
+- do not use effects to model fallibility
+- do not use `nil` as a substitute for `Err(...)`
+- keep optional values typed as `?T`
 
-## Canonical module notes
+## HTTP style
 
-### `env`
+Prefer:
 
-- `get_or(key, default)` is the defaulted configuration path
-- environment access is always `!env`
+- `http.text`
+- `http.json`
+- `http.not_found`
+- `http.with_header`
 
-### `fs`
-
-- prefer `read_file(path)`
-- prefer `write_file(path, body)`
-- `fs.read` has been removed from the canonical surface
-
-### `http`
-
-- handlers should use `fn handler(req:http.Req) -> R[http.Resp, str]`
-- prefer `http.text`, `http.json`, `http.not_found`, and `http.with_header`
-- prefer direct handler testing with `http.test_req`
-
-### `json`
-
-- `encode` and `decode` are pure
-- JSON does not imply an effect declaration by itself
-
-### `log`
-
-- log calls are operational and require `!log`
-
-### `test`
-
-- use `test.eq` for simple direct assertions in canonical examples
+Keep handlers on `R[http.Resp,str]` so error flow stays explicit.

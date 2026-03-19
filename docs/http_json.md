@@ -1,19 +1,13 @@
-# HTTP + JSON
+# HTTP and JSON
 
-Kiro treats HTTP as operational and JSON as pure.
+Kiro keeps HTTP and JSON semantics intentionally separate.
 
-## Canonical handler shape
-
-```ki
-fn handler(req:http.Req) -> R[http.Resp, str]
-```
-
-## Example
+## Canonical handler
 
 ```ki
-fn handler(req:http.Req) -> R[http.Resp, str] {
+fn handler(req:http.Req) -> R[http.Resp,str] {
   when req.path
-    "/health" => {
+    "/status" => {
       let body = json.encode(Status{status:"ok"})?
       return Ok(http.json(200, body))
     }
@@ -23,8 +17,9 @@ fn handler(req:http.Req) -> R[http.Resp, str] {
 }
 ```
 
-## Semantic split
+## Important semantic rule
 
-- `http.serve` is `!net`
-- request handling may return `R[http.Resp, str]`
-- `json.encode` and `json.decode` remain pure
+- `http.serve` is operational and requires `!net`
+- `json.encode` and `json.decode` are pure and return `R[T,E]`
+
+Do not declare `!json`.

@@ -1,41 +1,19 @@
-# Migration guide
+# Migration notes
 
-## Expression-bodied functions
+Kiro is still pre-1.0 and breaking changes are expected.
 
-Old:
+## Current redesign direction
 
-```ki
-fn greet(name:str) -> str = "hello ${name}"
-```
+### Removed or rejected
 
-New:
+- expression-bodied functions
+- pseudo-effects like `!json`
+- mixed handler signatures in docs/examples/templates
+- multiple service/testing styles in public docs
 
-```ki
-fn greet(name:str) -> str {
-  return "hello ${name}"
-}
-```
+### Canonical replacements
 
-## Filesystem reads
-
-Old:
-
-```ki
-fs.read(path)
-```
-
-New:
-
-```ki
-fs.read_file(path)
-```
-
-## Service handlers
-
-Old examples in the repo mixed shorthand type names.
-
-New canonical shape:
-
-```ki
-fn handler(req:http.Req) -> R[http.Resp, str]
-```
+- use block bodies with explicit `return`
+- use `R[T,E]` for pure fallible transforms
+- use `fn handler(req:http.Req) -> R[http.Resp,str]`
+- use `group` / `spawn` / `await` for visible structured concurrency

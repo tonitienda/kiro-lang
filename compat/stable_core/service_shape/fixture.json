@@ -1,0 +1,4 @@
+{
+  "inspect_go": true,
+  "expected_modules": ["app/module", "internal/config/module", "module"]
+}

@@ -111,10 +111,19 @@ func (p *Project) resolveImports() error {
 			if hasModuleByPath(p.Files, imp) {
 				continue
 			}
-			return fmt.Errorf("%s: unresolved import %q", f.Rel, imp)
+			return fmt.Errorf("%s: unresolved import %q\nhint: import a stdlib module (%s) or a project module whose `mod` name/path matches the import", f.Rel, imp, strings.Join(sortedStdlibModules(), ", "))
 		}
 	}
 	return nil
+}
+
+func sortedStdlibModules() []string {
+	names := make([]string, 0, len(stdlibModules))
+	for name := range stdlibModules {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }
 
 func hasModuleByPath(files []File, imp string) bool {

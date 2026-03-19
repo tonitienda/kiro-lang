@@ -65,7 +65,7 @@ fn main() -> i32 {
 		t.Fatalf("expected error")
 	}
 	msg := err.Error()
-	if !strings.Contains(msg, `function "main" calls "load" which requires effect "!env"`) {
+	if !strings.Contains(msg, `missing effect declaration`) || !strings.Contains(msg, `add "!env"`) {
 		t.Fatalf("diagnostic = %q", msg)
 	}
 }
@@ -84,6 +84,24 @@ fn main() -> i32 !database {
 	}
 	if !strings.Contains(err.Error(), `unknown effect "!database"`) {
 		t.Fatalf("diagnostic = %q", err)
+	}
+}
+
+func TestLoadRejectsPseudoEffectForPureJSON(t *testing.T) {
+	dir := t.TempDir()
+	mustWrite(t, filepath.Join(dir, "main.ki"), `mod main
+
+fn main() -> i32 !json {
+  return 0
+}
+`)
+	_, err := Load(dir)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, `unknown effect "!json"`) || !strings.Contains(msg, `json operations are pure transforms`) {
+		t.Fatalf("diagnostic = %q", msg)
 	}
 }
 
@@ -121,8 +139,28 @@ fn main() -> i32 {
 }
 `)
 	_, err := Load(dir)
-	if err == nil || !strings.Contains(err.Error(), `requires effect "!io"`) {
+	if err == nil || !strings.Contains(err.Error(), `missing effect declaration`) || !strings.Contains(err.Error(), `add "!io"`) {
 		t.Fatalf("expected io-only error, got %v", err)
+	}
+}
+
+func TestLoadRejectsUnresolvedImportWithHint(t *testing.T) {
+	dir := t.TempDir()
+	mustWrite(t, filepath.Join(dir, "main.ki"), `mod main
+
+import missing/module
+
+fn main() -> i32 {
+  return 0
+}
+`)
+	_, err := Load(dir)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, `unresolved import "missing/module"`) || !strings.Contains(msg, `stdlib module`) {
+		t.Fatalf("diagnostic = %q", msg)
 	}
 }
 
@@ -146,7 +184,7 @@ fn main() -> i32 {
 	if err == nil {
 		t.Fatalf("expected error")
 	}
-	if !strings.Contains(err.Error(), `requires effect "!io"`) {
+	if !strings.Contains(err.Error(), `missing effect declaration`) || !strings.Contains(err.Error(), `add "!io"`) {
 		t.Fatalf("diagnostic = %q", err)
 	}
 }

@@ -20,7 +20,7 @@ const usageText = `usage: kiro <command> [args]
 
 Core commands:
   fmt <paths...>                          Format .ki files deterministically
-  check <entry-or-path>                   Parse and type-check a module/project
+  check <entry-or-path>                   Parse and validate a module/project
   inspect go <entry-or-path> [--out-dir]  Emit generated Go for inspection
   build <entry-or-path> [--out <file>] [--keep-gen]
                                           Build a native executable from Kiro source
@@ -375,11 +375,12 @@ fn test_health_handler() -> nil {
 `
 	readme := `# Kiro service template
 
-This template shows the Phase 12 standalone-toolchain shape:
+This template shows the canonical LLM-oriented Kiro service shape:
 
 - ` + "`internal/config`" + ` for explicit config loading
 - ` + "`app`" + ` module for handler composition
 - handler-level test via ` + "`http.test_req`" + ` style helpers
+- one explicit effect boundary in ` + "`main.ki`" + `
 - real ` + "`kiro check`" + `, ` + "`kiro build`" + `, ` + "`kiro run`" + `, and ` + "`kiro test`" + ` commands
 
 Suggested workflow:

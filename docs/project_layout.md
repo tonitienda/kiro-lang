@@ -1,26 +1,15 @@
 # Project layout
 
-Kiro encourages one obvious project shape.
+Kiro now documents one preferred layout for applications and services.
 
-## Tiny CLI tool
+## Small application
 
 ```text
-hello/
+app/
   main.ki
 ```
 
-Canonical entrypoint:
-
-```ki
-mod main
-
-fn main() -> i32 !io {
-  println("hello")
-  return 0
-}
-```
-
-## Tiny service
+## Service
 
 ```text
 service/
@@ -34,14 +23,13 @@ service/
     health.ki
 ```
 
-## Layout rules
+## Responsibilities
 
-- keep `main.ki` at the entry root
-- keep request handlers in `app/`
-- keep env/config loading in `internal/config/`
-- keep tests in `test/`
-- prefer module names that match paths predictably
+- `main.ki`: startup, effect boundaries, wiring
+- `app/`: request handlers and pure-ish service logic
+- `internal/config/`: environment/config loading
+- `test/`: test entry functions and handler-level assertions
 
-## Why this matters
+## Why this layout
 
-Stable layout conventions help both humans and LLMs generate coherent projects without inventing competing repository shapes.
+This shape keeps operational boundaries obvious, which improves both human review and model generation.

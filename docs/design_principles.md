@@ -1,34 +1,51 @@
 # Design principles
 
-Kiro is being refined around a deliberately machine-friendly core.
+Kiro is being redesigned around a strict machine-friendly core.
 
-## 1. Small surface area
+## 1. One obvious way
 
-Prefer a smaller language with fewer competing forms.
+Every important construct should have one obvious syntax and one obvious documented style.
 
-## 2. One obvious syntax per construct
+Current canonical choices:
 
 - block-only function bodies
-- explicit effect placement after return types
-- canonical formatting
+- explicit `return`
+- effect markers after return types
+- `R[T,E]` for failure
+- `?T` for optionality
+- `group { ... }` for structured concurrency scope
 
-## 3. Orthogonal semantics
+## 2. Concepts stay orthogonal
 
-Keep these distinct:
+Kiro sharply separates:
 
-- effects
-- results
-- optionals
+- impurity
+- failure
+- absence
 - concurrency
 
-## 4. Explicitness over inference
+If two ideas can be modeled separately, Kiro should not blur them for convenience.
 
-Kiro favors visible signatures, visible returns, and visible task lifecycles.
+## 3. Explicitness beats convenience
 
-## 5. Repairable diagnostics
+Prefer:
 
-Compiler feedback should help users make a concrete edit, not just describe a failure.
+- explicit effects
+- explicit returns
+- explicit result propagation
+- explicit optional types
+- explicit concurrency boundaries
 
-## 6. Inspectable lowering
+Avoid hidden inference that makes generated code harder to audit.
 
-Generated Go remains part of the trust and debugging story.
+## 4. Canonical formatting is mandatory
+
+`kiro fmt` is not cosmetic. It defines the canonical printed form.
+
+## 5. Diagnostics are part of language design
+
+A language optimized for LLM maintenance must make common repair steps local and obvious.
+
+## 6. Generated Go remains inspectable
+
+Lowering stays visible through `kiro inspect go`.

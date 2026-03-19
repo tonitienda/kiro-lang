@@ -1,97 +1,74 @@
-# Why Kiro for LLMs
+# Why Kiro is optimized for LLMs
 
-Kiro is being shaped around a simple idea: **make the language easy to generate correctly, easy to format canonically, and easy to repair from diagnostics**.
+Kiro is being shaped as a language that is easier for models to **generate**, **review**, **repair**, and **maintain**.
 
-## Core properties
+## What Kiro optimizes for
 
-### 1. Small surface area
+### 1. Small language, high semantic density
 
-Kiro intentionally stays narrow:
+Kiro intentionally keeps the core small:
 
-- modules
-- structs
-- functions
-- results and optionals
-- explicit effects
-- structured concurrency
-- HTTP/JSON-oriented server-side workflows
+- one declaration style
+- one function body style
+- one explicit effect system
+- one result model
+- one optional model
+- one structured concurrency model
 
-### 2. One obvious syntax per construct
+### 2. Orthogonal concepts
 
-The current optimization pass standardizes on:
+Kiro keeps these ideas separate:
 
-- **block-only function bodies**
-- explicit `return` for value flow
-- explicit effect markers after return types
-- `group` / `spawn` / `await` for concurrency
-- one canonical formatter output
-
-### 3. Orthogonal semantics
-
-Kiro keeps these concepts separate:
-
-- **effects** = operational impurity
+- **effects** = operational impurity (`!fs`, `!net`, `!env`, ...)
 - **`R[T,E]`** = fallibility
 - **`?`** = result propagation
 - **`?T`** = optionality
-- **`nil`** = absence for optionals
+- **`nil`** = absence where the type allows it
+- **`group` / `spawn` / `await`** = concurrency lifecycle
 
-That separation matters for both code generation and diagnostics.
+### 3. Canonical syntax
 
-### 4. Canonical formatting
+The formatter is part of the language definition.
 
-A formatter is part of the language design, not an afterthought.
+A model should not have to choose among multiple equally-valid surface forms. Kiro therefore prefers:
 
-Canonical formatting helps LLMs because:
+- block-only functions
+- explicit return statements
+- explicit effect markers after return types
+- canonical lexicographic effect ordering
+- stable project layout
 
-- training examples converge on one printed shape
-- repair loops can suggest exact rewrites
-- diffs stay small and semantic
+### 4. Compiler-guided repair
 
-### 5. Compiler-guided repair
+Diagnostics are designed to support a repair loop:
 
-The repository now prefers diagnostics that say:
+- identify the local cause
+- state what was expected
+- suggest the next edit
 
-- what is wrong
-- which construct is wrong
-- what to add, remove, or replace
+This matters especially for:
 
-Examples:
+- missing effects
+- invalid pseudo-effects like `!json`
+- invalid imports
+- misuse of `?`, `?T`, and `nil`
+- malformed concurrency structure
 
-- missing effect declarations
-- old expression-bodied functions
-- invalid `?` on non-`R[T,E]` values
-- `await` used on a non-task
+### 5. Inspectable backend lowering
 
-### 6. Stable project conventions
-
-Kiro is not only a language; it also suggests one obvious project shape:
-
-- `main.ki` for entrypoints
-- `app/` for handlers
-- `internal/config/` for environment-derived config
-- `test/` for direct handler tests
-
-### 7. Inspectable lowering
-
-Kiro lowers to Go and keeps that path inspectable with `kiro inspect go`.
-
-That makes debugging more practical for both humans and tool-assisted workflows.
+Kiro keeps generated Go visible so that both humans and models can debug what the compiler emitted.
 
 ## What Kiro deliberately avoids
 
-- operator overloading
+To stay machine-friendly, Kiro avoids or limits:
+
+- multiple equivalent syntaxes for major constructs
 - effect inference
-- syntax aliases that compete with the canonical style
-- hidden concurrency or async magic
-- conflating JSON/parsing with effects
+- operator overloading
+- magic convenience helpers with unclear semantics
+- conflating failure with impurity
+- ambient concurrency
 
-## Repository support for this design
+## Design consequence
 
-The design is reinforced by:
-
-- compatibility fixtures
-- formatter tests and idempotence checks
-- template verification
-- example checks
-- editor/LSP hover signatures sourced from the same compiler surface
+Kiro is intentionally more opinionated and narrower than a general-purpose language prototype. That tradeoff is deliberate: less choice and less ambiguity generally produce better generated code and more reliable repair.

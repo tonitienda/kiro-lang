@@ -1,0 +1,11 @@
+mod main
+
+import json
+
+type Msg {
+  text:str
+}
+
+fn body() -> R[str,str] {
+  return json.encode(Msg{text:"ok"})
+}

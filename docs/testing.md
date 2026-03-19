@@ -1,6 +1,6 @@
 # Testing
 
-Kiro keeps testing simple.
+Kiro testing favors explicit test functions and local assertions.
 
 ## Canonical test shape
 
@@ -20,12 +20,7 @@ fn test_add() -> nil {
 
 ## Rules
 
-- test functions are named `test_*`
-- handler and helper tests should call functions directly when possible
-- prefer small, local tests over broad integration harnesses
-
-## Run tests
-
-```bash
-kiro test .
-```
+- test entry points start with `test_`
+- tests use ordinary functions; there is no special test syntax
+- keep tests deterministic and local
+- keep effectful setup in thin helpers when needed

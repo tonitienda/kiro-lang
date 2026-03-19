@@ -1,89 +1,88 @@
 # kiro-lang
 
-Kiro is an **experimental, Go-backed server-side programming language** optimized for **LLM-friendly generation, repair, and review**.
+Kiro is an **experimental Go-backed language** for **LLM-generated, LLM-reviewed, and LLM-maintained code**.
 
-Kiro deliberately keeps the surface area small:
-
-- **one obvious syntax** for each major construct
-- **explicit semantics** for effects, results, optionals, and concurrency
-- **canonical formatting** so one AST has one printed shape
-- **inspectable generated Go** so failures can always be debugged in a familiar backend
-- **compatibility fixtures** that protect the intended stable core
+The repository now treats **aggressive simplification** as a language feature, not a migration inconvenience.
 
 ## Why Kiro is optimized for LLMs
 
-Kiro is trying to be easy for both humans and models to generate correctly:
+Kiro is designed so a model can:
 
-- **small language core** for services and CLI tools
-- **effects for operational impurity**: `!env`, `!fs`, `!io`, `!log`, `!net`, ...
-- **`R[T,E]` for fallibility**, with `?` only for result propagation
-- **`?T` for absence**, with `nil` only as an optional value
-- **structured concurrency** with `group`, `spawn`, and `await`
-- **block-only function bodies** so return flow is always explicit
-- **stable project conventions** for tiny apps, services, and tests
+- generate code in **one obvious syntax**
+- recover from diagnostics with **small, local edits**
+- distinguish **effects**, **fallibility**, **optionality**, and **concurrency** without guesswork
+- rely on **canonical formatting** as part of the language definition
+- inspect generated Go when debugging or reviewing lowered code
 
-See also:
+Kiro optimizes for:
 
-- `docs/why_kiro_for_llms.md`
-- `docs/llm_optimization_pass.md`
-- `LLM_OPTIMIZATION_NOTES.md`
+1. **predictability**
+2. **regularity**
+3. **semantic clarity**
+4. **repairability from compiler diagnostics**
+5. **canonical formatting**
+6. **low ambiguity**
+7. **small explicit surface area**
+8. **high semantic information per token**
 
-## What Kiro is for
+Read the rationale in `docs/why_kiro_for_llms.md` and the redesign record in `LLM_REDESIGN_NOTES.md`.
 
-- small HTTP/JSON services
-- CLI and file-processing tools
-- explicit, inspectable backend workflows
-- compatibility-driven language iteration
+## Core language contract
 
-## What Kiro is not for today
+Kiro now teaches one canonical style:
 
-- browser/JS/WASM targets
-- large framework-heavy ecosystems
-- production-stability guarantees
+- **block-only functions** with explicit `return`
+- **explicit effects** for operational impurity only
+- **`R[T,E]`** for fallibility
+- **`?`** only for propagating `R[T,E]`
+- **`?T`** for optional values
+- **`nil`** only where an optional or `nil` return type is allowed
+- **`group` + `spawn` + `await`** for visible structured concurrency
+- **deterministic formatting** via `kiro fmt`
 
-## Status
+### Canonical function signature
 
-Kiro is in an active simplification pass that treats the repository as the source of truth for the **new stable core**, not for historical syntax preservation.
-
-Key docs:
-
-- stable core: `docs/stable_core.md`
-- design principles: `docs/design_principles.md`
-- effects: `docs/effects.md`
-- project layout: `docs/project_layout.md`
-- service structure: `docs/service_structure.md`
-- compatibility: `docs/compatibility.md`
-- generated Go debugging: `docs/debugging_generated_go.md`
-
-## Install and build Kiro itself
-
-### From source
-
-```bash
-go build ./cmd/kiro
+```ki
+fn handler(req:http.Req) -> R[http.Resp,str] !net {
+  return Ok(http.not_found())
+}
 ```
 
-### From release artifacts
+The signature carries the information an LLM most often needs to reason correctly about behavior:
 
-Release bundles include:
+- inputs
+- return type
+- failure channel
+- operational impurity
 
-- `bin/kiro`
-- `toolchain/go/...`
+## Effects are operational, not fallibility
 
-That keeps `kiro build`, `kiro run`, and `kiro test` usable without separately installing `go` in downstream environments.
+Built-in effects are intentionally small:
+
+- `!env`
+- `!fs`
+- `!io`
+- `!log`
+- `!net`
+- `!panic`
+- `!proc`
+- `!time`
+
+Pure transforms are **not** effects, even when they return `R[T,E]`:
+
+- `json.encode`
+- `json.decode`
+- `parse.i32`
 
 ## Quick start
 
 ```bash
+go build ./cmd/kiro
 ./kiro new hello
 ./kiro fmt hello
 ./kiro check hello
-./kiro build hello --out ./hello-bin
-./hello-bin
 ./kiro inspect go hello --out-dir hello/.kiro-gen
 ```
-
-## Hello world
 
 `kiro new hello` scaffolds:
 
@@ -96,129 +95,67 @@ fn main() -> i32 !io {
 }
 ```
 
-## Tiny service example
+## Canonical service shape
 
-```bash
-./kiro new service
-./kiro check service
-./kiro test service
-PORT=:8080 ./kiro run service
-```
+The service template and docs now teach a single service layout:
 
-The service template uses the canonical service shape:
+- `main.ki` owns startup and effect boundaries
+- `app/` owns request handlers
+- `internal/config/` owns environment loading
+- `test/` owns handler-level tests
 
-- `main.ki` for wiring and effect boundaries
-- `internal/config` for environment loading
-- `app` for request handlers
-- `test/` for handler-level tests
+See:
 
-## Canonical language rules
-
-### Functions use block bodies only
-
-```ki
-fn add(a:i32, b:i32) -> i32 {
-  return a + b
-}
-```
-
-Expression-bodied functions were removed to make control flow explicit and formatter output canonical.
-
-### Effects are operational, not fallibility
-
-```ki
-fn load() -> R[Config, str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(Config{port:port})
-}
-```
-
-`json.encode`, `json.decode`, and `parse.i32` are pure even though they return `R[...]`.
-
-### Result, optional, and absence stay separate
-
-```ki
-fn parse_port(raw:str) -> R[i32, str] {
-  return parse.i32(raw)
-}
-
-fn maybe_name(req:http.Req) -> ?str {
-  return http.query(req, "name")
-}
-```
-
-- `R[T,E]` means failure is possible
-- `?` propagates an `R[T,E]`
-- `?T` means the value may be absent
-- `nil` belongs only in optional contexts
-
-### Structured concurrency is explicit
-
-```ki
-group {
-  let ta = spawn fetch_a()
-  let tb = spawn fetch_b()
-  let a = await ta
-  let b = await tb
-  return Ok(http.json(200, json.encode(Resp{a:a b:b})?))
-}
-```
-
-`group` is the preferred pattern because task lifecycles remain local and visible.
+- `docs/project_layout.md`
+- `docs/service_structure.md`
+- `docs/testing_services.md`
+- `docs/http_json.md`
 
 ## CLI commands
 
 ```bash
 ./kiro fmt <paths...>
 ./kiro check <entry-or-path>
+./kiro inspect go <entry-or-path> [--out-dir <dir>]
 ./kiro build <entry-or-path> [--out <file>] [--keep-gen]
 ./kiro run <entry-or-path> [--keep-gen] [-- <program args...>]
 ./kiro test <entry-or-path> [--keep-gen]
 ./kiro compat [root] [--mode fmt,check,inspect]
-./kiro inspect go <entry-or-path> [--out-dir <dir>]
 ./kiro new <hello|service>
 ./kiro lsp
 ```
 
-## Generated Go and debugging
+## Compatibility and generated Go
 
-Kiro keeps generated Go first-class:
+Kiro treats both as first-class trust mechanisms:
 
-- `kiro inspect go <entry>` writes an inspectable backend view
-- `kiro build/run/test --keep-gen` preserve the generated standalone workdir
-- `docs/debugging_generated_go.md` explains when to use each path
+- compatibility fixtures protect the **new canonical language**, not old accidental syntax
+- `kiro inspect go` keeps lowering visible and debuggable
 
-## Docs index
+## Documentation map
 
 ### Language
 
-- `docs/language_tour.md`
-- `docs/syntax-overview.md`
 - `docs/design_principles.md`
-- `docs/effects.md`
-- `docs/concurrency.md`
 - `docs/stable_core.md`
-- `docs/limitations.md`
+- `docs/language_tour.md`
+- `docs/effects.md`
+- `docs/stdlib_style.md`
 
-### Projects and services
+### Projects
 
 - `docs/project_layout.md`
 - `docs/service_structure.md`
-- `docs/http_json.md`
-- `docs/config.md`
 - `docs/testing.md`
 - `docs/testing_services.md`
-- `docs/examples.md`
+- `docs/http_json.md`
 
-### Tooling and process
+### Rationale and process
 
-- `docs/compatibility.md`
-- `docs/editor_setup.md`
-- `docs/debugging_generated_go.md`
-- `docs/stdlib_style.md`
 - `docs/why_kiro_for_llms.md`
-- `docs/llm_optimization_pass.md`
-- `LLM_OPTIMIZATION_NOTES.md`
+- `docs/compatibility.md`
+- `docs/migration.md`
+- `LLM_REDESIGN_NOTES.md`
 
 ## Development checks
 

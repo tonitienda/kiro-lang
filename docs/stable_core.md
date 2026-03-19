@@ -1,27 +1,29 @@
 # Stable core
 
-The stable core is intentionally narrow.
+The stable core is the intentionally small language slice that Kiro currently treats as canonical.
 
-## Included
+## Included in the stable core
 
-- deterministic lexer/parser/formatter behavior for the documented syntax
+- deterministic lexer, parser, and formatter behavior
+- module/import loading for the documented project layout
 - block-only function declarations
-- explicit effects in signatures
-- explicit result/optional separation
+- explicit operational effects in function signatures
+- `R[T,E]`, `?`, `?T`, and `nil` as separate concepts
 - structured concurrency with `group`, `spawn`, and `await`
-- predictable project/module resolution
-- canonical CLI workflow: `fmt`, `check`, `inspect go`, `build`, `run`, `test`, `new`, `compat`, `lsp`
-- generated-Go visibility as part of the workflow
+- generated-Go inspection with `kiro inspect go`
+- compatibility fixtures for formatter, checking, diagnostics, and inspectability
 
-## Protected by the repository
+## Stable-core style rules
 
-- Go tests across parser/formatter/project/build/LSP layers
-- compatibility fixtures
-- examples and template verification
-- formatter idempotence through compatibility checks
+- use one function style: `fn name(params) -> type !effects { ... }`
+- prefer thin impure shells around pure inner logic
+- keep handlers on `fn handler(req:http.Req) -> R[http.Resp,str]`
+- keep config loading in dedicated `internal/config` modules
+- keep tests in explicit `test_*` functions
 
-## Intentionally not promised
+## Not promised yet
 
 - a frozen generated-Go API
-- broad runtime coverage for every experimental example
-- effect polymorphism or large-scale type inference
+- effect polymorphism
+- broad inference-heavy typing
+- multiple competing project styles
