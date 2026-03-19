@@ -9,6 +9,8 @@
 
 ## Preserved assumptions
 
-- `kiro inspect go` remains the debugging backstop for runtime/codegen issues
+- `kiro inspect go` remains the debugging backstop for runtime/codegen issue
+- release packaging should not introduce editor-specific forks of compiler behavior
+- tagged release automation now requires explicit workflow `contents: write` permission so CLI bundles can publish to GitHub Releases without manual intervention
 - LSP still depends on the same parser and formatter, not a second frontend
 - editor tooling continues to surface explicit function effects
