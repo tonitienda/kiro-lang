@@ -8,12 +8,13 @@
 - diagnostics now use a more repair-oriented shape for missing effects, pseudo-effects, and unresolved imports
 - editor setup docs remain valid because syntax changes were normalized in the shared parser/formatter layers
 - release bundles and the installer now carry `kiro-lsp` alongside `kiro` so downstream editor setup can pin one release version
+- the VS Code client now treats `kiro lsp` as the primary production entrypoint and packages as a release `.vsix` for normal users
 - scaffolded projects now vendor a `.kiro/skill/` snapshot, root `AGENTS.md`, and `.kiro/version.json` so downstream repos can hand editors/LLMs a repo-local, version-pinned language bundle with an explicit Codex/agent entry point
 
 ## Preserved assumptions
 
 - `kiro inspect go` remains the debugging backstop for runtime/codegen issue
 - release packaging should not introduce editor-specific forks of compiler behavior
-- tagged release automation now requires explicit workflow `contents: write` permission so CLI bundles and checksum assets can publish to GitHub Releases without manual intervention
+- tagged release automation now requires explicit workflow `contents: write` permission so CLI bundles, the packaged VS Code `.vsix`, and checksum assets can publish to GitHub Releases without manual intervention
 - LSP still depends on the same parser and formatter, not a second frontend
 - editor tooling continues to surface explicit function effects

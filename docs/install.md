@@ -30,7 +30,7 @@ The installer:
 - downloads the release checksum file
 - verifies the target artifact checksum
 - installs `kiro`
-- installs `kiro-lsp` when present in the bundle
+- installs `kiro-lsp` when present in the bundle for compatibility with existing tooling
 - installs the bundled Go toolchain next to the chosen binary directory so `kiro build`, `kiro run`, and `kiro test` keep working from a release install
 
 ## Supported platforms
@@ -53,8 +53,9 @@ Release assets follow a boring predictable shape:
 - `kiro-vX.Y.Z-darwin-amd64.tar.gz`
 - `kiro-vX.Y.Z-darwin-arm64.tar.gz`
 - `kiro-vX.Y.Z-checksums.txt`
+- `kiro-vscode-vX.Y.Z.vsix`
 
-The installer resolves the current platform to one of those names.
+The installer resolves the current platform to one of the tarball names, and the matching `.vsix` is the normal VS Code install artifact.
 
 ## Installed layout
 
@@ -91,3 +92,15 @@ cat hello/AGENTS.md
 - `--version latest` is accepted as a convenience, but explicit tags are preferred for reproducible CI.
 - release installs are for consumers; building Kiro itself from source still requires Go.
 - `kiro new` from an installed release vendors a project-local skill snapshot and root `AGENTS.md`, both pinned to that installed Kiro version.
+
+
+## Install the VS Code extension
+
+For VS Code, the normal user workflow is separate from the CLI bundle:
+
+1. install `kiro` with the release installer
+2. download the matching `kiro-vscode-vX.Y.Z.vsix` release asset
+3. in VS Code, choose **Extensions → Install from VSIX...**
+4. open a Kiro project or any folder with `.ki` files
+
+The VS Code extension starts the language server through `kiro lsp`. Normal users do not need to know about `kiro-lsp`, `KIRO_LSP_BIN`, or the extension source tree.
