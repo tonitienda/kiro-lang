@@ -7,14 +7,13 @@ type CreateReq {
   name:str
 }
 
-fn app(req:httpReq) -> Resp {
+fn app(req:http.Req) -> R[http.Resp,str] {
   when req.path
-    "/items" => {
-      let body = req.body
-      let input = json.decode[CreateReq](body)?
-      return Ok(http.json(200, json.encode(input)?))
-    }
-    _ => {
-      return Ok(http.not_found())
-    }
+  "/items" => {
+  let input = json.decode [ CreateReq ] ( req.body ) ?
+  return Ok ( http.json ( 200 , json.encode ( input ) ? ) )
+  }
+  _ => {
+  return Ok ( http.not_found ( ) )
+  }
 }

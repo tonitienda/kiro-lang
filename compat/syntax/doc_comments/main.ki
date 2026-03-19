@@ -9,10 +9,10 @@ type Pair {
   right:str
 }
 
-/// join is expression body for parser coverage.
-fn join(a:str, b:str) -> str =
-  "${a}-${b}"
-
+/// join uses the canonical block body style.
+fn join(a:str, b:str) -> str {
+  return "${a}-${b}"
+}
 
 fn main() -> i32 !io {
   println ( join ( AppName , "doc" ) )

@@ -1,9 +1,9 @@
 mod main
 
 /// greet returns a greeting.
-fn greet(name:str) -> str =
-  "hello ${name}"
-
+fn greet(name:str) -> str {
+  return "hello ${name}"
+}
 
 fn main() -> i32 !io {
   println ( greet ( "toni" ) )

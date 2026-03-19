@@ -1,8 +1,8 @@
-# Concurrency with `group`, `spawn`, `await`
+# Concurrency with `group`, `spawn`, and `await`
 
-Kiro concurrency stays explicit.
+Kiro keeps concurrency explicit and local.
 
-## Recommended pattern
+## Canonical pattern
 
 ```ki
 group {
@@ -11,16 +11,33 @@ group {
 
   let a = await ta
   let b = await tb
+
   return Ok(http.json(200, json.encode(Resp{a:a b:b})?))
 }
 ```
 
-Guidelines:
+## Preferred rules
 
-- Spawn related work in a single `group` scope.
-- Await every spawned task before leaving the group.
-- Prefer small fan-out/fan-in over deep task trees.
-- When request context exists, pass it explicitly into worker calls.
+- use `group` for structured concurrent work
+- spawn related work together
+- await every spawned task explicitly
+- keep task lifetimes inside the nearest readable block
 
+## Why this style is preferred
 
-Note: `json.encode`/`json.decode` remain pure in Kiro v1; they do not require an effect declaration by themselves.
+This style makes the task lifecycle visible to readers and to LLMs:
+
+- creation is explicit: `spawn`
+- synchronization is explicit: `await`
+- scope is explicit: `group`
+
+## Diagnostics
+
+Kiro now uses actionable diagnostics when `await` is used on a non-task and points users toward `spawn`.
+
+## Relationship to effects and results
+
+- concurrency is **not** the same concept as effects
+- `spawn`/`await` do not replace `R[T,E]`
+- pure functions may still be concurrent
+- `json.encode`/`json.decode` remain pure inside concurrent code

@@ -34,6 +34,64 @@ fn main() -> i32 !io {
 	}
 }
 
+func TestBuildRunReportsInvalidResultUnwrap(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "main.ki"), `mod main
+
+fn value() -> i32 {
+  return 1
+}
+
+fn main() -> i32 {
+  let n = value()?
+  return n
+}
+`)
+	out := filepath.Join(dir, binaryName("bad-unwrap"))
+	result, err := Build(Options{Entry: dir, Out: out, Mode: ModeBuild})
+	if err != nil {
+		t.Fatalf("Build() error = %v", err)
+	}
+	defer os.RemoveAll(result.WorkDir)
+	run := exec.Command(out)
+	output, err := run.CombinedOutput()
+	if err == nil {
+		t.Fatalf("expected runtime failure, got success: %s", output)
+	}
+	if !strings.Contains(string(output), "invalid ? on non-result value") {
+		t.Fatalf("runtime output = %q", string(output))
+	}
+}
+
+func TestBuildRunReportsAwaitHint(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "main.ki"), `mod main
+
+fn value() -> i32 {
+  return 1
+}
+
+fn main() -> i32 {
+  let n = await value()
+  return n
+}
+`)
+	out := filepath.Join(dir, binaryName("bad-await"))
+	result, err := Build(Options{Entry: dir, Out: out, Mode: ModeBuild})
+	if err != nil {
+		t.Fatalf("Build() error = %v", err)
+	}
+	defer os.RemoveAll(result.WorkDir)
+	run := exec.Command(out)
+	output, err := run.CombinedOutput()
+	if err == nil {
+		t.Fatalf("expected runtime failure, got success: %s", output)
+	}
+	if !strings.Contains(string(output), "await requires a spawned task") || !strings.Contains(string(output), "call spawn first") {
+		t.Fatalf("runtime output = %q", string(output))
+	}
+}
+
 func binaryName(base string) string {
 	if runtime.GOOS == "windows" {
 		return base + ".exe"

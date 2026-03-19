@@ -3,18 +3,18 @@ mod main
 import http
 import test
 
-fn app(req:httpReq) -> Resp {
+fn app(req:http.Req) -> R[http.Resp,str] {
   when req.path
-    "/health" => {
-      return Ok(http.text(200, "ok"))
-    }
-    _ => {
-      return Ok(http.text(404, "not found"))
-    }
+  "/health" => {
+  return Ok ( http.text ( 200 , "ok" ) )
+  }
+  _ => {
+  return Ok ( http.not_found ( ) )
+  }
 }
 
 fn test_health_handler() -> nil {
-  let req = http.test_req("GET", "/health", "")
-  let res = app(req)?
-  test.eq(res.code, 200)
+  let req = http.test_req ( "GET" , "/health" , "" )
+  let res = app ( req ) ?
+  test.eq ( res.code , 200 )
 }

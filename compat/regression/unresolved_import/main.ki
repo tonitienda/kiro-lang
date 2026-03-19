@@ -2,4 +2,6 @@ mod main
 
 import does/not/exist
 
-fn main() -> i32 = 0
+fn main() -> i32 {
+  return 0
+}

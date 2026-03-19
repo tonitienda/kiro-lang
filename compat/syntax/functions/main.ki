@@ -1,8 +1,8 @@
 mod main
 
-fn add(a:i32, b:i32) -> i32 =
-  a + b
-
+fn add(a:i32, b:i32) -> i32 {
+  return a + b
+}
 
 fn main() -> i32 !io {
   let x = add ( 1 , 2 )

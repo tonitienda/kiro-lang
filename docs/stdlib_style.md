@@ -1,62 +1,62 @@
-# Stdlib API style guide (Phase 9)
+# Stdlib style
 
-This document defines naming and shape conventions for Kiro stdlib modules.
+Kiro's stdlib surface is intentionally small and regular.
 
-## Goals
-
-- Keep common operations predictable across modules.
-- Prefer small, explicit APIs over many aliases.
-- Preserve backwards compatibility unless a cleanup materially improves clarity.
-
-## Module surface conventions
-
-Applies to: `env`, `parse`, `http`, `json`, `log`, `test`, `fs`, `ctx`, and task/concurrency helpers.
+## Core rules
 
 ### Naming
 
-- Use short lower_snake names (`get`, `get_or`, `require`, `must`) instead of near-duplicates.
-- Prefer verb-first function names for effects (`read_text`, `write_text`, `with_header`).
-- Keep booleans explicit (`ok_json`, `not_found`, `bad_request` are action/result names, not ambiguous toggles).
+- prefer short lower_snake names
+- prefer one public name per operation
+- remove aliases that do not pay for themselves
 
-### Argument order
+### Effects
 
-- Prefer **primary input first**, then options/config, then context-like values.
-- For helpers that mutate/build a value, put the base value first:
-  - `with_header(resp, key, value)`
-  - `with_query(req, key, value)`
+Operational APIs carry effects; pure transforms do not.
 
-### Error/result shape
+Examples:
 
-- Use `R[T,E]` for fallible operations where callers may recover.
-- Reserve `must_*` for crash-on-error convenience wrappers.
-- Keep paired APIs aligned:
-  - `get` -> optional/maybe style
-  - `require` -> `R[T,E]` with descriptive error
-  - `must` -> panic/abort behavior
+- `env.get_or` -> `!env`
+- `fs.read_file` -> `!fs`
+- `http.serve` -> `!net`
+- `log.info` -> `!log`
+- `json.encode` -> pure `R[T,E]`
+- `parse.i32` -> pure `R[T,E]`
 
-### Output helpers
+### Result and optional shape
 
-- `print` means no newline.
-- `println` means trailing newline.
-- `json` and `text` response constructors should have consistent defaults per module docs.
+- use `R[T,E]` for recoverable failure
+- use `?T` for optional values
+- use `nil` only for optional absence
 
-## Compatibility + deprecation policy
+## Canonical module notes
 
-Phase 9 uses a **documented deprecation policy** (without compiler warnings yet):
+### `env`
 
-1. Keep deprecated names as aliases for at least one phase.
-2. Mark deprecations in docs and phase notes.
-3. Update examples/templates to preferred names immediately.
-4. Remove aliases only in a later phase with explicit migration notes.
+- `get_or(key, default)` is the defaulted configuration path
+- environment access is always `!env`
 
-If warnings are added later, they should start with stdlib aliases only and remain opt-out-free (always visible) until a warning configuration story exists.
+### `fs`
 
-## Review checklist for stdlib changes
+- prefer `read_file(path)`
+- prefer `write_file(path, body)`
+- `fs.read` has been removed from the canonical surface
 
-When changing a stdlib module:
+### `http`
 
-- Is the name aligned with existing module vocabulary?
-- Is argument ordering consistent with similar helpers?
-- Is return shape (`T`, `?T`, `R[T,E]`) justified and documented?
-- Are docs/examples/tests updated together?
-- If a rename occurred, is alias + migration note present?
+- handlers should use `fn handler(req:http.Req) -> R[http.Resp, str]`
+- prefer `http.text`, `http.json`, `http.not_found`, and `http.with_header`
+- prefer direct handler testing with `http.test_req`
+
+### `json`
+
+- `encode` and `decode` are pure
+- JSON does not imply an effect declaration by itself
+
+### `log`
+
+- log calls are operational and require `!log`
+
+### `test`
+
+- use `test.eq` for simple direct assertions in canonical examples

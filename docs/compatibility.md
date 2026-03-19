@@ -1,79 +1,30 @@
-# Compatibility policy and corpus
+# Compatibility corpus
 
-Kiro maintains a repository-owned compatibility corpus under `compat/`.
+Kiro uses compatibility fixtures to protect the intended core language and workflow.
 
-## Fixture categories
+## What the corpus is for
 
-```text
-compat/
-  syntax/
-  cli/
-  services/
-  stdlib/
-  templates/
-  regression/
-  concurrency/
-```
+Fixtures are used to protect:
 
-Phase 10 compatibility categories:
+- canonical formatting
+- parser + project loading behavior
+- diagnostics for important mistakes
+- template shape
+- inspect-go/codegen regressions
 
-- **Stable-core fixtures**
-  - currently: `syntax/`, `cli/`, `services/`, `stdlib/`, `templates/`
-  - strongest source-compatibility promise
-- **Compatibility fixtures**
-  - long-lived behavior guards that are still expected to evolve occasionally
-- **Regression-only fixtures**
-  - currently: `regression/`
-  - lock bug fixes and diagnostic regressions
-- **Diagnostics fixtures**
-  - typically represented via `fixture.json` with `expect_success=false` + `error_contains`
-- **Template fixtures**
-  - currently: `templates/`
-  - protect `kiro new` output shape and checks
-- **Codegen fixtures**
-  - fixtures using `inspect_go`/`expected_modules` assertions
-- **Experimental fixtures**
-  - currently: `concurrency/`
-  - valuable, but allowed to evolve faster while semantics mature
+## Current fixture themes
 
-## Fixture metadata
+The repository is converging on these categories:
 
-Optional `fixture.json` fields:
+- `compat/syntax/` — stable core syntax
+- `compat/services/` — canonical service shapes
+- `compat/templates/` — `kiro new` outputs
+- `compat/cli/` — inspect-go and CLI workflow checks
+- `compat/concurrency/` — structured concurrency patterns
+- `compat/diagnostics/` and `compat/regression/` — repair-focused failures and regressions
 
-- `expect_success`
-- `error_contains`
-- `modes`
-- `inspect_go`
-- `expected_modules`
-- `entry`
+## Optimization-pass focus
 
-## Running the corpus
+The corpus now prioritizes the **new canonical core**, not preservation of every historical syntax form.
 
-```bash
-kiro compat
-```
-
-or scoped:
-
-```bash
-kiro compat compat/regression --mode check
-```
-
-## Intentional updates
-
-When intentionally changing fixture behavior:
-
-1. Update fixture source/metadata.
-2. Keep category intent clear (stable-core vs regression vs experimental).
-3. Update `PHASE10_NOTES.md` (or current active phase notes) with rationale and migration impact.
-4. Update docs/templates/examples if user-visible behavior changed.
-
-## What compatibility protects
-
-The corpus validates:
-
-- formatter idempotence on `.ki` files
-- parser/project load and module resolution
-- explicit effect declaration parsing and call-site enforcement
-- optional inspect-go emission checks
-- expected diagnostics for failure fixtures
+That means obsolete forms should move into diagnostics fixtures only when they still help repair loops.

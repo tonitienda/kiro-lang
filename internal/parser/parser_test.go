@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/kiro-lang/kiro/internal/ast"
@@ -18,8 +19,9 @@ type Resp {
   body:?str
 }
 
-fn main() -> i32 =
-  0
+fn main() -> i32 {
+  return 0
+}
 `
 	file, err := Parse(src)
 	if err != nil {
@@ -84,8 +86,9 @@ type User {
   name:str
 }
 
-fn (u:User) display() -> ?str =
-  u.name
+fn (u:User) display() -> ?str {
+  return u.name
+}
 `
 	file, err := Parse(src)
 	if err != nil {
@@ -133,8 +136,9 @@ func TestParseDocCommentOnFunc(t *testing.T) {
 	src := `mod main
 
 /// greet returns a greeting.
-fn greet(name:str) -> str =
-  "hello ${name}"
+fn greet(name:str) -> str {
+  return "hello ${name}"
+}
 `
 	file, err := Parse(src)
 	if err != nil {
@@ -164,8 +168,9 @@ import env
 func TestParseGenericTypeRef(t *testing.T) {
 	src := `mod main
 
-fn load() -> R[Config,str] =
-  Ok(Config{})
+fn load() -> R[Config,str] {
+  return Ok(Config{})
+}
 `
 	file, err := Parse(src)
 	if err != nil {
@@ -177,5 +182,40 @@ fn load() -> R[Config,str] =
 	}
 	if fd.ReturnType != "R[Config,str]" {
 		t.Fatalf("return type = %q", fd.ReturnType)
+	}
+}
+
+func TestParseQualifiedTypeRef(t *testing.T) {
+	src := `mod main
+
+fn handler(req:http.Req) -> R[http.Resp,str] {
+  return Ok(http.not_found())
+}
+`
+	file, err := Parse(src)
+	if err != nil {
+		t.Fatalf("Parse() error = %v", err)
+	}
+	fd := file.Decls[0].(ast.FuncDecl)
+	if fd.Params[0].Type != "http.Req" {
+		t.Fatalf("param type = %q", fd.Params[0].Type)
+	}
+	if fd.ReturnType != "R[http.Resp,str]" {
+		t.Fatalf("return type = %q", fd.ReturnType)
+	}
+}
+
+func TestParseRejectsExpressionBodyFunctions(t *testing.T) {
+	src := `mod main
+
+fn main() -> i32 =
+  0
+`
+	_, err := Parse(src)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if got := err.Error(); got == "" || !strings.Contains(got, "expression-bodied functions were removed") {
+		t.Fatalf("unexpected error = %q", got)
 	}
 }

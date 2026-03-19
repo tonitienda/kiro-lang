@@ -1,6 +1,9 @@
 package format
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestSource(t *testing.T) {
 	in := `mod main
@@ -12,7 +15,7 @@ const Version="0.4"
 type Resp { code:i32
 body:?str }
 
-fn main()->i32= 0`
+fn main()->i32{return 0}`
 	out, err := Source(in)
 	if err != nil {
 		t.Fatalf("Source() error = %v", err)
@@ -28,8 +31,9 @@ type Resp {
   body:?str
 }
 
-fn main() -> i32 =
-  0
+fn main() -> i32 {
+  return 0
+}
 `
 	if out != want {
 		t.Fatalf("unexpected format:\n%s", out)
@@ -101,7 +105,7 @@ func TestSource_DocComment(t *testing.T) {
 	in := `mod main
 
 ///greet returns a greeting.
-fn greet(name:str)->str= "hello ${name}"`
+fn greet(name:str)->str{return "hello ${name}"}`
 	out, err := Source(in)
 	if err != nil {
 		t.Fatalf("Source() error = %v", err)
@@ -109,10 +113,24 @@ fn greet(name:str)->str= "hello ${name}"`
 	want := `mod main
 
 /// greet returns a greeting.
-fn greet(name:str) -> str =
-  "hello ${name}"
+fn greet(name:str) -> str {
+  return "hello ${name}"
+}
 `
 	if out != want {
 		t.Fatalf("unexpected format:\n%s", out)
+	}
+}
+
+func TestSource_RejectsExpressionBodyFunctions(t *testing.T) {
+	in := `mod main
+
+fn main() -> i32 = 0`
+	_, err := Source(in)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if got := err.Error(); got == "" || !strings.Contains(got, "expression-bodied functions were removed") {
+		t.Fatalf("unexpected error: %q", got)
 	}
 }

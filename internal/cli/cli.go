@@ -336,7 +336,7 @@ fn main() -> i32 !env !log !net {
 
 import http
 
-fn handler(req:httpReq) -> Resp {
+fn handler(req:http.Req) -> R[http.Resp, str] {
   when req.path
     "/health" => {
       return Ok(http.text(200, "ok"))

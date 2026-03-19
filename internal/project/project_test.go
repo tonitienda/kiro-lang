@@ -13,7 +13,9 @@ func TestLoadResolvesImportsByModuleName(t *testing.T) {
 
 import util
 
-fn main() -> i32 = 0
+fn main() -> i32 {
+  return 0
+}
 `)
 	mustWrite(t, filepath.Join(dir, "util.ki"), `mod util
 
@@ -145,6 +147,22 @@ fn main() -> i32 {
 		t.Fatalf("expected error")
 	}
 	if !strings.Contains(err.Error(), `requires effect "!io"`) {
+		t.Fatalf("diagnostic = %q", err)
+	}
+}
+
+func TestLoadRejectsExpressionBodyFunctions(t *testing.T) {
+	dir := t.TempDir()
+	mustWrite(t, filepath.Join(dir, "main.ki"), `mod main
+
+fn main() -> i32 =
+  0
+`)
+	_, err := Load(dir)
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "expression-bodied functions were removed") {
 		t.Fatalf("diagnostic = %q", err)
 	}
 }

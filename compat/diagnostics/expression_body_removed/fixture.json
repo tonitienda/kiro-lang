@@ -1,0 +1,5 @@
+{
+  "modes": ["check"],
+  "expect_success": false,
+  "error_contains": "expression-bodied functions were removed"
+}
