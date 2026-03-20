@@ -60,7 +60,7 @@ From the repository root:
 ./scripts/package_vscode_extension.sh v0.1.0
 ```
 
-That produces a normal installable artifact such as `dist/kiro-vscode-v0.1.0.vsix`.
+That produces a normal installable artifact such as `dist/kiro-vscode-v0.1.0.vsix`. When the label is a tagged release like `v0.1.0`, the packaging step stamps the packaged extension manifest version from that tag before writing the `.vsix`.
 
 For a release-quality smoke check, run:
 

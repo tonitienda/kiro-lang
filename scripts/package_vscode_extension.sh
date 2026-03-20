@@ -13,12 +13,32 @@ EXT_DIR="${REPO_ROOT}/editors/vscode"
 PACKAGE_JSON="${EXT_DIR}/package.json"
 OUTPUT_FILE="${REPO_ROOT}/${DIST_DIR}/kiro-vscode-${VERSION_LABEL}.vsix"
 MANIFEST_VERSION="$(node -p "require('${PACKAGE_JSON}').version")"
+PACKAGE_SOURCE_DIR="${EXT_DIR}"
+TEMP_DIR=""
+
+cleanup() {
+  if [[ -n "${TEMP_DIR}" && -d "${TEMP_DIR}" ]]; then
+    rm -rf "${TEMP_DIR}"
+  fi
+}
+
+trap cleanup EXIT
 
 if [[ "${VERSION_LABEL}" == v* ]]; then
   EXPECTED_VERSION="${VERSION_LABEL#v}"
   if [[ "${MANIFEST_VERSION}" != "${EXPECTED_VERSION}" ]]; then
-    echo "extension manifest version ${MANIFEST_VERSION} does not match release label ${VERSION_LABEL}" >&2
-    exit 1
+    TEMP_DIR="$(mktemp -d)"
+    PACKAGE_SOURCE_DIR="${TEMP_DIR}/vscode"
+    cp -R "${EXT_DIR}" "${PACKAGE_SOURCE_DIR}"
+    node -e '
+      const fs = require("fs");
+      const path = process.argv[1];
+      const version = process.argv[2];
+      const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
+      pkg.version = version;
+      fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + "\n");
+    ' "${PACKAGE_SOURCE_DIR}/package.json" "${EXPECTED_VERSION}"
+    echo "overriding extension manifest version ${MANIFEST_VERSION} with release label ${VERSION_LABEL}" >&2
   fi
 fi
 
@@ -26,6 +46,6 @@ mkdir -p "${REPO_ROOT}/${DIST_DIR}"
 
 node "${REPO_ROOT}/scripts/verify_vscode_manifest.js"
 node "${REPO_ROOT}/scripts/verify_vscode_lsp_entrypoint.js"
-python3 "${REPO_ROOT}/scripts/build_vsix.py" "${EXT_DIR}" "${OUTPUT_FILE}"
+python3 "${REPO_ROOT}/scripts/build_vsix.py" "${PACKAGE_SOURCE_DIR}" "${OUTPUT_FILE}"
 
 echo "created ${OUTPUT_FILE}"
