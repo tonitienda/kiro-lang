@@ -4,13 +4,13 @@
   "description": "Installable VS Code support for Kiro with syntax highlighting, diagnostics, hover, definitions, symbols, completion, and formatting via `kiro lsp`.",
   "version": "0.1.0",
   "publisher": "kiro-lang",
-  "homepage": "https://github.com/kiro-lang/kiro",
+  "homepage": "https://github.com/tonitienda/kiro-lang",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kiro-lang/kiro.git"
+    "url": "https://github.com/tonitienda/kiro-lang.git"
   },
   "bugs": {
-    "url": "https://github.com/kiro-lang/kiro/issues"
+    "url": "https://github.com/tonitienda/kiro-lang/issues"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -76,9 +76,9 @@
     }
   },
   "scripts": {
-    "lint:manifest": "node -e \"const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); if(pkg.name!=='kiro-vscode') throw new Error('unexpected package name'); if(!pkg.contributes?.configuration?.properties?.['kiro.lsp.path']) throw new Error('missing kiro.lsp.path setting'); console.log('manifest ok')\"",
+    "lint:manifest": "node ../../scripts/verify_vscode_manifest.js",
     "package:vsix": "python3 ../../scripts/build_vsix.py . ../../dist/kiro-vscode-local.vsix",
-    "verify:lsp-entrypoint": "node -e \"const fs=require('fs'); const src=fs.readFileSync('extension.js','utf8'); if(!/command: 'kiro'/.test(src) || !/args: \\\\['lsp'\\\\]/.test(src)) throw new Error('default kiro lsp entrypoint missing'); console.log('lsp entrypoint ok')\""
+    "verify:lsp-entrypoint": "node ../../scripts/verify_vscode_lsp_entrypoint.js"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"

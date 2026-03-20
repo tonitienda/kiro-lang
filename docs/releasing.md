@@ -74,7 +74,7 @@ For a packaging smoke test plus doc/workflow validation:
 ./scripts/verify_vscode_extension.sh v0.1.0
 ```
 
-The packaged artifact is written to `dist/kiro-vscode-v0.1.0.vsix`.
+The packaged artifact is written to `dist/kiro-vscode-v0.1.0.vsix`. The packaging path now runs repository-local Node verification scripts directly instead of shelling through `npm run`, which keeps GitHub Actions release jobs insulated from npm user-config quirks while still validating manifest metadata and the `kiro lsp` entrypoint.
 
 ## Validate a release bundle locally
 

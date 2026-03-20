@@ -44,7 +44,7 @@ From the repository root:
 ./scripts/package_vscode_extension.sh v0.1.0
 ```
 
-That writes `dist/kiro-vscode-v0.1.0.vsix`.
+That writes `dist/kiro-vscode-v0.1.0.vsix`. The packaging script validates the extension manifest and `kiro lsp` entrypoint with repository-local Node checks before building the archive, so CI does not depend on `npm run` behavior.
 
 ## Development notes
 

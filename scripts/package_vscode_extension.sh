@@ -24,10 +24,8 @@ fi
 
 mkdir -p "${REPO_ROOT}/${DIST_DIR}"
 
-pushd "${EXT_DIR}" >/dev/null
-npm run lint:manifest
-npm run verify:lsp-entrypoint
+node "${REPO_ROOT}/scripts/verify_vscode_manifest.js"
+node "${REPO_ROOT}/scripts/verify_vscode_lsp_entrypoint.js"
 python3 "${REPO_ROOT}/scripts/build_vsix.py" "${EXT_DIR}" "${OUTPUT_FILE}"
-popd >/dev/null
 
 echo "created ${OUTPUT_FILE}"
