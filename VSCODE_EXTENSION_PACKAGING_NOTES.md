@@ -29,6 +29,7 @@ The repository now packages the VS Code extension with:
 
 Packaging behavior:
 
+- for tagged release labels, stamps the packaged extension manifest version from the release tag
 - validates the vendored VS Code extension runtime files under `editors/vscode/`
 - validates the extension manifest
 - validates that the default client entrypoint is `kiro lsp`

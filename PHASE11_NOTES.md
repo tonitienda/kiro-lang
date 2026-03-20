@@ -10,6 +10,7 @@
 - release bundles and the installer now carry `kiro-lsp` alongside `kiro` so downstream editor setup can pin one release version
 - the VS Code client now treats `kiro lsp` as the primary production entrypoint and packages as a release `.vsix` for normal users
 - VS Code packaging now validates manifest metadata and the `kiro lsp` entrypoint with repository-local Node scripts instead of `npm run`, reducing CI sensitivity to runner npm configuration
+- tagged VS Code release packaging now stamps the packaged extension manifest version from the release tag, avoiding CI failures when the checked-in development manifest version has already moved ahead
 - scaffolded projects now vendor a `.kiro/skill/` snapshot, root `AGENTS.md`, and `.kiro/version.json` so downstream repos can hand editors/LLMs a repo-local, version-pinned language bundle with an explicit Codex/agent entry point
 
 ## Preserved assumptions
