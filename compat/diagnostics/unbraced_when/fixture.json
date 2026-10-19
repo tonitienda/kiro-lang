@@ -1,0 +1,6 @@
+{
+  "modes": ["check"],
+  "expect_success": false,
+  "skip_fmt": true,
+  "error_contains": "when requires a delimited subject and case block"
+}

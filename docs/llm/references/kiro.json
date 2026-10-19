@@ -1,10 +1,11 @@
 {
   "language": "Kiro",
-  "version": "phase11-stable-core",
+  "version": "phase12-agent-core",
   "skill_format": "codex-skill-v1",
   "extensions": [".ki"],
   "stable_core": {
     "function_form": "block_only",
+    "case_dispatch": "when (subject) { pattern => { ... } }",
     "results": "R[T,E] with ? propagation",
     "optional": "?T with nil",
     "concurrency": ["group", "spawn", "await"],

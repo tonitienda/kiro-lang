@@ -1,7 +1,7 @@
 mod shipping
 
 fn base_price(delivery:str) -> R[i32,str] {
-  when delivery
+  when ( delivery ) {
   "standard" => {
   return Ok ( 300 )
   }
@@ -11,11 +11,12 @@ fn base_price(delivery:str) -> R[i32,str] {
   _ => {
   return Err ( "unknown delivery method" )
   }
+  }
 }
 
 fn price(delivery:str, coupon:?str) -> R[i32,str] {
   let base = base_price ( delivery ) ?
-  when coupon
+  when ( coupon ) {
   nil => {
   return Ok ( base )
   }
@@ -24,5 +25,6 @@ fn price(delivery:str, coupon:?str) -> R[i32,str] {
   }
   _ => {
   return Err ( "unknown coupon" )
+  }
   }
 }

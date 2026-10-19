@@ -2,6 +2,10 @@
 
 This file records the aggressive redesign pass that sharpens Kiro for LLM-generated and LLM-maintained code.
 
+Phase 12 revisits these design assumptions for agent-only implementation/review/audit.
+`when (subject) { ... }` is now required; see `PHASE12_NOTES.md` and
+`docs/research/agent_core_reassessment.md`. Later tagged-value/type proposals are not yet implemented.
+
 ## Redesign goals
 
 The redesign optimized for:

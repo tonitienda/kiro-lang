@@ -10,12 +10,13 @@ fn text(code:i32, body:str) -> Resp {
 }
 
 fn route(path:str) -> Resp {
-  when path
+  when (path) {
   "/health" => {
   return text ( 200 , "ok" )
   }
   _ => {
   return text ( 404 , "not found" )
+  }
   }
 }
 

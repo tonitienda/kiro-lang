@@ -134,3 +134,19 @@ fn main() -> i32 = 0`
 		t.Fatalf("unexpected error: %q", got)
 	}
 }
+
+func TestSource_PreservesLiteralContents(t *testing.T) {
+	const literal = "A  B = > C . D - > E = = F"
+	in := "mod main\n\nfn main() -> i32 !io {\n  println(\"" + literal + "\")\n  return 0\n}\n"
+	once, err := Source(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(once, "\""+literal+"\"") {
+		t.Fatalf("formatter changed a literal: %s", once)
+	}
+	twice, err := Source(once)
+	if err != nil || once != twice {
+		t.Fatalf("formatting is not idempotent: %v\n%s", err, twice)
+	}
+}

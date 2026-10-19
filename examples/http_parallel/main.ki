@@ -17,7 +17,7 @@ fn slow_b() -> str {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when (req.path) {
   "/health" => {
   let ta = spawn slow_a ( )
   let tb = spawn slow_b ( )
@@ -28,6 +28,7 @@ fn app(req:http.Req) -> R[http.Resp,str] {
   }
   _ => {
   return Ok ( http.text ( 404 , "not found" ) )
+  }
   }
 }
 

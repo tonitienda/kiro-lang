@@ -19,9 +19,9 @@ fn create_quote(req:http.Req) -> R[http.Resp,str] {
 }
 
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when ( req.path ) {
   "/health" => {
-  when req.method
+  when ( req.method ) {
   "GET" => {
   return Ok ( http.text ( 200 , "ok" ) )
   }
@@ -29,8 +29,9 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
   return Ok ( http.text ( 405 , "method not allowed" ) )
   }
   }
+  }
   "/quotes" => {
-  when req.method
+  when ( req.method ) {
   "POST" => {
   return create_quote ( req )
   }
@@ -38,7 +39,9 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
   return Ok ( http.text ( 405 , "method not allowed" ) )
   }
   }
+  }
   _ => {
   return Ok ( http.not_found ( ) )
+  }
   }
 }

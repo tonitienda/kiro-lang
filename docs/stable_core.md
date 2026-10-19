@@ -7,6 +7,7 @@ The stable core is the intentionally small language slice that Kiro currently tr
 - deterministic lexer, parser, and formatter behavior
 - module/import loading for the documented project layout
 - block-only function declarations
+- explicitly delimited case dispatch: `when (subject) { pattern => { ... } }`
 - explicit operational effects in function signatures
 - `R[T,E]`, `?`, `?T`, and `nil` as separate concepts
 - structured concurrency with `group`, `spawn`, and `await`

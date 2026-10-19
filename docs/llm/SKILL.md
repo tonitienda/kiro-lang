@@ -16,6 +16,7 @@ Use this bundle when a repository contains Kiro source files.
 ## Stable-core rules
 
 - Use block-only `fn` bodies with explicit `return`.
+- Delimit case dispatch as `when (value) { pattern => { ... } }`; the old unbraced form is rejected.
 - Declare only real operational effects: `env`, `fs`, `io`, `log`, `net`, `panic`, `proc`, `time`.
 - Use `R[T,E]` for failure, `?` only to propagate `R[T,E]`, `?T` for optionals, and `nil` only for optional or nil-capable returns.
 - Use `group`, `spawn`, and `await` for structured concurrency.

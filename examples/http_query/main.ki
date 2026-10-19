@@ -4,12 +4,13 @@ import http
 
 fn app(req:http.Req) -> R[http.Resp,str] {
   let name = http.query ( req , "name" )
-  when name
+  when (name) {
   nil => {
   return Ok ( http.text ( 200 , "hello stranger" ) )
   }
   _ => {
   return Ok ( http.text ( 200 , "hello" ) )
+  }
   }
 }
 

@@ -164,10 +164,21 @@ func (p *bodyParser) parseWhen() (*whenExpr, error) {
 	if _, err := p.expect(TokenKeyword, "when"); err != nil {
 		return nil, err
 	}
+	if _, err := p.expect(TokenSymbol, "("); err != nil {
+		return nil, fmt.Errorf("when requires a delimited subject and case block\nhint: write when (value) { pattern => { ... } }")
+	}
 	value, err := p.parseExpr(0)
 	if err != nil {
 		return nil, err
 	}
+	if _, err := p.expect(TokenSymbol, ")"); err != nil {
+		return nil, err
+	}
+	p.skipNewlines()
+	if !p.peekText("{") {
+		return nil, fmt.Errorf("when requires a delimited subject and case block\nhint: write when (value) { pattern => { ... } }")
+	}
+	p.next()
 	p.skipNewlines()
 	var cases []whenCase
 	for !p.peekText("}") && p.peek().Kind != TokenEOF {
@@ -181,6 +192,9 @@ func (p *bodyParser) parseWhen() (*whenExpr, error) {
 		}
 		cases = append(cases, c)
 		p.skipNewlines()
+	}
+	if _, err := p.expect(TokenSymbol, "}"); err != nil {
+		return nil, err
 	}
 	return &whenExpr{Value: value, Cases: cases}, nil
 }

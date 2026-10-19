@@ -17,7 +17,7 @@ fn slow_b() -> str {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when (req.path) {
   "/parallel" => {
   group {
   let ta = spawn slow_a ( )
@@ -30,6 +30,7 @@ fn app(req:http.Req) -> R[http.Resp,str] {
   }
   _ => {
   return Ok ( http.not_found ( ) )
+  }
   }
 }
 

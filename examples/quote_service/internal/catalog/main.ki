@@ -1,7 +1,7 @@
 mod catalog
 
 fn price(sku:str) -> R[i32,str] {
-  when sku
+  when ( sku ) {
   "book" => {
   return Ok ( 1500 )
   }
@@ -11,14 +11,16 @@ fn price(sku:str) -> R[i32,str] {
   _ => {
   return Err ( "unknown product" )
   }
+  }
 }
 
 fn addon_price(sku:?str) -> R[i32,str] {
-  when sku
+  when ( sku ) {
   nil => {
   return Ok ( 0 )
   }
   _ => {
   return price ( sku )
+  }
   }
 }

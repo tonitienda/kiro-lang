@@ -26,13 +26,14 @@ fn greet(name:str) -> str {
 }
 
 fn route(path:str) -> R[http.Resp, str] {
-  when path
+  when (path) {
     "/health" => {
       return Ok(http.text(200, "ok"))
     }
     _ => {
       return Ok(http.not_found())
     }
+  }
 }
 ```
 

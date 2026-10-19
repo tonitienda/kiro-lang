@@ -470,7 +470,7 @@ fn load_config() -> R[AppConfig, str] !env {
 }
 
 fn app(req:http.Req) -> R[http.Resp, str] !json {
-  when req.path
+  when (req.path) {
     "/health" => {
       let body = json.encode(Msg{status:"ok"})?
       return Ok(http.json(200, body))
@@ -478,6 +478,7 @@ fn app(req:http.Req) -> R[http.Resp, str] !json {
     _ => {
       return Ok(http.not_found())
     }
+  }
 }
 
 fn main() -> i32 !env !log !net {

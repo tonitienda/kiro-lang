@@ -1,5 +1,8 @@
 # Phase 10 Notes - Stable Core Contract
 
+Phase 12 retains these core concepts but requires explicit case delimiters,
+`when (subject) { ... }`; see `PHASE12_NOTES.md` for the breaking change.
+
 ## Core contract after the LLM-oriented simplification pass
 
 - stable-core now assumes **block-only function bodies**

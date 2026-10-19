@@ -14,12 +14,13 @@ fn main() -> i32 !io {
   break
   }
   }
-  when total
+  when (total) {
   8 => {
   println ( "ok" )
   }
   _ => {
   println ( "other" )
+  }
   }
   defer println ( "done" )
   return 0

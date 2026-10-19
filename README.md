@@ -29,6 +29,8 @@ These are design goals, not a measured advantage over existing languages. Read t
 
 The [agent-language research plan](docs/research/agent_language_iteration.md) records the current implementation audit, comparison methodology, and proposed iterations. The [multi-module quote service](examples/quote_service/README.md) is the first runnable integration example for that work.
 
+The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, and preserves literal contents during formatting. Tagged optional/unit values, exhaustive typed errors and structural agent tools remain proposals.
+
 ### Current backend boundary
 
 Runnable programs currently package a Go-hosted interpreter into a Go executable. `kiro inspect go` currently emits structural stubs, not direct typed lowering of the executable business logic. Checking, runtime semantics, and generated-Go inspection are still incomplete; see the research plan for reproducible probes and limitations.

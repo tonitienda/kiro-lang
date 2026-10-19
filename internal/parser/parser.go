@@ -279,6 +279,11 @@ func (p *Parser) collectBlockBody() (string, error) {
 	var current []string
 	for !p.isEOF() {
 		t := p.next()
+		if t.Kind == lexer.TokenKeyword && t.Text == "when" {
+			if err := p.requireWhenBlock(t); err != nil {
+				return "", err
+			}
+		}
 		if t.Kind == lexer.TokenSymbol {
 			if t.Text == "{" {
 				depth++
@@ -304,6 +309,41 @@ func (p *Parser) collectBlockBody() (string, error) {
 		current = append(current, renderToken(t))
 	}
 	return "", fmt.Errorf("unterminated block body")
+}
+
+// Function bodies are not fully parsed by this frontend yet. Validate the case
+// delimiter without claiming that this establishes body/type correctness.
+func (p *Parser) requireWhenBlock(start lexer.Token) error {
+	invalid := func() error {
+		return fmt.Errorf("%d:%d: when requires a delimited subject and case block\nhint: write when (value) { pattern => { ... } }", start.Line, start.Column)
+	}
+	if !p.peekText("(") {
+		return invalid()
+	}
+	depth := 0
+	for i := p.pos; i < len(p.tokens); i++ {
+		t := p.tokens[i]
+		if t.Kind != lexer.TokenSymbol {
+			continue
+		}
+		if t.Text == "(" {
+			depth++
+		}
+		if t.Text == ")" {
+			depth--
+			if depth == 0 {
+				i++
+				for i < len(p.tokens) && p.tokens[i].Kind == lexer.TokenNewline {
+					i++
+				}
+				if i < len(p.tokens) && p.tokens[i].Kind == lexer.TokenSymbol && p.tokens[i].Text == "{" {
+					return nil
+				}
+				return invalid()
+			}
+		}
+	}
+	return invalid()
 }
 
 func (p *Parser) parseTypeRef() (lexer.Token, error) {

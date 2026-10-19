@@ -1,5 +1,8 @@
 # Phase 11 Notes - Editor Tooling and LSP Baseline
 
+Phase 12 is now active; see `PHASE12_NOTES.md`. Existing editor/release tooling remains
+supported while the shared parser/formatter adopts the new explicit case delimiters.
+
 ## Agent-language research slice (2026-10-19)
 
 - Added `examples/quote_service/`, a seven-module integration seed with 14 domain/handler tests, without changing stable-core syntax.

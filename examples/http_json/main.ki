@@ -8,13 +8,14 @@ type Msg {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when (req.path) {
   "/health" => {
   let body = json.encode ( Msg { status : "ok" } ) ?
   return Ok ( http.json ( 200 , body ) )
   }
   _ => {
   return Ok ( http.text ( 404 , "not found" ) )
+  }
   }
 }
 

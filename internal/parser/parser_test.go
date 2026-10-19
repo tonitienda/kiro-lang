@@ -219,3 +219,31 @@ fn main() -> i32 =
 		t.Fatalf("unexpected error = %q", got)
 	}
 }
+
+func TestParseRejectsUnbracedWhen(t *testing.T) {
+	for _, body := range []string{
+		"when 1\n1 => { return 0 }\n",
+		"when 1 {\n1 => { return 0 }\n}\n",
+		"when (1)\n1 => { return 0 }\n",
+	} {
+		_, err := Parse("mod main\nfn main() -> i32 {\n" + body + "}\n")
+		if err == nil || !strings.Contains(err.Error(), "when requires a delimited subject and case block") {
+			t.Fatalf("body %q: expected migration diagnostic, got %v", body, err)
+		}
+	}
+}
+
+func TestParseBracedWhenWithContinuation(t *testing.T) {
+	_, err := Parse(`mod main
+fn main() -> i32 {
+  when (label(Box{name:"hit"})) {
+    "hit" => { println("hit") }
+    _ => { println("other") }
+  }
+  return 0
+}
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+}

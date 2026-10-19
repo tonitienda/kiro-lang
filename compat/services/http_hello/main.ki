@@ -3,12 +3,13 @@ mod main
 import http
 
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when (req.path) {
   "/" => {
   return Ok ( http.text ( 200 , "hello" ) )
   }
   _ => {
   return Ok ( http.not_found ( ) )
+  }
   }
 }
 
