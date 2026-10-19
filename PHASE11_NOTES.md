@@ -5,6 +5,7 @@
 - Added `examples/quote_service/`, a seven-module integration seed with 14 domain/handler tests, without changing stable-core syntax.
 - Added a research plan and reproducible checker/runtime probes under `docs/research/` and `scripts/probe_agent_contract.py`.
 - The audit distinguishes the Go-hosted executable interpreter from structural `inspect go` stubs and records incomplete type, JSON, result and concurrency enforcement. These findings motivate follow-up work; they do not establish an agent-performance advantage.
+- The research workflow assumes agent implementation, review, audits and creation of deterministic tools, with no required human code review. Evaluate tooling bootstrapping separately from steady-state application work, including evaluator validation and agent audit errors.
 
 ## Editor/tooling status after the simplification pass
 

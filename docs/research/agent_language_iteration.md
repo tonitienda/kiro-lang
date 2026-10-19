@@ -6,8 +6,16 @@ No comparative model runs have been performed. This document is not evidence of 
 
 ## Research question
 
-Can a small explicit language help coding agents build, understand, repair and extend
+Can a small explicit language help coding agents implement, review, audit, repair and extend
 software more reliably or cheaply than an established language with equally good guidance?
+
+For this experiment, human code review is outside the required workflow. Implementation,
+review, audits and creation of deterministic verification tools are performed by agents.
+Human source readability is not an acceptance criterion. Requirements still need an explicit
+meaning; a human requirement author or article reader is not a required code reviewer.
+
+Treat Kiro-specific tooling as something to build and evaluate, not as a mature ecosystem
+we can assume already exists. The current compiler, formatter and probes are starting points.
 
 Keeping Go as the backend is compatible with this investigation. The source language,
 compiler feedback and agent tools are the variables of interest. Native code generation
@@ -23,7 +31,9 @@ than merging every dimension into an arbitrary weighted score.
 Primary objective: maximize the fraction of tasks satisfying independent behavior and
 regression checks within a fixed time/token budget, including initial language-learning cost.
 Then compare the total cost and latency needed to reach those accepted results.
-For a deployment decision, also report the resource cost of failed attempts.
+For a deployment decision, also report the resource cost of failed attempts. The measured
+system includes implementation agents, review/audit agents and deterministic tools created
+by agents; their aggregate resource use counts toward efficiency.
 
 | Dimension | Measurement | Common misleading shortcut |
 | --- | --- | --- |
@@ -32,7 +42,8 @@ For a deployment decision, also report the resource cost of failed attempts.
 | Repairability | Failed checks, repair rounds, time to accepted fix, errors left after budget | A diagnostic that merely sounds helpful |
 | Change robustness | Acceptance at each new requirement; cumulative regressions; abandoned attempts | A successful initial implementation |
 | Context needs | Files/bytes read, retrieved tokens, documentation reads; controlled budget reductions | Shorter source automatically means less context |
-| Reviewability | Time and errors in a separate human review of intent, effects and behavior | Model self-ratings or code length |
+| Agent review and audit | Detection and localization of seeded defects; false positives; missed violations; audit tokens/time | Reviewer approval or agreement between agents |
+| Verification tooling | Tool construction/repair cost; defect detection on withheld cases; incorrect acceptance/rejection | Treating determinism as evidence that a tool is correct |
 | Runtime practicality | Separate CPU, memory, startup and binary-size measurements | Assuming a Go executable has native Go business-logic performance |
 
 Token counts depend on the actual model tokenizer and APIs. Do not equate characters,
@@ -41,6 +52,34 @@ not be exposed by every provider; record that as unavailable rather than estimat
 
 A useful Kiro result may be better reliability at equal cost, equal reliability at lower cost,
 or a clearer failure boundary. It may also be that better Go tooling supplies the same benefit.
+
+### Verification without a human code reviewer
+
+A deterministic tool gives repeatable answers; the correctness of those answers still needs
+evidence. An implementing agent, reviewing agent and agent-authored checker can share the
+same mistaken interpretation. Separate roles alone do not establish independence.
+
+- Express requirements as observable behavior and invariants before implementation.
+- Have acceptance tools authored from that specification without access to the candidate
+  implementation, then freeze them for scored runs. Keep evaluator fixtures outside the
+  implementation agent's workspace; isolate execution so it cannot modify the evaluator.
+- Challenge the evaluator with deliberately incorrect programs, boundary cases and changed
+  inputs. Report which defect classes it detects and which it misses. Withheld mutants must
+  include cases not used while building the tool; a mutation score is not a correctness proof.
+- Where practical, triangulate with separately constructed Go/reference implementations,
+  properties, metamorphic relations and exhaustive checks over bounded inputs. Agent-created
+  reference code is another fallible implementation, not an unquestioned oracle.
+- Score review/audit agents against known defects and false-alarm cases. Preserve unresolved
+  disagreements and the evidence behind decisions rather than replacing them with majority votes.
+
+This is a proposal for an automated evidence chain, not a claim that testing can prove arbitrary
+programs correct. Specify what each check establishes and leave unverified properties explicit.
+
+Without a human-review constraint, candidate interfaces can prioritize typed AST operations,
+machine-readable contracts, stable symbol identifiers, dependency/effect queries and structured
+diagnostics. A textual syntax can remain the current input format. Compare text and structural
+editing only after tools exist, and include serialization, schema-learning and repair costs;
+JSON or AST output is not automatically more token-efficient or more reliable.
 
 ## Current implementation: observed boundaries
 
@@ -155,6 +194,20 @@ Kiro must still meet the same behavior. Do not grant it custom domain helpers un
 the Go baseline. Backend/library maturity is a practical cost; label it rather than claiming
 every observed difference is caused by syntax.
 
+All three arms use agent implementation/review/audit and deterministic validation, with no
+required human source-review stage. Tool creation needs two separate accounting views:
+
+- **Bootstrapping:** start from a declared toolkit/specification and count agent effort to
+  construct, validate and repair missing tools. Existing Go tools are declared dependencies;
+  requiring agents to rebuild Go's ecosystem would answer a different question.
+- **Steady state:** pin the validated tool versions and compare subsequent application tasks.
+  Report Kiro's one-time setup cost separately, and show any amortization assumptions explicitly.
+
+The existing three arms primarily compare steady-state application work. A bootstrapping
+study is a separate experiment, with equal resource ceilings and explicit initial dependencies.
+Neither view silently grants Kiro free tools. Offline language/tool development is also distinct
+from per-run tool construction and application maintenance.
+
 Later, run within-Kiro ablations for specific ideas: diagnostic format, compact vs full docs,
 signature/context views and explicit contracts. Do not change syntax, model and tool budget
 simultaneously and then attribute the outcome to a language feature.
@@ -165,10 +218,13 @@ simultaneously and then attribute the outcome to a language feature.
 - Begin with two model configurations of different capability/cost and 3–5 independent runs per
   arm for a pilot. This estimates feasibility and variance, not a publishable general advantage.
 - Include creation, bug repair, feature extension and code explanation/audit tasks.
+- Pin reviewer/auditor configurations as well as implementation agents. Account for all roles;
+  evaluate known-defect detection and false alarms separately from application acceptance.
 - For extension tasks, each trajectory retains its own prior solution. Never substitute the
   author's reference implementation between checkpoints.
 - Freeze acceptance checks before scored runs. Keep public development tests separate from
-  withheld tests, and verify that deliberate incorrect solutions fail the evaluation.
+  withheld tests, and verify that deliberate incorrect solutions fail the evaluation. Evaluators
+  may be created by agents; their provenance and validation evidence must be recorded.
 - Give the agent only the current checkpoint requirement. Split development workloads from
   held-out evaluation workloads; use additional domains before making broad language claims.
 - Give arms the same model configuration, external interfaces, wall-time/token ceilings and
@@ -190,6 +246,8 @@ Record: run ID; task/checkpoint; arm; source/compiler/model/agent versions; rand
 supported; documentation bundle hash; budgets; first-check outcome; acceptance and regression
 outcomes; tool calls; repair rounds; wall time; input/output/reasoning usage where available;
 billed cost; files read/changed; final patch; and infrastructure/compiler/model failure category.
+Also record role-specific usage, tool-construction/repair effort, checker versions/provenance,
+validation mutants, audit true/false positives and missed defects where ground truth is known.
 
 Report final accepted-run cost distributions alongside total spend divided by accepted runs,
 so failed attempts do not disappear from the efficiency story. Do not imply an infinite-cost
@@ -202,7 +260,8 @@ zero-success arm has an ordinary numeric cost-per-success estimate.
    codes and structured diagnostics are candidates, not existing features.
 2. **Make changes local.** Test whether explicit signatures, effects and module/API summaries
    reduce retrieval and repair work. Consider an agent-facing dependency/contract query before
-   inventing another surface notation.
+   inventing another surface notation. Optimize these interfaces for agent consumers; human
+   source-review convenience is outside this experiment's objective.
 3. **Reduce accidental choice.** Preserve canonical formatting and a verified compact guide.
    Measure guide coverage and invented-API failures before shortening it further.
 4. **Tune syntax last.** Compare token counts and semantic mistakes with real tokenizers and
