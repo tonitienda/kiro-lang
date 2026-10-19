@@ -35,7 +35,11 @@ var builtinParameters = map[string][]string{
 	"http.serve":  {"addr", "handler"},
 	"json.encode": {"value"}, "json.decode": {"text"},
 	"ctx.background": {}, "ctx.with_timeout_ms": {"parent", "ms"},
-	"list.map": {"items", "transform"}, "list.filter": {"items", "predicate"}, "list.fold": {"items", "initial", "reduce"},
+	"list.map": {"items", "transform"}, "list.filter": {"items", "predicate"}, "list.reduce": {"items", "initial", "reduce"},
+	"list.mapping": {"transform"}, "list.filtering": {"predicate"},
+	"list.compose":   {"first", "then"},
+	"list.transduce": {"items", "through", "initial", "reduce"},
+	"list.collect":   {"items", "through"},
 }
 
 // ArgumentOrder validates a complete keyed call before any argument is evaluated.

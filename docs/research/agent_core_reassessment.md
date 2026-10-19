@@ -235,3 +235,8 @@ requirement may still be wrong; layer diversity and measurable coverage are the 
 The unit/optional/error proposals may break the current core. There is no requirement to
 preserve accidental prototype behavior, and no need to introduce all proposed syntax before
 its enforcement and validation tools exist.
+
+Phase 14 adds explicit typed stateless transducers and the canonical `list.reduce` name.
+Execution and error order are explicit; see `../functional-core.md` and
+`transducer_measurements.md` for memory/runtime evidence. No agent-performance advantage
+is inferred from eliminating intermediate lists.

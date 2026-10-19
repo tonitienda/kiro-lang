@@ -1,0 +1,11 @@
+mod main
+
+import list
+
+fn sum(state:i32, value:i32) -> i32 {
+  return state + value
+}
+
+fn main() -> i32 {
+  return list.fold ( items : [ ] , initial : 0 , reduce : sum )
+}

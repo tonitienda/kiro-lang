@@ -211,7 +211,11 @@ func builtinFunctionType(name string) (FunctionType, bool) {
 	switch name {
 	case "list.map", "list.filter":
 		set("List[Any]", "List[Any]", "Any")
-	case "list.fold":
+	case "list.collect":
+		set("List[Any]", "List[Any]", "Any")
+	case "list.transduce":
+		set("Any", "List[Any]", "Any", "Any", "Any")
+	case "list.reduce":
 		set("Any", "List[Any]", "Any", "Any")
 	case "print", "println":
 		set("nil", "Any")
@@ -358,10 +362,23 @@ func (rt *runtime) validateValue(v value, typ string) error {
 		}
 		return rt.validateValue(res.Value, parts[0])
 	}
+	if parts, ok := genericParts(typ, "Transform"); ok && len(parts) == 2 {
+		transform, ok := v.(*transformValue)
+		if !ok {
+			return fmt.Errorf("expected %s, got %T", typ, v)
+		}
+		if !contractAcceptsType(transform.InputType, parts[0]) || !contractAcceptsType(parts[1], transform.OutputType) {
+			return fmt.Errorf("expected %s, got Transform[%s,%s]", typ, transform.InputType, transform.OutputType)
+		}
+		return nil
+	}
 	if parts, ok := genericParts(typ, "List"); ok && len(parts) == 1 {
 		items, ok := v.([]value)
 		if !ok {
 			return fmt.Errorf("expected %s, got %T", typ, v)
+		}
+		if parts[0] == "Any" {
+			return nil
 		}
 		for _, item := range items {
 			if err := rt.validateValue(item, parts[0]); err != nil {
@@ -407,6 +424,28 @@ func (rt *runtime) validateValue(v value, typ string) error {
 
 func validateTypeContract(raw string) error {
 	raw = strings.TrimPrefix(raw, "?")
+	if raw == "Transform" {
+		return fmt.Errorf("Transform requires two types: Transform[Input,Output]")
+	}
+	if strings.HasPrefix(raw, "Transform[") {
+		parts, ok := genericParts(raw, "Transform")
+		if !ok || len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			return fmt.Errorf("Transform requires two types: Transform[Input,Output]")
+		}
+		for _, part := range parts {
+			parser, err := newBodyParser(part)
+			if err != nil {
+				return err
+			}
+			if _, err = readValueType(parser); err != nil {
+				return fmt.Errorf("invalid Transform type argument: %w", err)
+			}
+			if parser.peek().Kind != TokenEOF {
+				return fmt.Errorf("unexpected trailing tokens in Transform type argument %q", part)
+			}
+		}
+		return nil
+	}
 	if raw == "Fn" {
 		return fmt.Errorf("Fn requires a keyed signature: Fn[(value:i32)->i32]")
 	}

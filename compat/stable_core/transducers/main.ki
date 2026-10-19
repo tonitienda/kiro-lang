@@ -1,0 +1,25 @@
+mod main
+
+import list
+
+fn increment(value:i32) -> i32 {
+  return value + 1
+}
+
+fn positive(value:i32) -> bool {
+  return value > 0
+}
+
+fn sum(state:i32, value:i32) -> i32 {
+  return state + value
+}
+
+fn pipeline() -> Transform[i32,i32] {
+  return list.compose ( first : list.filtering ( predicate : positive ) , then : list.mapping ( transform : increment ) )
+}
+
+fn main() -> i32 !io {
+  let through = pipeline ( )
+  println ( value : list.transduce ( items : [ 0 , 1 , 2 ] , through : through , initial : 0 , reduce : sum ) )
+  return 0
+}

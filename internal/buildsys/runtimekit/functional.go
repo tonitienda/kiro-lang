@@ -12,7 +12,12 @@ type contractedValue struct {
 	Signature FunctionType
 }
 
-func ascribeCallable(v value, typ string) value {
+func ascribeValue(v value, typ string) value {
+	if parts, ok := genericParts(typ, "Transform"); ok && len(parts) == 2 {
+		if transform, ok := v.(*transformValue); ok {
+			return &transformValue{InputType: parts[0], OutputType: parts[1], Steps: transform.Steps}
+		}
+	}
 	if !strings.HasPrefix(typ, "Fn[") {
 		return v
 	}
@@ -138,7 +143,7 @@ func (rt *runtime) invokeCallable(callee value, args []value) (value, error) {
 	if err = rt.validateValue(result, sig.ReturnType); err != nil {
 		return nil, fmt.Errorf("return value: %w", err)
 	}
-	return ascribeCallable(result, sig.ReturnType), nil
+	return ascribeValue(result, sig.ReturnType), nil
 }
 
 func (ctx *execContext) evaluateCall(call *callExpr, partial bool) (value, error) {
@@ -305,6 +310,17 @@ func freezeValue(v value) (value, error) {
 			return nil, err
 		}
 		return &contractedValue{Target: target, Signature: x.Signature}, nil
+	case *transformValue:
+		steps := make([]transformStep, len(x.Steps))
+		for i, step := range x.Steps {
+			callback, err := freezeValue(step.Callback.Callee)
+			if err != nil {
+				return nil, err
+			}
+			steps[i] = step
+			steps[i].Callback.Callee = callback
+		}
+		return &transformValue{InputType: x.InputType, OutputType: x.OutputType, Steps: steps}, nil
 	case *partialValue:
 		target, err := freezeValue(x.Target)
 		if err != nil {
@@ -330,56 +346,26 @@ func listOperation(name string) builtinFn {
 			return nil, fmt.Errorf("list.%s expects a list", name)
 		}
 		callback := args[1]
-		if name == "fold" {
+		if name == "reduce" {
 			callback = args[2]
 		}
-		sig, err := ctx.rt.callableType(callback)
+		prepared, err := prepareListCallback(ctx.rt, callback, name == "reduce", name == "filter")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list.%s: %w", name, err)
 		}
-		if len(sig.Effects) > 0 {
-			return nil, fmt.Errorf("list.%s requires a pure callback", name)
-		}
-		keys := []string{"value"}
-		if name == "fold" {
-			keys = []string{"state", "value"}
-		}
-		params := make([]string, len(sig.Params))
-		for i, param := range sig.Params {
-			params[i] = param.Name
-		}
-		order, err := ArgumentOrder(params, keys)
-		if err != nil {
-			return nil, fmt.Errorf("list.%s callback: %w", name, err)
-		}
-		if name == "filter" && sig.ReturnType != "bool" {
-			return nil, fmt.Errorf("list.filter callback must return bool")
+		var state value
+		if name == "reduce" {
+			state = args[1]
+			if err := prepared.validateInitial(ctx.rt, state); err != nil {
+				return nil, err
+			}
 		}
 		out := []value{}
-		var state value
-		if name == "fold" {
-			state = args[1]
-			for _, parameter := range sig.Params {
-				if parameter.Name == "state" {
-					if parameter.Type != sig.ReturnType {
-						return nil, fmt.Errorf("list.fold reducer return type must match state type")
-					}
-					if err := ctx.rt.validateValue(state, parameter.Type); err != nil {
-						return nil, fmt.Errorf("list.fold initial: %w", err)
-					}
-				}
-			}
+		if name == "map" {
+			out = make([]value, 0, len(items))
 		}
 		for _, item := range items {
-			values := []value{item}
-			if name == "fold" {
-				values = []value{state, item}
-			}
-			bound := make([]value, len(order))
-			for i, index := range order {
-				bound[i] = values[index]
-			}
-			result, err := ctx.rt.invokeCallable(callback, bound)
+			result, err := prepared.invoke(ctx.rt, state, item)
 			if err != nil {
 				return nil, err
 			}
@@ -387,18 +373,14 @@ func listOperation(name string) builtinFn {
 			case "map":
 				out = append(out, result)
 			case "filter":
-				keep, ok := result.(bool)
-				if !ok {
-					return nil, fmt.Errorf("filter callback returned a non-bool")
-				}
-				if keep {
+				if result.(bool) {
 					out = append(out, item)
 				}
-			case "fold":
+			case "reduce":
 				state = result
 			}
 		}
-		if name == "fold" {
+		if name == "reduce" {
 			return state, nil
 		}
 		return out, nil

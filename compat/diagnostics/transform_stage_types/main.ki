@@ -1,0 +1,16 @@
+mod main
+
+import list
+
+fn text(value:i32) -> str {
+  return "${value}"
+}
+
+fn increment(value:i32) -> i32 {
+  return value + 1
+}
+
+fn main() -> nil {
+  list.compose ( first : list.mapping ( transform : text ) , then : list.mapping ( transform : increment ) )
+  return nil
+}

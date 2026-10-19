@@ -42,8 +42,8 @@ println(value:quote(extra:3))`, "5\n", ""},
 		{"eager_pipeline", `let up = partial add(amount:default)
 let xs = list.map(items:[1,2,3],transform:up)
 let ys = list.filter(items:xs,predicate:partial keep(minimum:3))
-println(value:list.fold(items:ys,initial:0,reduce:sum))`, "7\n", ""},
-		{"empty_fold", `println(value:list.fold(items:[],initial:9,reduce:sum))`, "9\n", ""},
+println(value:list.reduce(items:ys,initial:0,reduce:sum))`, "7\n", ""},
+		{"empty_reduce", `println(value:list.reduce(items:[],initial:9,reduce:sum))`, "9\n", ""},
 		{"latent_effect", `let output = partial show(value:3)
 output()`, "3\n", ""},
 		{"generic_partial", `let decode = partial json.decode[Box](text:"{}")
@@ -62,8 +62,8 @@ println(value:decode()?)`, "map[_type:Box]\n", ""},
 		{"bad_callback_label_empty", `list.map(items:[],transform:label)`, "", "unknown argument"},
 		{"bad_predicate_empty", `list.filter(items:[],predicate:partial add(amount:1))`, "", "return bool"},
 		{"effectful_callback_empty", `list.map(items:[],transform:show)`, "", "pure callback"},
-		{"bad_fold_initial_empty", `list.fold(items:[],initial:"oops",reduce:sum)`, "", "initial"},
-		{"bad_fold_return_empty", `list.fold(items:[],initial:0,reduce:bad_reduce)`, "", "match state"},
+		{"bad_reduce_initial_empty", `list.reduce(items:[],initial:"oops",reduce:sum)`, "", "initial"},
+		{"bad_reduce_return_empty", `list.reduce(items:[],initial:0,reduce:bad_reduce)`, "", "match state"},
 		{"immutable_before_rhs", `let number = 2
 number = show(value:1)`, "", "immutable binding"},
 		{"alias_effect", `pure()`, "", "effect !io"},

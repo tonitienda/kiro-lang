@@ -49,6 +49,9 @@ func validateCalls(p *Project) error {
 					}
 				} else if len(parts) == 2 {
 					if !locals[parts[0]] {
+						if call.Target == "list.fold" {
+							return withSourceLocation(file.Path, file.Src, fmt.Errorf("%d:%d: list.fold was renamed to list.reduce; keep items, initial and reduce keys", fn.Line, fn.Column))
+						}
 						parameters, known = runtimekit.BuiltinParameters(call.Target)
 						if target, ok := modules[parts[0]][parts[1]]; ok && !known {
 							parameters = declarationParameters(target, true)

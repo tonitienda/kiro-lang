@@ -31,7 +31,7 @@
     },
     "types": {
       "patterns": [
-        { "name": "storage.type.kiro", "match": "\\b(Fn|List|R|i32|i64|str|bool|nil)\\b|\\?[A-Za-z_][A-Za-z0-9_]*" }
+        { "name": "storage.type.kiro", "match": "\\b(Transform|Fn|List|R|i32|i64|str|bool|nil)\\b|\\?[A-Za-z_][A-Za-z0-9_]*" }
       ]
     },
     "declarations": {

@@ -34,3 +34,6 @@ supported while the shared parser/formatter adopts the new explicit case delimit
 Phase 13 extends the keyed core with typed functions, explicit partial application,
 visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.md` and
 `docs/functional-core.md` for the implemented contracts and their limits.
+
+Phase 14 renames `list.fold` to `list.reduce` and adds explicit typed transducers.
+See `PHASE14_NOTES.md` for ordered execution and allocation limits.

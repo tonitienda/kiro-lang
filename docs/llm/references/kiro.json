@@ -1,6 +1,6 @@
 {
   "language": "Kiro",
-  "version": "phase13-functional-core",
+  "version": "phase14-transducers",
   "skill_format": "codex-skill-v1",
   "extensions": [
     ".ki"
@@ -21,7 +21,8 @@
     "partial_application": "partial f(key:expression); pure eager snapshot captures; latent effects retained",
     "defaults": "scalar literal declarations; explicit key:default selection; no omitted keys",
     "bindings": "let is immutable; mut name = value permits local rebinding",
-    "collections": "eager list.map/filter/fold with pure keyed callbacks"
+    "collections": "eager map/filter/reduce; explicit mapping/filtering/compose plans and transduce/collect terminals",
+    "transducers": "Transform[Input,Output]; immutable pure stateless stages; per-item first-then order; no intermediate data lists"
   },
   "keywords": [
     "mod",
@@ -90,7 +91,12 @@
     "list": [
       "map",
       "filter",
-      "fold"
+      "reduce",
+      "mapping",
+      "filtering",
+      "compose",
+      "transduce",
+      "collect"
     ]
   },
   "canonical_commands": [
@@ -226,10 +232,30 @@
       "items",
       "predicate"
     ],
-    "list.fold": [
+    "list.reduce": [
       "items",
       "initial",
       "reduce"
+    ],
+    "list.mapping": [
+      "transform"
+    ],
+    "list.filtering": [
+      "predicate"
+    ],
+    "list.compose": [
+      "first",
+      "then"
+    ],
+    "list.transduce": [
+      "items",
+      "through",
+      "initial",
+      "reduce"
+    ],
+    "list.collect": [
+      "items",
+      "through"
     ]
   }
 }

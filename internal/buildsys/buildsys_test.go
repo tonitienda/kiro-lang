@@ -127,7 +127,7 @@ func TestFunctionalExampleNativeBinary(t *testing.T) {
 	for _, tc := range []struct {
 		mode BuildMode
 		want string
-	}{{ModeBuild, "3700\n"}, {ModeTest, "ok\t3 test(s)"}} {
+	}{{ModeBuild, "3700\n"}, {ModeTest, "ok\t4 test(s)"}} {
 		t.Run(string(tc.mode), func(t *testing.T) {
 			out := filepath.Join(t.TempDir(), binaryName("functional"))
 			result, err := Build(Options{Entry: filepath.Join("..", "..", "examples", "functional"), Out: out, Mode: tc.mode})
@@ -141,6 +141,39 @@ func TestFunctionalExampleNativeBinary(t *testing.T) {
 			}
 			if !strings.Contains(string(output), tc.want) {
 				t.Fatalf("want %q, got %s", tc.want, output)
+			}
+		})
+	}
+}
+
+func TestBuildTransducerFailureOrder(t *testing.T) {
+	const declarations = `mod main
+import list
+fn predicate(value:i32)->bool {
+let n = value + 2147483646
+return n > 0
+}
+fn mapper(value:i32)->i32 {return 1 / (value - 1)}
+fn sum(state:i32,value:i32)->i32 {return state + value}
+`
+	for _, tc := range []struct{ name, body, want string }{
+		{"eager", `let selected = list.filter(items:[1,2],predicate:predicate)
+list.map(items:selected,transform:mapper)`, "i32 arithmetic overflow"},
+		{"fused", `let through = list.compose(first:list.filtering(predicate:predicate),then:list.mapping(transform:mapper))
+list.transduce(items:[1,2],through:through,initial:0,reduce:sum)`, "item 0: stage 1: division by zero"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			writeFile(t, filepath.Join(dir, "main.ki"), declarations+"fn main()->nil {\n"+tc.body+"\nreturn nil\n}\n")
+			out := filepath.Join(dir, binaryName("failure-order"))
+			result, err := Build(Options{Entry: dir, Out: out, Mode: ModeBuild})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(result.WorkDir)
+			output, err := exec.Command(out).CombinedOutput()
+			if err == nil || !strings.Contains(string(output), tc.want) {
+				t.Fatalf("want %s; got %v: %s", tc.want, err, output)
 			}
 		})
 	}

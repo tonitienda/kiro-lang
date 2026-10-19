@@ -2,6 +2,18 @@
 
 Kiro is still pre-1.0 and breaking changes are expected.
 
+## Phase 14: canonical reduce and explicit fusion
+
+Replace `list.fold(items:xs, initial:zero, reduce:r)` with
+`list.reduce(items:xs, initial:zero, reduce:r)`. The keys and ordered left-fold semantics
+are unchanged. Old calls and aliases receive a migration diagnostic.
+
+For fused processing, create a `Transform[T,U]` using `list.mapping`, `list.filtering`,
+and `list.compose(first:a, then:b)`. Execute it with `list.transduce` or `list.collect`.
+Separate map/filter calls remain eager and materialized. Explicit transducers execute
+per item, so their first error may differ from separate full passes; see
+[the functional contract](functional-core.md). Regenerate guides for `phase14-transducers`.
+
 ## Phase 13: explicit functional values
 
 See [the functional core](functional-core.md) for `Fn` contracts, `partial`, defaults and

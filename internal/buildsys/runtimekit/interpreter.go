@@ -181,7 +181,7 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 	}
 	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver, effects: fn.Effects, mutable: map[string]bool{}}
 	for i, param := range fn.Params {
-		ctx.locals[param.Name] = ascribeCallable(args[i], param.Type)
+		ctx.locals[param.Name] = ascribeValue(args[i], param.Type)
 	}
 	if receiver != nil && fn.ReceiverType != "" && len(fn.Params) > 0 {
 		ctx.locals[fn.Params[0].Name] = receiver
@@ -195,7 +195,7 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 			if err := rt.validateValue(val, fn.ReturnType); err != nil {
 				return nil, fmt.Errorf("%s.%s return: %w", module, fn.Name, err)
 			}
-			return ascribeCallable(val, fn.ReturnType), nil
+			return ascribeValue(val, fn.ReturnType), nil
 		}
 		if err := rt.validateValue(nil, fn.ReturnType); err != nil {
 			return nil, fmt.Errorf("%s.%s falls through without a valid return: %w", module, fn.Name, err)
@@ -456,6 +456,9 @@ func (ctx *execContext) resolveSelector(sel *selectorExpr) (value, error) {
 	}
 	switch v := left.(type) {
 	case moduleSentinel:
+		if string(v) == "list" && sel.Name == "fold" {
+			return nil, fmt.Errorf("list.fold was renamed to list.reduce; keep items, initial and reduce keys")
+		}
 		if builtin := builtinModuleFunc(string(v), sel.Name); builtin != nil {
 			return builtinValue{Name: string(v) + "." + sel.Name, Invoke: builtin}, nil
 		}
@@ -700,7 +703,9 @@ func builtinModuleKnown(name string) bool {
 }
 func builtinModuleFunc(module, name string) builtinFn {
 	switch module + "." + name {
-	case "list.map", "list.filter", "list.fold":
+	case "list.mapping", "list.filtering", "list.compose", "list.transduce", "list.collect":
+		return transformOperation(name)
+	case "list.map", "list.filter", "list.reduce":
 		return listOperation(name)
 	case "env.get_or":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {

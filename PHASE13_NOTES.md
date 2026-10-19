@@ -32,3 +32,6 @@ checking), native compilation/execution of the functional example, existing comp
 fixtures, and the quote-service suite. Existing contract probes are observations; the wrong
 return-type probe now fails at checking instead of silently running. The other known gaps
 remain recorded, rather than being treated as fixed by the new features.
+
+Phase 14 supersedes the collection API name with `list.reduce` and adds explicit typed
+transducers; see `PHASE14_NOTES.md`. `list.fold` is no longer accepted.

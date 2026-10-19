@@ -29,7 +29,7 @@ These are design goals, not a measured advantage over existing languages. Read t
 
 The [agent-language research plan](docs/research/agent_language_iteration.md) records the current implementation audit, comparison methodology, and proposed iterations. The [multi-module quote service](examples/quote_service/README.md) is the first runnable integration example for that work.
 
-The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, required named value arguments (`f(name: expression)`), and preserves literal contents during formatting. Phase 13 adds [typed function values, explicit partial application, visible defaults and eager pure collection transforms](docs/functional-core.md), demonstrated by the [functional basket example](examples/functional/README.md). Tagged optional/unit values, exhaustive typed errors and structural agent tools remain proposals.
+The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, required named value arguments (`f(name: expression)`), and preserves literal contents during formatting. Phase 13 adds [typed function values, explicit partial application, visible defaults and eager pure collection transforms](docs/functional-core.md), demonstrated by the [functional basket example](examples/functional/README.md). Phase 14 adds explicit ordered transducers without intermediate data lists and renames `fold` to `reduce`. Tagged optional/unit values, exhaustive typed errors and structural agent tools remain proposals.
 
 ### Current backend boundary
 
@@ -42,7 +42,8 @@ Kiro now teaches one canonical style:
 - **block-only functions** with explicit `return`
 - **keyed function types** and explicit `partial` specialization
 - **visible literal defaults** selected with `key:default`
-- **eager pure collection transforms** via `list.map`, `list.filter`, `list.fold`
+- **eager pure collection transforms** via `list.map`, `list.filter`, `list.reduce`
+- **explicit fused transducers** with typed `Transform[Input,Output]` plans
 - **explicit effects** for operational impurity only
 - **`R[T,E]`** for fallibility
 - **`?`** only for propagating `R[T,E]`

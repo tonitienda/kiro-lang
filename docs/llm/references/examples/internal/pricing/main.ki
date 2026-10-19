@@ -29,8 +29,17 @@ fn accumulate(state:i32, value:Line) -> i32 {
   return state + value.total_cents
 }
 
+fn pipeline(transform:Fn[(value:Item)->Line]) -> Transform[Item,Line] {
+  return list.compose ( first : list.filtering ( predicate : purchasable ) , then : list.mapping ( transform : transform ) )
+}
+
 fn total(items:List[Item], transform:Fn[(value:Item)->Line]) -> i32 {
+  let through = pipeline ( transform : transform )
+  return list.transduce ( items : items , through : through , initial : 0 , reduce : accumulate )
+}
+
+fn total_eager(items:List[Item], transform:Fn[(value:Item)->Line]) -> i32 {
   let selected = list.filter ( items : items , predicate : purchasable )
   let lines = list.map ( items : selected , transform : transform )
-  return list.fold ( items : lines , initial : 0 , reduce : accumulate )
+  return list.reduce ( items : lines , initial : 0 , reduce : accumulate )
 }

@@ -67,9 +67,9 @@ func ValidateFunctionalContracts(spec ProgramSpec) error {
 		for _, fn := range mod.Funcs {
 			parsed, err := rt.parseFunc(fn)
 			if err != nil {
-				functional := strings.Contains(fn.Body, "partial") || strings.Contains(fn.Body, "default") || strings.Contains(fn.Body, "list .") || strings.Contains(fn.Body, "list.") || strings.Contains(fn.ReturnType, "Fn[")
+				functional := strings.Contains(fn.Body, "partial") || strings.Contains(fn.Body, "default") || strings.Contains(fn.Body, "list .") || strings.Contains(fn.Body, "list.") || (strings.Contains(fn.ReturnType, "Fn[") || strings.Contains(fn.ReturnType, "Transform["))
 				for _, p := range fn.Params {
-					functional = functional || strings.Contains(p.Type, "Fn[")
+					functional = functional || strings.Contains(p.Type, "Fn[") || strings.Contains(p.Type, "Transform[")
 				}
 				if functional {
 					return fmt.Errorf("%s.%s functional body: %w", mod.Name, fn.Name, err)
@@ -207,6 +207,9 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 	case *selectorExpr:
 		if root, ok := n.Left.(*identExpr); ok {
 			if _, local := c.env[root.Name]; !local {
+				if root.Name == "list" && n.Name == "fold" {
+					return unknown, fmt.Errorf("list.fold was renamed to list.reduce; keep items, initial and reduce keys")
+				}
 				if sig, ok := builtinFunctionType(root.Name + "." + n.Name); ok {
 					v := functionInference(sig)
 					v.Builtin = root.Name + "." + n.Name
@@ -374,6 +377,7 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 		}
 	}
 	bound := map[string]bool{}
+	values := map[string]inferredValue{}
 	for _, arg := range call.Args {
 		parameter := params[arg.Name]
 		bound[arg.Name] = true
@@ -391,6 +395,7 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 		if err != nil {
 			return unknown, err
 		}
+		values[arg.Name] = v
 		if !strings.HasPrefix(parameter.Type, "Fn[") && !compatibleValueTypes(v.Type, parameter.Type) {
 			return unknown, fmt.Errorf("argument %s: expected %s, got %s", arg.Name, parameter.Type, v.Type)
 		}
@@ -419,22 +424,22 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 		}
 		return functionInference(remaining), nil
 	}
+	if result, handled, err := c.transformCall(name, values); handled {
+		return result, err
+	}
 	if strings.HasPrefix(name, "list.") {
 		key := "transform"
 		if name == "list.filter" {
 			key = "predicate"
 		}
-		if name == "list.fold" {
+		if name == "list.reduce" {
 			key = "reduce"
 		}
 		var callback *FunctionType
 		var itemType = "Any"
 		var initialType = "Any"
 		for _, arg := range call.Args {
-			v, e := c.infer(arg.Value)
-			if e != nil {
-				return unknown, e
-			}
+			v := values[arg.Name]
 			if arg.Name == key {
 				if v.Type == "Any" {
 					return inferredValue{Type: sig.ReturnType}, nil
@@ -476,10 +481,10 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 			}
 			if p.Name == "state" {
 				if p.Type != callback.ReturnType {
-					return unknown, fmt.Errorf("fold reducer return type must match state type")
+					return unknown, fmt.Errorf("reduce reducer return type must match state type")
 				}
 				if !compatibleValueTypes(initialType, p.Type) {
-					return unknown, fmt.Errorf("fold initial: expected %s, got %s", p.Type, initialType)
+					return unknown, fmt.Errorf("reduce initial: expected %s, got %s", p.Type, initialType)
 				}
 			}
 		}
@@ -528,6 +533,11 @@ func compatibleValueTypes(actual, expected string) bool {
 		a, e1 := ParseFunctionType(actual)
 		b, e2 := ParseFunctionType(expected)
 		return e1 == nil && e2 == nil && compatibleFunctions(*a, *b) == nil
+	}
+	if actualParts, ok := genericParts(actual, "Transform"); ok && len(actualParts) == 2 {
+		if expectedParts, ok := genericParts(expected, "Transform"); ok && len(expectedParts) == 2 {
+			return contractAcceptsType(actualParts[0], expectedParts[0]) && contractAcceptsType(expectedParts[1], actualParts[1])
+		}
 	}
 	for _, generic := range []string{"R", "List"} {
 		a, ok := genericParts(actual, generic)

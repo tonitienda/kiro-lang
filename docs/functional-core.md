@@ -76,11 +76,11 @@ configuration, refer to another parameter, or allocate mutable collections. The 
 | --- | --- | --- |
 | `list.map` | `items`, `transform` | `value:T` returns an output value |
 | `list.filter` | `items`, `predicate` | `value:T` returns `bool` |
-| `list.fold` | `items`, `initial`, `reduce` | `state:S`, `value:T` returns `S` |
+| `list.reduce` | `items`, `initial`, `reduce` | `state:S`, `value:T` returns `S` |
 
-Transforms run eagerly in list order. Fold is a left fold, with an explicit initial value.
-An empty fold returns that initial value. Callback labels, purity, filter result type and
-fold state/return compatibility are checked even for empty lists. Typed item and state
+Transforms run eagerly in list order. Reduce is an ordered left fold, with an explicit
+initial value. An empty reduction returns that initial value. Callback labels, purity, filter result type and
+reducer state/return compatibility are checked even for empty lists. Typed item and state
 values are checked at invocation. A mapped `R[T,E]` remains a result value; list helpers
 neither unwrap results nor silently discard failures.
 
@@ -91,6 +91,60 @@ a specialized price function and a total reducer across modules. Run:
 go run ./cmd/kiro run examples/functional
 go run ./cmd/kiro test examples/functional
 ```
+
+## Explicit fused transducers
+
+```ki
+fn plan()->Transform[i32,i32] {
+  return list.compose(first:list.filtering(predicate:positive), then:list.mapping(transform:increment))
+}
+
+fn total(items:List[i32])->i32 {
+  return list.transduce(items:items, through:plan(), initial:0, reduce:sum)
+}
+```
+
+Here `positive(value:i32)->bool`, `increment(value:i32)->i32`, and
+`sum(state:i32,value:i32)->i32` are ordinary pure block functions. The complete runnable
+forms are in the basket example and `compat/stable_core/transducers/main.ki`.
+
+| Helper | Required keys | Result |
+| --- | --- | --- |
+| `list.mapping` | `transform` | `Transform[T,U]` from a pure `value:T -> U` callback |
+| `list.filtering` | `predicate` | `Transform[T,T]` from a pure `value:T -> bool` callback |
+| `list.compose` | `first`, `then` | Typed first-then composition |
+| `list.transduce` | `items`, `through`, `initial`, `reduce` | Final accumulator |
+| `list.collect` | `items`, `through` | Only the final output list |
+
+Plans contain no source list. Construction snapshots callbacks, including partial captures
+and method receivers, without executing them. Plans can be reused over different input
+lists, returned from functions, passed through typed boundaries and captured in partials.
+The output of one stage must fit the next stage's input. Reducer input and state contracts
+are checked before iteration, including on empty input. A callback accepting `Any` can
+consume concrete values; an `Any` output cannot promise a concrete receiving type.
+
+Both terminals execute immediately, in input order. For each item, stages execute in
+first-then order, followed by reduction or final collection. A failed predicate skips later
+stages and reduction for that item. The first runtime failure aborts; errors identify the
+zero-based item and stage (or reducer). Result values are ordinary outputs, not implicitly
+unwrapped. An empty transduction returns its required initial value; empty collect returns
+an empty list.
+
+This is an explicit execution model. Separate `filter`/`map` calls still finish one full
+pass before the next starts. As a result, they can report a different first error from a
+transducer pipeline even with pure callbacks. Kiro does not silently fuse existing calls.
+
+Implementation: immutable flattened stage descriptors drive a single processing loop.
+Transduce holds one current element and accumulator, with no intermediate data lists;
+collect allocates only its final result list. Descriptor storage grows with stage count.
+Input data, the accumulator, callback-produced values, interpreter frames/argument storage,
+and boundary validation still have costs. There is no claim of zero allocation or faster
+execution; see [the measurements](research/transducer_measurements.md).
+
+`list.reduce` replaces `list.fold`; there is one canonical name. Reduce remains sequential,
+with no associativity or parallel-execution requirement. Only stateless mapping/filtering
+stages over finite lists are supported in this batch. There is no lazy collection, stateful
+stage, early-termination/completion protocol, stream adapter or general pipeline operator.
 
 ## Enforcement and limits
 
@@ -113,6 +167,6 @@ booleans. String `+` concatenates strings; numeric-looking strings are not coerc
 integers. Negative integer literals are supported. Arithmetic errors currently abort
 execution rather than returning a typed result.
 
-No implicit currying, anonymous functions, lazy collections, pipeline syntax, tagged
+No implicit currying, anonymous functions, lazy collections, pipeline operator syntax, tagged
 optionals/unit or new variant syntax are introduced in this pass. Those require separate
 semantic work and controlled comparison experiments.

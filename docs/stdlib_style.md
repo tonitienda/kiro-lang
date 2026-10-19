@@ -42,6 +42,11 @@ Keep handlers on `R[http.Resp,str]` so error flow stays explicit.
 ## Collection style
 
 Use eager `list.map(items:xs, transform:f)`, `list.filter(items:xs, predicate:p)`, and
-`list.fold(items:xs, initial:zero, reduce:r)`. Callbacks are pure with explicit `value`
+`list.reduce(items:xs, initial:zero, reduce:r)`. Callbacks are pure with explicit `value`
 roles; reducers additionally use `state` and return the state type. See
 [the functional contract](functional-core.md).
+
+For explicit fusion, use typed `Transform[Input,Output]` values built by `list.mapping`,
+`list.filtering` and `list.compose(first:a, then:b)`. `list.transduce` produces an accumulator
+without intermediate data lists; `list.collect` builds only the final list. These terminals
+execute eagerly per item. `list.fold` was renamed to `list.reduce`.

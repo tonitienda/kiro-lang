@@ -60,7 +60,10 @@ Function types preserve keys: `Fn[(value:i32)->i32]`. Latent effects are inside 
 e.g. `Fn[(value:str)->nil!io]`. Use `partial add(amount:1)` for deliberate specialization;
 ordinary calls still require all keys. Literal defaults (`amount:i32 = 1`) are selected
 explicitly with `amount:default`. `let` is immutable; use `mut name = value` for rebinding.
-See [functional-core.md](functional-core.md) for eager collection helpers and enforcement
+Use `Transform[Input,Output]` for explicit first-then mapping/filtering plans and
+`list.transduce` or `list.collect` to execute them. `list.reduce` is the canonical ordered
+left fold; `list.fold` is rejected. See [functional-core.md](functional-core.md) for eager
+collection helpers and enforcement
 limits. The frontend accepts some historical control-flow forms that do not yet execute.
 
 ## Removed form
