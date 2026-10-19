@@ -31,7 +31,8 @@ removing a human constraint does not itself justify replacing text with JSON or 
 | Introduce tagged optionals and a distinct unit value | Absence, an empty result and failure should not share an untagged representation | Recommended next semantic change; syntax below is a proposal |
 | Add typed variants and exhaustive result/error matching | Auditors need to inspect and recover from failures, not just abort execution or compare strings | Recommended next semantic change; not implemented |
 | Add resolved structural queries/editing | Local reasoning should not require rereading and rediscovering the whole program | Proposed agent/tool interface |
-| Compare named arguments and checkable contracts | Explicit argument roles and invariants may improve repair and independent validation | Experimental candidates, not adopted syntax |
+| Require keyed value arguments | Roles are explicit at every call and key sets can be checked | Implemented, breaking; comparative benefit remains to be measured |
+| Compare checkable contracts | Explicit invariants may improve independent validation | Experimental candidate |
 
 ## Implemented syntax change: explicit case boundaries
 
@@ -47,8 +48,8 @@ Current form:
 
 ```ki
 when (req.path) {
-  "/health" => { return Ok(http.text(200, "ok")) }
-  _ => { return Ok(http.not_found()) }
+  "/health" => { return Ok(value : http.text(code : 200, body : "ok")) }
+  _ => { return Ok(value : http.not_found()) }
 }
 ```
 
@@ -137,15 +138,20 @@ and global lookup can save tokens while adding opportunities for silent mistakes
 rejecting ambiguity over silently taking the last expression or coercing a value. Strict
 expression validation is a follow-up; it is not fully implemented by this change.
 
-Named arguments are a useful controlled experiment for the quote service:
+Named value arguments are now required throughout the executable surface, including unary
+built-ins. The quote service uses:
 
 ```text
 pricing.quote(sku:sku, addon:addon, delivery:delivery, coupon:coupon)
 ```
 
-Compare semantic mistakes and total repair cost with the positional call. The compiler
-would have to check names, completeness and types. The same mapping can also be exposed
-through structural tools, so named-call text should not be assumed necessary.
+The checker validates key sets for resolved calls and the runtime validates the actual callable
+before evaluating its arguments. Expressions evaluate once in source order. Built-ins and
+constructors use the same keyed rule; parameterless calls and positional generic type arguments
+remain unchanged. The compact manifest records exact built-in keys. Full argument type checking
+is still future work. Compare semantic mistakes and total repair cost with the earlier positional
+form; adopting the syntax is not evidence of a measured performance advantage. Structural
+queries, distinct nominal types and reusable request records remain complementary approaches.
 
 ### Explicit at interfaces does not require annotation everywhere
 
@@ -216,7 +222,7 @@ requirement may still be wrong; layer diversity and measurable coverage are the 
    propagation, tagged values and typed decoding with negative tests.
 3. Add typed variants and exhaustive matching; extend the quote service's failure paths.
 4. Expose resolved queries and structured diagnostics for implementation and audit agents.
-5. Run controlled named-argument, contract and structural-editing experiments.
+5. Measure keyed-call behavior against the earlier positional baseline and run contract and structural-editing experiments.
 
 The unit/optional/error proposals may break the current core. There is no requirement to
 preserve accidental prototype behavior, and no need to introduce all proposed syntax before

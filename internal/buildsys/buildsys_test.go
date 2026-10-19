@@ -14,7 +14,7 @@ func TestBuildCreatesRunnableBinary(t *testing.T) {
 	writeFile(t, filepath.Join(dir, "main.ki"), `mod main
 
 fn main() -> i32 !io {
-  println("hello from buildsys")
+  println(value : "hello from buildsys")
   return 0
 }
 `)

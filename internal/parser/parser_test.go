@@ -57,10 +57,10 @@ func TestParseBlockFunction(t *testing.T) {
 
 fn route(path:str) -> Resp {
   if path == "/health" => {
-    return text(200, "ok")
+    return text(code : 200, body : "ok")
   }
 
-  return text(404, "not found")
+  return text(code : 404, body : "not found")
 }
 `
 	file, err := Parse(src)
@@ -169,7 +169,7 @@ func TestParseGenericTypeRef(t *testing.T) {
 	src := `mod main
 
 fn load() -> R[Config,str] {
-  return Ok(Config{})
+  return Ok(value : Config{})
 }
 `
 	file, err := Parse(src)
@@ -189,7 +189,7 @@ func TestParseQualifiedTypeRef(t *testing.T) {
 	src := `mod main
 
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  return Ok(http.not_found())
+  return Ok(value : http.not_found())
 }
 `
 	file, err := Parse(src)
@@ -236,9 +236,9 @@ func TestParseRejectsUnbracedWhen(t *testing.T) {
 func TestParseBracedWhenWithContinuation(t *testing.T) {
 	_, err := Parse(`mod main
 fn main() -> i32 {
-  when (label(Box{name:"hit"})) {
-    "hit" => { println("hit") }
-    _ => { println("other") }
+  when (label(item : Box{name:"hit"})) {
+    "hit" => { println(value : "hit") }
+    _ => { println(value : "other") }
   }
   return 0
 }

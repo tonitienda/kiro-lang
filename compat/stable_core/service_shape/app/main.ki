@@ -5,10 +5,10 @@ import http
 fn handler(req:http.Req) -> R[http.Resp,str] {
   when (req.path) {
     "/health" => {
-      return Ok(http.text(200, "ok"))
+      return Ok(value : http.text(code : 200, body : "ok"))
     }
     _ => {
-      return Ok(http.not_found())
+      return Ok(value : http.not_found())
     }
   }
 }

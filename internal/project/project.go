@@ -90,6 +90,9 @@ func Load(entry string) (*Project, error) {
 	if err := validateEffects(proj); err != nil {
 		return nil, err
 	}
+	if err := validateCalls(proj); err != nil {
+		return nil, err
+	}
 
 	return proj, nil
 }

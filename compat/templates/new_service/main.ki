@@ -7,7 +7,7 @@ import log
 
 fn main() -> i32 !env !log !net {
   let cfg = config.load ( ) ?
-  log.info ( "starting ${cfg.port}" )
-  http.serve ( cfg.port , app.handler ) ?
+  log.info ( message : "starting ${cfg.port}" )
+  http.serve ( addr : cfg.port , handler : app.handler ) ?
   return 0
 }

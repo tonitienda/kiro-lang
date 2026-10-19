@@ -12,10 +12,10 @@ type QuoteRequest {
 }
 
 fn create_quote(req:http.Req) -> R[http.Resp,str] {
-  let input = json.decode [ QuoteRequest ] ( req.body ) ?
-  let quote = pricing.quote ( input.sku , input.addon , input.delivery , input.coupon ) ?
-  let body = json.encode ( quote ) ?
-  return Ok ( http.json ( 200 , body ) )
+  let input = json.decode [ QuoteRequest ] ( text : req.body ) ?
+  let quote = pricing.quote ( sku : input.sku , addon : input.addon , delivery : input.delivery , coupon : input.coupon ) ?
+  let body = json.encode ( value : quote ) ?
+  return Ok ( value : http.json ( code : 200 , body : body ) )
 }
 
 fn handler(req:http.Req) -> R[http.Resp,str] {
@@ -23,25 +23,25 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
   "/health" => {
   when ( req.method ) {
   "GET" => {
-  return Ok ( http.text ( 200 , "ok" ) )
+  return Ok ( value : http.text ( code : 200 , body : "ok" ) )
   }
   _ => {
-  return Ok ( http.text ( 405 , "method not allowed" ) )
+  return Ok ( value : http.text ( code : 405 , body : "method not allowed" ) )
   }
   }
   }
   "/quotes" => {
   when ( req.method ) {
   "POST" => {
-  return create_quote ( req )
+  return create_quote ( req : req )
   }
   _ => {
-  return Ok ( http.text ( 405 , "method not allowed" ) )
+  return Ok ( value : http.text ( code : 405 , body : "method not allowed" ) )
   }
   }
   }
   _ => {
-  return Ok ( http.not_found ( ) )
+  return Ok ( value : http.not_found ( ) )
   }
   }
 }

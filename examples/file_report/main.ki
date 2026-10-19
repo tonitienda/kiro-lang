@@ -3,7 +3,7 @@ mod main
 import fs
 
 fn main() -> i32 !fs !io {
-  let body = fs.read ( "./README.md" )
-  println ( "bytes ${body}" )
+  let body = fs.read_file ( path : "./README.md" ) ?
+  println ( value : "bytes ${body}" )
   return 0
 }

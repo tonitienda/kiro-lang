@@ -29,7 +29,7 @@ These are design goals, not a measured advantage over existing languages. Read t
 
 The [agent-language research plan](docs/research/agent_language_iteration.md) records the current implementation audit, comparison methodology, and proposed iterations. The [multi-module quote service](examples/quote_service/README.md) is the first runnable integration example for that work.
 
-The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, and preserves literal contents during formatting. Tagged optional/unit values, exhaustive typed errors and structural agent tools remain proposals.
+The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, required named value arguments (`f(name: expression)`), and preserves literal contents during formatting. Tagged optional/unit values, exhaustive typed errors and structural agent tools remain proposals.
 
 ### Current backend boundary
 
@@ -52,7 +52,7 @@ Kiro now teaches one canonical style:
 
 ```ki
 fn handler(req:http.Req) -> R[http.Resp,str] !net {
-  return Ok(http.not_found())
+  return Ok(value : http.not_found())
 }
 ```
 

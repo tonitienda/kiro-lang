@@ -7,7 +7,7 @@ import log
 
 fn main() -> i32 !env !log !net {
   let address = config.address ( )
-  log.info ( "quote service listening on ${address}" )
-  http.serve ( address , app.handler ) ?
+  log.info ( message : "quote service listening on ${address}" )
+  http.serve ( addr : address , handler : app.handler ) ?
   return 0
 }

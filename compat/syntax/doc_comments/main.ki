@@ -15,6 +15,6 @@ fn join(a:str, b:str) -> str {
 }
 
 fn main() -> i32 !io {
-  println ( join ( AppName , "doc" ) )
+  println ( value : join ( a : AppName , b : "doc" ) )
   return 0
 }

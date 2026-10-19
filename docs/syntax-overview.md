@@ -2,6 +2,11 @@
 
 Kiro intentionally keeps the frontend small and regular.
 
+Every call supplies all value arguments by their declared names: `f(name: expression)`.
+Arguments require commas; keys may appear in any order, but expressions evaluate in source
+order. Parameterless calls use `f()`. Type arguments remain positional, for example
+`json.decode[User](text: body)`. See [migration notes](migration.md) for built-in keys.
+
 ## Canonical example
 
 ```ki
@@ -28,10 +33,10 @@ fn greet(name:str) -> str {
 fn route(path:str) -> R[http.Resp, str] {
   when (path) {
     "/health" => {
-      return Ok(http.text(200, "ok"))
+      return Ok(value : http.text(code : 200, body : "ok"))
     }
     _ => {
-      return Ok(http.not_found())
+      return Ok(value : http.not_found())
     }
   }
 }

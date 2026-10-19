@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 	"github.com/kiro-lang/kiro/internal/lexer"
 )
 
@@ -179,6 +180,10 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		return nil, err
 	}
 	var params []ast.Param
+	parameterNames := map[string]bool{}
+	if receiver != nil {
+		parameterNames[receiver.Name] = true
+	}
 	for !p.peekText(")") {
 		paramName, err := p.expect(lexer.TokenIdent)
 		if err != nil {
@@ -191,6 +196,10 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		if err != nil {
 			return nil, err
 		}
+		if parameterNames[paramName.Text] {
+			return nil, fmt.Errorf("%d:%d: duplicate parameter %q", paramName.Line, paramName.Column, paramName.Text)
+		}
+		parameterNames[paramName.Text] = true
 		params = append(params, ast.Param{Name: paramName.Text, Type: paramType.Text})
 		if p.peekText(",") {
 			p.next()
@@ -234,6 +243,9 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		}
 		decl.BlockBody = true
 		decl.Body = body
+		if _, err := runtimekit.InspectCalls(body); err != nil {
+			return nil, fmt.Errorf("%d:%d: function %s: %w", decl.Line, decl.Column, decl.Name, err)
+		}
 		return decl, nil
 	}
 	return nil, fmt.Errorf("expected \"{\" to start function body at %d:%d", p.peek().Line, p.peek().Column)

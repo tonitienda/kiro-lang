@@ -43,8 +43,8 @@ fn main() -> i32 {
 func TestSource_BlockFunction(t *testing.T) {
 	in := `mod main
 
-fn route(path:str)->Resp{if path=="/health"=>{return text(200,"ok")}
-return text(404,"not found")}`
+fn route(path:str)->Resp{if path=="/health"=>{return text(code : 200,body : "ok")}
+return text(code : 404,body : "not found")}`
 	out, err := Source(in)
 	if err != nil {
 		t.Fatalf("Source() error = %v", err)
@@ -52,8 +52,8 @@ return text(404,"not found")}`
 	want := `mod main
 
 fn route(path:str) -> Resp {
-  if path == "/health" => { return text ( 200 , "ok" ) }
-  return text ( 404 , "not found" )
+  if path == "/health" => { return text ( code : 200 , body : "ok" ) }
+  return text ( code : 404 , body : "not found" )
 }
 `
 	if out != want {
@@ -83,7 +83,7 @@ fn main() -> i32 !env !log !net {
 func TestSource_InterpolationStringBody(t *testing.T) {
 	in := `mod main
 
-fn main()->i32!io{println("kiro ${Version}")
+fn main()->i32!io{println(value : "kiro ${Version}")
 return 0}`
 	out, err := Source(in)
 	if err != nil {
@@ -92,7 +92,7 @@ return 0}`
 	want := `mod main
 
 fn main() -> i32 !io {
-  println ( "kiro ${Version}" )
+  println ( value : "kiro ${Version}" )
   return 0
 }
 `
@@ -137,7 +137,7 @@ fn main() -> i32 = 0`
 
 func TestSource_PreservesLiteralContents(t *testing.T) {
 	const literal = "A  B = > C . D - > E = = F"
-	in := "mod main\n\nfn main() -> i32 !io {\n  println(\"" + literal + "\")\n  return 0\n}\n"
+	in := "mod main\n\nfn main() -> i32 !io {\n  println(value: \"" + literal + "\")\n  return 0\n}\n"
 	once, err := Source(in)
 	if err != nil {
 		t.Fatal(err)
@@ -148,5 +148,16 @@ func TestSource_PreservesLiteralContents(t *testing.T) {
 	twice, err := Source(once)
 	if err != nil || once != twice {
 		t.Fatalf("formatting is not idempotent: %v\n%s", err, twice)
+	}
+}
+
+func TestSource_PreservesNamedArgumentOrder(t *testing.T) {
+	in := "mod main\nfn main() -> i32 {\nf(right:mark(value:2),left:mark(value:1))\nreturn 0\n}\n"
+	out, err := Source(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Index(out, "right :") >= strings.Index(out, "left :") {
+		t.Fatalf("formatter reordered argument expressions: %s", out)
 	}
 }

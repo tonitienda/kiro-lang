@@ -2,8 +2,8 @@ mod main
 
 fn main() -> i32 !io {
   group {
-  let t1 = spawn work ( "a" )
-  let t2 = spawn work ( "b" )
+  let t1 = spawn work ( name : "a" )
+  let t2 = spawn work ( name : "b" )
   await t1
   await t2
   }
@@ -11,5 +11,5 @@ fn main() -> i32 !io {
 }
 
 fn work(name:str) -> nil !io {
-  println ( "working ${name}" )
+  println ( value : "working ${name}" )
 }

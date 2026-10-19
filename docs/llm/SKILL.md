@@ -16,6 +16,10 @@ Use this bundle when a repository contains Kiro source files.
 ## Stable-core rules
 
 - Use block-only `fn` bodies with explicit `return`.
+- Every value argument must be keyed: `f(name: expression)`, including unary built-ins such as `Ok(value: x)` and `println(value: x)`. Parameterless calls remain `f()`; generic type arguments remain positional.
+- Use the declaration's exact parameter names; pass every parameter exactly once, including explicit `nil` for an absent optional. Separate arguments with commas. No positional calls, mixed calls, defaults, or argument-name shorthand.
+- Expressions evaluate once in source order; keys bind the results to parameters. Never reorder calls' argument expressions while formatting or editing unless changed effect order is intended.
+- Read `call_signatures` in the manifest for built-in keys; for example, `test.eq(actual: got, expected: want)` and `json.decode[Type](text: body)`.
 - Delimit case dispatch as `when (value) { pattern => { ... } }`; the old unbraced form is rejected.
 - Declare only real operational effects: `env`, `fs`, `io`, `log`, `net`, `panic`, `proc`, `time`.
 - Use `R[T,E]` for failure, `?` only to propagate `R[T,E]`, `?T` for optionals, and `nil` only for optional or nil-capable returns.

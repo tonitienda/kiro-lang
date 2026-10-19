@@ -159,17 +159,19 @@ func (rt *runtime) runTests() (int, error) {
 }
 
 func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []value) (value, error) {
+	if receiver != nil && fn.ReceiverType != "" {
+		args = append([]value{receiver}, args...)
+	}
+	if len(args) != len(fn.Params) {
+		return nil, fmt.Errorf("call %s.%s requires %d arguments, got %d", module, fn.Name, len(fn.Params), len(args))
+	}
 	parsed, err := rt.parseFunc(fn)
 	if err != nil {
 		return nil, err
 	}
 	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver}
 	for i, param := range fn.Params {
-		if i < len(args) {
-			ctx.locals[param.Name] = args[i]
-		} else {
-			ctx.locals[param.Name] = nil
-		}
+		ctx.locals[param.Name] = args[i]
 	}
 	if receiver != nil && fn.ReceiverType != "" && len(fn.Params) > 0 {
 		ctx.locals[fn.Params[0].Name] = receiver
@@ -403,7 +405,7 @@ func (ctx *execContext) resolveIdent(name string) (value, error) {
 		}
 	}
 	if builtinGlobal(name) != nil {
-		return builtinGlobal(name), nil
+		return builtinValue{Name: name, Invoke: builtinGlobal(name)}, nil
 	}
 	if ctx.rt.modules[name] != nil || builtinModuleKnown(name) {
 		return moduleSentinel(name), nil
@@ -419,7 +421,7 @@ func (ctx *execContext) resolveSelector(sel *selectorExpr) (value, error) {
 	switch v := left.(type) {
 	case moduleSentinel:
 		if builtin := builtinModuleFunc(string(v), sel.Name); builtin != nil {
-			return builtin, nil
+			return builtinValue{Name: string(v) + "." + sel.Name, Invoke: builtin}, nil
 		}
 		if mod := ctx.rt.modules[string(v)]; mod != nil {
 			if c, ok := mod.consts[sel.Name]; ok {
@@ -452,17 +454,14 @@ func (ctx *execContext) evalCall(call *callExpr) (value, error) {
 	if err != nil {
 		return nil, err
 	}
-	args := make([]value, 0, len(call.Args))
-	for _, arg := range call.Args {
-		v, err := ctx.eval(arg)
-		if err != nil {
-			return nil, err
-		}
-		args = append(args, v)
-	}
+	var parameters []string
 	switch fn := callee.(type) {
-	case builtinFn:
-		return fn(ctx, call.TypeArgs, args)
+	case builtinValue:
+		var known bool
+		parameters, known = BuiltinParameters(fn.Name)
+		if !known {
+			return nil, fmt.Errorf("missing builtin signature for %s", fn.Name)
+		}
 	case functionValue:
 		mod := ctx.rt.modules[fn.Module]
 		if mod == nil {
@@ -472,14 +471,48 @@ func (ctx *execContext) evalCall(call *callExpr) (value, error) {
 		if !ok {
 			return nil, fmt.Errorf("unknown function %s.%s", fn.Module, fn.Name)
 		}
-		return ctx.rt.callUser(spec, fn.Module, nil, args)
+		for _, param := range spec.Params {
+			parameters = append(parameters, param.Name)
+		}
 	case methodValue:
-		return ctx.rt.callUser(fn.Method, fn.Method.Module, fn.Receiver, args)
+		for _, param := range fn.Method.Params[1:] {
+			parameters = append(parameters, param.Name)
+		}
 	case typeSentinel:
-		return ctx.constructStruct(string(fn), args)
+		return nil, fmt.Errorf("record constructors use %s{field:value}, not function-call syntax", string(fn))
 	default:
 		return nil, fmt.Errorf("expression is not callable: %T", callee)
 	}
+	keys := make([]string, len(call.Args))
+	for i, arg := range call.Args {
+		keys[i] = arg.Name
+	}
+	order, err := ArgumentOrder(parameters, keys)
+	if err != nil {
+		return nil, err
+	}
+	// Validate first, then evaluate exactly once in source order. Binding by key
+	// does not permit a formatter or optimizer to reorder effectful expressions.
+	source := make([]value, len(call.Args))
+	for i, arg := range call.Args {
+		source[i], err = ctx.eval(arg.Value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args := make([]value, len(parameters))
+	for i, position := range order {
+		args[i] = source[position]
+	}
+	switch fn := callee.(type) {
+	case builtinValue:
+		return fn.Invoke(ctx, call.TypeArgs, args)
+	case functionValue:
+		return ctx.rt.callUser(ctx.rt.modules[fn.Module].funcs[fn.Name], fn.Module, nil, args)
+	case methodValue:
+		return ctx.rt.callUser(fn.Method, fn.Method.Module, fn.Receiver, args)
+	}
+	return nil, fmt.Errorf("unsupported callable")
 }
 
 func (ctx *execContext) evalBinary(node *binaryExpr) (value, error) {
@@ -552,10 +585,6 @@ func (ctx *execContext) evalAwait(node *awaitExpr) (value, error) {
 	return result.val, result.err
 }
 
-func (ctx *execContext) constructStruct(typeName string, args []value) (value, error) {
-	return &structValue{Type: typeName, Fields: map[string]any{}}, nil
-}
-
 func (rt *runtime) lookupMethod(receiverType, name string) (FuncSpec, bool) {
 	for _, mod := range rt.modules {
 		for _, fn := range mod.funcs {
@@ -572,6 +601,11 @@ type moduleSentinel string
 type typeSentinel string
 
 type builtinFn func(ctx *execContext, typeArgs []string, args []value) (value, error)
+
+type builtinValue struct {
+	Name   string
+	Invoke builtinFn
+}
 
 func builtinGlobal(name string) builtinFn {
 	switch name {

@@ -10,6 +10,7 @@ These instructions apply to the full repository.
 - For the active agent-only reassessment, read `PHASE12_NOTES.md` and `docs/research/agent_core_reassessment.md`; distinguish implemented syntax from proposals.
 - Prefer straightforward, readable Go over abstractions.
 - Keep parser/formatter behavior deterministic.
+- Every value argument is named; preserve source evaluation order when formatting or migrating calls. Built-in names come from `runtimekit/arguments.go` and the validated compact manifest.
 
 ## Documentation policy
 - Any user-visible or architectural change should update relevant docs (`README.md`, `docs/*`, examples).

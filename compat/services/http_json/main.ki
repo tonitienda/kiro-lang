@@ -10,10 +10,10 @@ type Msg {
 fn handler(req:http.Req) -> R[http.Resp,str] {
   let _ = req
   let body = Msg { text : "ok" }
-  return Ok ( http.json ( 200 , json.encode ( body ) ? ) )
+  return Ok ( value : http.json ( code : 200 , body : json.encode ( value : body ) ? ) )
 }
 
 fn main() -> i32 !net {
-  http.serve ( ":8080" , handler ) ?
+  http.serve ( addr : ":8080" , handler : handler ) ?
   return 0
 }

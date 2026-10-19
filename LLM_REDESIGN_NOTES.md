@@ -3,7 +3,7 @@
 This file records the aggressive redesign pass that sharpens Kiro for LLM-generated and LLM-maintained code.
 
 Phase 12 revisits these design assumptions for agent-only implementation/review/audit.
-`when (subject) { ... }` is now required; see `PHASE12_NOTES.md` and
+`when (subject) { ... }` and named value calls (`f(name: expression)`) are now required; see `PHASE12_NOTES.md` and
 `docs/research/agent_core_reassessment.md`. Later tagged-value/type proposals are not yet implemented.
 
 ## Redesign goals
@@ -88,8 +88,8 @@ This pass tightened wording for:
 
 ```ki
 fn load() -> R[Config,str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(Config{port:port})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  return Ok(value : Config{port:port})
 }
 ```
 
@@ -97,7 +97,7 @@ fn load() -> R[Config,str] !env {
 
 ```ki
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  return Ok(http.not_found())
+  return Ok(value : http.not_found())
 }
 ```
 
@@ -107,7 +107,7 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
 group {
   let t = spawn work()
   let v = await t
-  return Ok(v)
+  return Ok(value : v)
 }
 ```
 

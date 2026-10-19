@@ -4,6 +4,6 @@ import cli
 
 fn main() -> i32 !io !proc {
   let args = cli.args ( )
-  println ( "count ${args}" )
+  println ( value : "count ${args}" )
   return 0
 }

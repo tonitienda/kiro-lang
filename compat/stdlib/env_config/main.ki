@@ -8,12 +8,12 @@ type Config {
 }
 
 fn load() -> R[Config,str] !env {
-  let addr = env.get_or ( "ADDR" , ":8080" )
-  return Ok ( Config { addr : addr mode : nil } )
+  let addr = env.get_or ( key : "ADDR" , fallback : ":8080" )
+  return Ok ( value : Config { addr : addr mode : nil } )
 }
 
 fn main() -> i32 !env !io {
   let cfg = load ( ) ?
-  println ( "${cfg.addr}" )
+  println ( value : "${cfg.addr}" )
   return 0
 }

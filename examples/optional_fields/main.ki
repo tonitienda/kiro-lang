@@ -8,6 +8,6 @@ type User {
 
 fn main() -> i32 !io {
   let u = User { id : 1 name : "toni" email : nil }
-  println ( "user=${u.name}" )
+  println ( value : "user=${u.name}" )
   return 0
 }

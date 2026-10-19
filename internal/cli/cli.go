@@ -333,7 +333,7 @@ func scaffoldHello(vendorSkill bool) error {
 	if err := os.WriteFile("hello/main.ki", []byte(`mod main
 
 fn main() -> i32 !io {
-  println("hello")
+  println(value : "hello")
   return 0
 }
 `), 0o644); err != nil {
@@ -373,8 +373,8 @@ import log
 
 fn main() -> i32 !env !log !net {
   let cfg = config.load()?
-  log.info("starting ${cfg.port}")
-  http.serve(cfg.port, app.handler)?
+  log.info(message : "starting ${cfg.port}")
+  http.serve(addr : cfg.port, handler : app.handler)?
   return 0
 }
 `
@@ -385,10 +385,10 @@ import http
 fn handler(req:http.Req) -> R[http.Resp, str] {
   when (req.path) {
     "/health" => {
-      return Ok(http.text(200, "ok"))
+      return Ok(value : http.text(code : 200, body : "ok"))
     }
     _ => {
-      return Ok(http.not_found())
+      return Ok(value : http.not_found())
     }
   }
 }
@@ -403,9 +403,9 @@ type AppConfig {
 }
 
 fn load() -> R[AppConfig, str] !env {
-  let port = env.get_or("PORT", ":8080")
-  let app_env = env.get_or("APP_ENV", "dev")
-  return Ok(AppConfig{port:port env:app_env})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  let app_env = env.get_or(key : "APP_ENV", fallback : "dev")
+  return Ok(value : AppConfig{port:port env:app_env})
 }
 `
 	testFile := `mod health_test
@@ -415,9 +415,9 @@ import http
 import test
 
 fn test_health_handler() -> nil {
-  let req = http.test_req("GET", "/health", "")
-  let res = app.handler(req)?
-  test.eq(res.code, 200)
+  let req = http.test_req(method : "GET", path : "/health", body : "")
+  let res = app.handler(req : req)?
+  test.eq(actual : res.code, expected : 200)
 }
 `
 	readme := `# Kiro service template

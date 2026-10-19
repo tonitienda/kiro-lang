@@ -1,15 +1,22 @@
 {
   "language": "Kiro",
-  "version": "phase12-agent-core",
+  "version": "phase12-keyed-calls",
   "skill_format": "codex-skill-v1",
-  "extensions": [".ki"],
+  "extensions": [
+    ".ki"
+  ],
   "stable_core": {
     "function_form": "block_only",
     "case_dispatch": "when (subject) { pattern => { ... } }",
     "results": "R[T,E] with ? propagation",
     "optional": "?T with nil",
-    "concurrency": ["group", "spawn", "await"],
-    "formatting": "kiro fmt"
+    "concurrency": [
+      "group",
+      "spawn",
+      "await"
+    ],
+    "formatting": "kiro fmt",
+    "calls": "required name: expression value arguments; source-order evaluation"
   },
   "keywords": [
     "mod",
@@ -25,16 +32,53 @@
     "await",
     "nil"
   ],
-  "effects": ["env", "fs", "io", "log", "net", "panic", "proc", "time"],
+  "effects": [
+    "env",
+    "fs",
+    "io",
+    "log",
+    "net",
+    "panic",
+    "proc",
+    "time"
+  ],
   "stdlib_modules": {
-    "env": ["get", "get_or"],
-    "fs": ["read", "write"],
-    "http": ["serve", "text", "json", "not_found", "test_req"],
-    "json": ["encode", "decode"],
-    "log": ["info", "error"],
-    "parse": ["i32"],
-    "test": ["eq", "ok", "fail"],
-    "time": ["now"]
+    "env": [
+      "get_or"
+    ],
+    "log": [
+      "info"
+    ],
+    "test": [
+      "eq"
+    ],
+    "parse": [
+      "i32"
+    ],
+    "cli": [
+      "args"
+    ],
+    "fs": [
+      "read_file",
+      "write_file"
+    ],
+    "http": [
+      "text",
+      "json",
+      "not_found",
+      "with_header",
+      "test_req",
+      "query",
+      "serve"
+    ],
+    "json": [
+      "encode",
+      "decode"
+    ],
+    "ctx": [
+      "background",
+      "with_timeout_ms"
+    ]
   },
   "canonical_commands": [
     "kiro fmt <paths...>",
@@ -46,12 +90,36 @@
     "kiro test <entry-or-path> [--keep-gen]"
   ],
   "project_conventions": {
-    "tiny_cli": ["main.ki", "mod main", "explicit main effects", "AGENTS.md", ".kiro/skill/", ".kiro/version.json"],
-    "tiny_service": ["main.ki", "app/", "internal/config/", "test/", "AGENTS.md", ".kiro/skill/", ".kiro/version.json"],
-    "tests": ["test_* functions", "http.test_req", "test.eq", "return nil"]
+    "tiny_cli": [
+      "main.ki",
+      "mod main",
+      "explicit main effects",
+      "AGENTS.md",
+      ".kiro/skill/",
+      ".kiro/version.json"
+    ],
+    "tiny_service": [
+      "main.ki",
+      "app/",
+      "internal/config/",
+      "test/",
+      "AGENTS.md",
+      ".kiro/skill/",
+      ".kiro/version.json"
+    ],
+    "tests": [
+      "test_* functions",
+      "http.test_req",
+      "test.eq",
+      "return nil"
+    ]
   },
   "agent_handoff": {
-    "read_first": [".kiro/skill/SKILL.md", ".kiro/skill/references/kiro.json", "AGENTS.md"],
+    "read_first": [
+      ".kiro/skill/SKILL.md",
+      ".kiro/skill/references/kiro.json",
+      "AGENTS.md"
+    ],
     "edit_scope": "Read the vendored skill before editing .ki files.",
     "version_pin": ".kiro/version.json records the Kiro version that produced the scaffold."
   },
@@ -59,5 +127,83 @@
     "generated-Go API stability",
     "runtime coverage beyond documented examples",
     "editor tooling breadth beyond the current LSP baseline"
-  ]
+  ],
+  "call_signatures": {
+    "print": [
+      "value"
+    ],
+    "println": [
+      "value"
+    ],
+    "Ok": [
+      "value"
+    ],
+    "Err": [
+      "error"
+    ],
+    "env.get_or": [
+      "key",
+      "fallback"
+    ],
+    "log.info": [
+      "message"
+    ],
+    "test.eq": [
+      "actual",
+      "expected"
+    ],
+    "assert.equal_i32": [
+      "actual",
+      "expected"
+    ],
+    "parse.i32": [
+      "text"
+    ],
+    "cli.args": [],
+    "fs.read_file": [
+      "path"
+    ],
+    "fs.write_file": [
+      "path",
+      "contents"
+    ],
+    "http.text": [
+      "code",
+      "body"
+    ],
+    "http.json": [
+      "code",
+      "body"
+    ],
+    "http.not_found": [],
+    "http.with_header": [
+      "resp",
+      "key",
+      "value"
+    ],
+    "http.test_req": [
+      "method",
+      "path",
+      "body"
+    ],
+    "http.query": [
+      "req",
+      "key"
+    ],
+    "http.serve": [
+      "addr",
+      "handler"
+    ],
+    "json.encode": [
+      "value"
+    ],
+    "json.decode": [
+      "text"
+    ],
+    "ctx.background": [],
+    "ctx.with_timeout_ms": [
+      "parent",
+      "ms"
+    ]
+  }
 }

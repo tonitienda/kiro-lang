@@ -5,6 +5,6 @@ import util
 const Name = "inspect"
 
 fn main() -> i32 !io {
-  println ( util.msg ( Name ) )
+  println ( value : util.msg ( name : Name ) )
   return 0
 }

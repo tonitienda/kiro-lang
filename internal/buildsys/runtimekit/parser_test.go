@@ -14,37 +14,37 @@ func TestBracedWhenExecution(t *testing.T) {
 	}{
 		{"continuation", `let value = "hit"
 when (value) {
-  "hit" => { println("first") }
-  _ => { println("wrong") }
+  "hit" => { println(value : "first") }
+  _ => { println(value : "wrong") }
 }
-println("after")
+println(value : "after")
 return 0`, "first\nafter\n"},
 		{"nested", `when ("outer") {
   "outer" => {
     when ("inner") {
-      "inner" => { println("nested") }
-      _ => { println("wrong inner") }
+      "inner" => { println(value : "nested") }
+      _ => { println(value : "wrong inner") }
     }
-    println("after inner")
+    println(value : "after inner")
   }
-  _ => { println("wrong outer") }
+  _ => { println(value : "wrong outer") }
 }
-println("after outer")
+println(value : "after outer")
 return 0`, "nested\nafter inner\nafter outer\n"},
 		{"selector", `let item = Box{name:"hit"}
 when (item.name) {
-  "hit" => { println("selector") }
-  _ => { println("wrong") }
+  "hit" => { println(value : "selector") }
+  _ => { println(value : "wrong") }
 }
 return 0`, "selector\n"},
-		{"call_with_record", `when (label(Box{name:"hit"})) {
-  "hit" => { println("call") }
-  _ => { println("wrong") }
+		{"call_with_record", `when (label(item : Box{name:"hit"})) {
+  "hit" => { println(value : "call") }
+  _ => { println(value : "wrong") }
 }
 return 0`, "call\n"},
 		{"parenthesized_record", `when ((Box{name:"hit"}).name) {
-  "hit" => { println("record") }
-  _ => { println("wrong") }
+  "hit" => { println(value : "record") }
+  _ => { println(value : "wrong") }
 }
 return 0`, "record\n"},
 	} {

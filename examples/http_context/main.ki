@@ -5,8 +5,8 @@ import log
 
 fn main() -> i32 !io !log {
   let c = ctx.background ( )
-  let t = ctx.with_timeout_ms ( c , 1000 )
-  log.info ( "started" )
-  println ( "ok ${t}" )
+  let t = ctx.with_timeout_ms ( parent : c , ms : 1000 )
+  log.info ( message : "started" )
+  println ( value : "ok ${t}" )
   return 0
 }

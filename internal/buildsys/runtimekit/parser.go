@@ -44,7 +44,12 @@ type selectorExpr struct {
 type callExpr struct {
 	Callee   expr
 	TypeArgs []string
-	Args     []expr
+	Args     []namedArgument
+}
+
+type namedArgument struct {
+	Name  string
+	Value expr
 }
 type binaryExpr struct {
 	Left  expr
@@ -402,16 +407,33 @@ func (p *bodyParser) finishCall(callee expr) (expr, error) {
 	if _, err := p.expect(TokenSymbol, "("); err != nil {
 		return nil, err
 	}
-	var args []expr
+	var args []namedArgument
+	seen := map[string]bool{}
+	p.skipNewlines()
 	for !p.peekText(")") {
+		if p.peek().Kind != TokenIdent || p.peekNext().Text != ":" {
+			return nil, fmt.Errorf("named arguments are required\nhint: write name: expression for every value argument")
+		}
+		name := p.next().Text
+		p.next()
+		if seen[name] {
+			return nil, fmt.Errorf("duplicate argument %q", name)
+		}
+		seen[name] = true
+		p.skipNewlines()
 		arg, err := p.parseExpr(0)
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, arg)
-		if p.peekText(",") {
-			p.next()
+		args = append(args, namedArgument{Name: name, Value: arg})
+		p.skipNewlines()
+		if p.peekText(")") {
+			break
 		}
+		if _, err := p.expect(TokenSymbol, ","); err != nil {
+			return nil, fmt.Errorf("expected comma between named arguments")
+		}
+		p.skipNewlines()
 	}
 	if _, err := p.expect(TokenSymbol, ")"); err != nil {
 		return nil, err

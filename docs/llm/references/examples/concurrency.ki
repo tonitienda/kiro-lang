@@ -21,12 +21,12 @@ fn load_pair() -> R[Pair, str] {
     let right_task = spawn fetch_right()
     let left = await left_task
     let right = await right_task
-    return Ok(Pair{left:left right:right})
+    return Ok(value : Pair{left:left right:right})
   }
 }
 
 fn main() -> i32 !io {
   let pair = load_pair()?
-  println(json.encode(pair)?)
+  println(value : json.encode(value : pair)?)
   return 0
 }

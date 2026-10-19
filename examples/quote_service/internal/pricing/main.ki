@@ -12,9 +12,9 @@ type Quote {
 }
 
 fn quote(sku:str, addon:?str, delivery:str, coupon:?str) -> R[Quote,str] {
-  let item = catalog.price ( sku ) ?
-  let extra = catalog.addon_price ( addon ) ?
-  let delivery_price = shipping.price ( delivery , coupon ) ?
+  let item = catalog.price ( sku : sku ) ?
+  let extra = catalog.addon_price ( sku : addon ) ?
+  let delivery_price = shipping.price ( delivery : delivery , coupon : coupon ) ?
   let subtotal = item + extra
-  return Ok ( Quote { currency : "EUR" subtotal_cents : subtotal shipping_cents : delivery_price total_cents : subtotal + delivery_price coupon : coupon } )
+  return Ok ( value : Quote { currency : "EUR" subtotal_cents : subtotal shipping_cents : delivery_price total_cents : subtotal + delivery_price coupon : coupon } )
 }

@@ -1,0 +1,6 @@
+mod main
+
+fn main() -> i32 !io {
+  println("old form")
+  return 0
+}

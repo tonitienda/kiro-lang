@@ -12,7 +12,7 @@ group {
   let a = await ta
   let b = await tb
 
-  return Ok(http.json(200, json.encode(Resp{a:a b:b})?))
+  return Ok(value : http.json(code : 200, body : json.encode(value : Resp{a:a b:b})?))
 }
 ```
 

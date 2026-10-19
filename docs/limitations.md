@@ -7,6 +7,7 @@ Kiro is still experimental.
 - semantics remain intentionally small and incomplete compared with mature languages
 - effect checking is explicit and conservative rather than inferred
 - diagnostics are improving, but not every runtime/type mistake is caught statically yet
+- named-call checking resolves direct signatures and some receiver types; aliases, higher-order calls and calls embedded in string interpolation need runtime signature validation
 - generated Go is inspectable but not a stable public API
 - example breadth is larger than fully battle-tested runtime coverage
 - executable builds currently package a Go-hosted interpreter; Go inspection emits structural stubs rather than faithful direct lowering

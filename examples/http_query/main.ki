@@ -3,18 +3,18 @@ mod main
 import http
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  let name = http.query ( req , "name" )
+  let name = http.query ( req : req , key : "name" )
   when (name) {
   nil => {
-  return Ok ( http.text ( 200 , "hello stranger" ) )
+  return Ok ( value : http.text ( code : 200 , body : "hello stranger" ) )
   }
   _ => {
-  return Ok ( http.text ( 200 , "hello" ) )
+  return Ok ( value : http.text ( code : 200 , body : "hello" ) )
   }
   }
 }
 
 fn main() -> i32 !net {
-  http.serve ( ":8080" , app ) ?
+  http.serve ( addr : ":8080" , handler : app ) ?
   return 0
 }

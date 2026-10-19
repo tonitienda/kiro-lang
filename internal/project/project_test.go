@@ -51,12 +51,12 @@ func TestLoadRejectsMissingEffects(t *testing.T) {
 import env
 
 fn load() -> str !env {
-  return env.get_or("PORT", ":8080")
+  return env.get_or(key : "PORT", fallback : ":8080")
 }
 
 fn main() -> i32 {
   let port = load()
-  println(port)
+  println(value : port)
   return 0
 }
 `)
@@ -133,8 +133,8 @@ type Msg {
 }
 
 fn main() -> i32 {
-  let body = json.encode(Msg{text:"ok"})?
-  println(body)
+  let body = json.encode(value : Msg{text:"ok"})?
+  println(value : body)
   return 0
 }
 `)
@@ -169,7 +169,7 @@ func TestLoadPropagatesSpawnedEffects(t *testing.T) {
 	mustWrite(t, filepath.Join(dir, "main.ki"), `mod main
 
 fn work() -> nil !io {
-  println("hi")
+  println(value : "hi")
 }
 
 fn main() -> i32 {

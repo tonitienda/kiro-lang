@@ -6,16 +6,16 @@ import test
 fn app(req:http.Req) -> R[http.Resp,str] {
   when (req.path) {
   "/health" => {
-  return Ok ( http.text ( 200 , "ok" ) )
+  return Ok ( value : http.text ( code : 200 , body : "ok" ) )
   }
   _ => {
-  return Ok ( http.not_found ( ) )
+  return Ok ( value : http.not_found ( ) )
   }
   }
 }
 
 fn test_health_handler() -> nil {
-  let req = http.test_req ( "GET" , "/health" , "" )
-  let res = app ( req ) ?
-  test.eq ( res.code , 200 )
+  let req = http.test_req ( method : "GET" , path : "/health" , body : "" )
+  let res = app ( req : req ) ?
+  test.eq ( actual : res.code , expected : 200 )
 }
