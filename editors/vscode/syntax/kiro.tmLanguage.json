@@ -26,12 +26,12 @@
     },
     "keywords": {
       "patterns": [
-        { "name": "keyword.control.kiro", "match": "\\b(mod|import|fn|type|const|let|mut|if|else|when|for|in|while|break|continue|defer|return|spawn|await|group)\\b" }
+        { "name": "keyword.control.kiro", "match": "\\b(mod|import|fn|type|const|let|mut|if|else|when|for|in|while|break|continue|defer|return|spawn|await|group|partial|default)\\b" }
       ]
     },
     "types": {
       "patterns": [
-        { "name": "storage.type.kiro", "match": "\\b(R|i32|i64|str|bool|nil)\\b|\\?[A-Za-z_][A-Za-z0-9_]*" }
+        { "name": "storage.type.kiro", "match": "\\b(Fn|List|R|i32|i64|str|bool|nil)\\b|\\?[A-Za-z_][A-Za-z0-9_]*" }
       ]
     },
     "declarations": {

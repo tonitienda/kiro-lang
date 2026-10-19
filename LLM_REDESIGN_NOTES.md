@@ -119,3 +119,7 @@ These areas remain intentionally narrow or unfinished:
 - broader concurrency diagnostics inside function bodies
 - generated-Go API stability
 - stdlib breadth beyond the documented canonical modules
+
+Phase 13 extends the keyed core with typed functions, explicit partial application,
+visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.md` and
+`docs/functional-core.md` for the implemented contracts and their limits.

@@ -167,7 +167,7 @@ func (l *Lexer) peekNext(ch rune) bool {
 
 func isKeyword(s string) bool {
 	switch s {
-	case "mod", "import", "const", "type", "fn", "let", "mut", "if", "else", "when", "for", "in", "while", "break", "continue", "defer", "return", "spawn", "await", "group":
+	case "partial", "default", "mod", "import", "const", "type", "fn", "let", "mut", "if", "else", "when", "for", "in", "while", "break", "continue", "defer", "return", "spawn", "await", "group":
 		return true
 	default:
 		return false

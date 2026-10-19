@@ -1,6 +1,6 @@
 {
   "language": "Kiro",
-  "version": "phase12-keyed-calls",
+  "version": "phase13-functional-core",
   "skill_format": "codex-skill-v1",
   "extensions": [
     ".ki"
@@ -16,7 +16,12 @@
       "await"
     ],
     "formatting": "kiro fmt",
-    "calls": "required name: expression value arguments; source-order evaluation"
+    "calls": "required name: expression value arguments; source-order evaluation",
+    "function_values": "Fn[(key:Type)->Return!effect]",
+    "partial_application": "partial f(key:expression); pure eager snapshot captures; latent effects retained",
+    "defaults": "scalar literal declarations; explicit key:default selection; no omitted keys",
+    "bindings": "let is immutable; mut name = value permits local rebinding",
+    "collections": "eager list.map/filter/fold with pure keyed callbacks"
   },
   "keywords": [
     "mod",
@@ -30,7 +35,10 @@
     "group",
     "spawn",
     "await",
-    "nil"
+    "nil",
+    "mut",
+    "partial",
+    "default"
   ],
   "effects": [
     "env",
@@ -78,6 +86,11 @@
     "ctx": [
       "background",
       "with_timeout_ms"
+    ],
+    "list": [
+      "map",
+      "filter",
+      "fold"
     ]
   },
   "canonical_commands": [
@@ -204,6 +217,19 @@
     "ctx.with_timeout_ms": [
       "parent",
       "ms"
+    ],
+    "list.map": [
+      "items",
+      "transform"
+    ],
+    "list.filter": [
+      "items",
+      "predicate"
+    ],
+    "list.fold": [
+      "items",
+      "initial",
+      "reduce"
     ]
   }
 }

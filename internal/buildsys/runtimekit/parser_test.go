@@ -51,7 +51,7 @@ return 0`, "record\n"},
 		t.Run(tc.name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			spec := ProgramSpec{EntryModule: "main", Modules: []ModuleSpec{{Name: "main", Funcs: []FuncSpec{
-				{Module: "main", Name: "main", ReturnType: "i32", BlockBody: true, Body: tc.body},
+				{Module: "main", Name: "main", Effects: []string{"io"}, ReturnType: "i32", BlockBody: true, Body: tc.body},
 				{Module: "main", Name: "label", Params: []ParamSpec{{Name: "item", Type: "Box"}}, ReturnType: "str", BlockBody: true, Body: "return item.name"},
 			}}}}
 			rt, err := newRuntime(spec, nil, &stdout, &stderr)

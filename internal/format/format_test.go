@@ -161,3 +161,28 @@ func TestSource_PreservesNamedArgumentOrder(t *testing.T) {
 		t.Fatalf("formatter reordered argument expressions: %s", out)
 	}
 }
+
+func TestFunctionalSignaturesAndDefaultsRoundTrip(t *testing.T) {
+	source := `mod main
+fn add(value:i32,amount:i32=-2)->i32 {return value + amount}
+fn factory()->Fn[(value:i32)->i32] {return partial add(amount:default)}
+fn text(value:str="A  B = > C . D")->str {return value}
+fn run(f:Fn[(value:str)->nil!io])->nil !io {return f(value:"A  B")}
+`
+	once, err := Source(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	twice, err := Source(once)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if once != twice {
+		t.Fatalf("formatting is not idempotent:\n%s\n%s", once, twice)
+	}
+	for _, part := range []string{"amount:i32 = -2", "Fn[(value:i32)->i32]", `"A  B = > C . D"`, "partial add ( amount : default )", "Fn[(value:str)->nil!io]"} {
+		if !strings.Contains(once, part) {
+			t.Fatalf("lost %s in\n%s", part, once)
+		}
+	}
+}

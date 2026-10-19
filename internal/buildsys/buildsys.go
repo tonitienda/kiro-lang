@@ -84,11 +84,13 @@ type FuncSpec struct {
 	ReturnType   string      `json:"return_type"`
 	BlockBody    bool        `json:"block_body"`
 	Body         string      `json:"body"`
+	Effects      []string    `json:"effects,omitempty"`
 }
 
 type ParamSpec struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Default string `json:"default,omitempty"`
 }
 
 func Build(opts Options) (*Result, error) {
@@ -167,14 +169,14 @@ func projectToSpec(proj *project.Project, mode string) ProgramSpec {
 			case ast.FuncDecl:
 				params := make([]ParamSpec, 0, len(d.Params))
 				for _, p := range d.Params {
-					params = append(params, ParamSpec{Name: p.Name, Type: p.Type})
+					params = append(params, ParamSpec{Name: p.Name, Type: p.Type, Default: p.Default})
 				}
 				receiverType := ""
 				if d.Receiver != nil {
 					receiverType = d.Receiver.Type
 					params = append([]ParamSpec{{Name: d.Receiver.Name, Type: d.Receiver.Type}}, params...)
 				}
-				mod.Funcs = append(mod.Funcs, FuncSpec{Module: file.AST.Module, Name: d.Name, ReceiverType: receiverType, Params: params, ReturnType: d.ReturnType, BlockBody: d.BlockBody, Body: d.Body})
+				mod.Funcs = append(mod.Funcs, FuncSpec{Module: file.AST.Module, Name: d.Name, ReceiverType: receiverType, Params: params, ReturnType: d.ReturnType, BlockBody: d.BlockBody, Body: d.Body, Effects: d.CanonicalEffectNames()})
 			}
 		}
 	}

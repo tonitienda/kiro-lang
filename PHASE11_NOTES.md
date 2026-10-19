@@ -30,3 +30,7 @@ supported while the shared parser/formatter adopts the new explicit case delimit
 - tagged release automation now requires explicit workflow `contents: write` permission so CLI bundles, the packaged VS Code `.vsix`, and checksum assets can publish to GitHub Releases without manual intervention
 - LSP still depends on the same parser and formatter, not a second frontend
 - editor tooling continues to surface explicit function effects
+
+Phase 13 extends the keyed core with typed functions, explicit partial application,
+visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.md` and
+`docs/functional-core.md` for the implemented contracts and their limits.

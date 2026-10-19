@@ -9,6 +9,14 @@ A more capable agent can identify hypotheses and implementation defects; that do
 establish that its preferred syntax will outperform alternatives. Measure the proposals
 using the [research protocol](agent_language_iteration.md).
 
+Current implementation addendum: Phase 13 implements the explicit functional subset in
+[functional-core.md](../functional-core.md): typed callables, explicit partial application,
+literal defaults selected by a visible marker, and eager pure collection transforms.
+Known return-type mismatches now fail checking and runtime callable contracts are validated.
+Tagged absence/unit, exhaustive variants, schema checks and complete effect/concurrency
+semantics remain proposals or known gaps. These changes have not been benchmarked against
+alternative languages or model versions.
+
 ## Main conclusion
 
 Optimize the full agent/tool interaction around explicit structure and enforceable semantics.

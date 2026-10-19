@@ -58,6 +58,7 @@ func (d FuncDecl) GetDoc() []string { return d.Doc }
 func (FuncDecl) declNode()          {}
 
 type Param struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	Default string
 }

@@ -20,3 +20,7 @@ Phase 12 retains these core concepts but requires explicit case delimiters,
 - stable-core does not promise a frozen generated-Go API
 - stable-core does not preserve every historical syntax alias or shorthand
 - stable-core does promise one boring, canonical style for the documented language slice
+
+Phase 13 extends the keyed core with typed functions, explicit partial application,
+visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.md` and
+`docs/functional-core.md` for the implemented contracts and their limits.

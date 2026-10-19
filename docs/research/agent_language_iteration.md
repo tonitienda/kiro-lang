@@ -119,6 +119,11 @@ All four probes passed `check` on the starting implementation:
 | Sum a list with documented `for` syntax | Fails: `expected IDENT, got NEWLINE` | Do checked examples actually execute? |
 | Compare a propagated failure with `Err(...)` in the caller | Aborts with the domain error before the assertion | Can callers inspect a failure after propagation? |
 
+Phase 13 rerun: the return-type probe now fails `check` and `run` with `expected i32,
+got str`. JSON required fields still pass without schema validation; the documented loop
+still passes checking but fails execution; a propagated failure still aborts before the
+caller assertion. The observation script intentionally preserves all four inputs.
+
 These are implementation findings, not measurements of agent performance. Fixes should
 be accompanied by negative compiler/runtime tests, not just more optimistic documentation.
 

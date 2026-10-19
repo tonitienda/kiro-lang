@@ -4,7 +4,7 @@ Kiro's stdlib surface is intentionally narrow and regular.
 
 ## Naming policy
 
-- use short module names with clear semantic ownership: `env`, `fs`, `http`, `json`, `log`, `parse`, `test`, `time`
+- use short module names with clear semantic ownership: `env`, `fs`, `http`, `json`, `log`, `parse`, `test`, `time`, `list`
 - use verb-oriented helpers for actions: `read_file`, `write_file`, `get_or`, `require`
 - keep constructors and pure transforms explicit
 
@@ -38,3 +38,10 @@ Prefer:
 - `http.with_header`
 
 Keep handlers on `R[http.Resp,str]` so error flow stays explicit.
+
+## Collection style
+
+Use eager `list.map(items:xs, transform:f)`, `list.filter(items:xs, predicate:p)`, and
+`list.fold(items:xs, initial:zero, reduce:r)`. Callbacks are pure with explicit `value`
+roles; reducers additionally use `state` and return the state type. See
+[the functional contract](functional-core.md).

@@ -35,6 +35,7 @@ var builtinParameters = map[string][]string{
 	"http.serve":  {"addr", "handler"},
 	"json.encode": {"value"}, "json.decode": {"text"},
 	"ctx.background": {}, "ctx.with_timeout_ms": {"parent", "ms"},
+	"list.map": {"items", "transform"}, "list.filter": {"items", "predicate"}, "list.fold": {"items", "initial", "reduce"},
 }
 
 // ArgumentOrder validates a complete keyed call before any argument is evaluated.
@@ -69,10 +70,11 @@ func ArgumentOrder(parameters, keys []string) ([]int, error) {
 }
 
 type CallSite struct {
-	Target string
-	Keys   []string
-	Line   int
-	Column int
+	Target  string
+	Keys    []string
+	Line    int
+	Column  int
+	Partial bool
 }
 
 // InspectCalls checks keyed-call syntax without pretending to parse every body
@@ -113,7 +115,7 @@ func InspectCalls(body string) ([]CallSite, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%d:%d: call %s: %w", token.Line, token.Column, strings.Join(parts, "."), err)
 		}
-		sites = append(sites, CallSite{Target: strings.Join(parts, "."), Keys: keys, Line: token.Line, Column: token.Column})
+		sites = append(sites, CallSite{Target: strings.Join(parts, "."), Keys: keys, Line: token.Line, Column: token.Column, Partial: i > 0 && tokens[i-1].Text == "partial"})
 	}
 	return sites, nil
 }
@@ -185,4 +187,23 @@ func inspectArgumentKeys(tokens []Token, open int) ([]string, error) {
 		}
 		return keys, nil
 	}
+}
+
+func CheckArgumentKeys(parameters, keys []string, partial bool) ([]int, error) {
+	if !partial {
+		return ArgumentOrder(parameters, keys)
+	}
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("partial must bind at least one argument")
+	}
+	allowed := map[string]bool{}
+	for _, name := range parameters {
+		allowed[name] = true
+	}
+	for _, name := range keys {
+		if !allowed[name] {
+			return nil, fmt.Errorf("unknown argument %q in partial application", name)
+		}
+	}
+	return ArgumentOrder(keys, keys)
 }

@@ -37,9 +37,9 @@ f(wrong:mark(value:"must not run"), right:"B")`, "", `unknown argument "wrong"`}
 		t.Run(tc.name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			functions := []FuncSpec{
-				{Module: "main", Name: "main", BlockBody: true, ReturnType: "i32", Body: tc.body + "\nreturn 0"},
+				{Module: "main", Name: "main", Effects: []string{"io"}, BlockBody: true, ReturnType: "i32", Body: tc.body + "\nreturn 0"},
 				{Module: "main", Name: "pair", BlockBody: true, ReturnType: "str", Params: []ParamSpec{{Name: "left", Type: "str"}, {Name: "right", Type: "str"}}, Body: `return "${left}|${right}"`},
-				{Module: "main", Name: "mark", BlockBody: true, ReturnType: "str", Params: []ParamSpec{{Name: "value", Type: "str"}}, Body: "println(value:value)\nreturn value"},
+				{Module: "main", Name: "mark", Effects: []string{"io"}, BlockBody: true, ReturnType: "str", Params: []ParamSpec{{Name: "value", Type: "str"}}, Body: "println(value:value)\nreturn value"},
 				{Module: "main", Name: "greet", ReceiverType: "User", BlockBody: true, ReturnType: "str", Params: []ParamSpec{{Name: "u", Type: "User"}, {Name: "prefix", Type: "str"}, {Name: "suffix", Type: "str"}}, Body: `return "${prefix} ${u.name}${suffix}"`},
 			}
 			rt, err := newRuntime(ProgramSpec{EntryModule: "main", Modules: []ModuleSpec{{Name: "main", Types: []TypeSpec{{Name: "User"}}, Funcs: functions}}}, nil, &stdout, &stderr)

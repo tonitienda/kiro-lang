@@ -6,7 +6,7 @@
   Old unbraced headers fail with a migration diagnostic. Parentheses remove subject/record
   literal ambiguity, and braces let execution continue after a case block.
 - Updated examples, compatibility fixtures, service scaffolding and the bundled skill.
-  The compact manifest now identifies `phase12-keyed-calls`; regenerate downstream snapshots.
+  The Phase 12 compact manifest identified `phase12-keyed-calls`; Phase 13 supersedes it. Regenerate downstream snapshots.
 - The formatter preserves string contents while normalizing surrounding non-literal tokens.
 - `docs/research/agent_core_reassessment.md` distinguishes implemented changes from proposed
   tagged optionals/unit, typed errors/exhaustiveness and structural agent tools.
@@ -23,3 +23,6 @@
   false alarms and escaped defects; different agents are not assumed statistically independent.
 - Phase 10's results/effects/optionals/concurrency concepts remain the design base. Existing
   body/type/JSON/result/concurrency enforcement gaps remain until explicitly implemented.
+
+Phase 13 adds typed function values, partial application, explicit defaults and pure eager
+collection transforms; see `PHASE13_NOTES.md` for the current enforcement boundary.

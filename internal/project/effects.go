@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
-	"github.com/kiro-lang/kiro/internal/lexer"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 )
 
 var knownEffects = map[string]struct{}{
@@ -125,26 +125,17 @@ func sortedKnownEffects() []string {
 }
 
 func collectCalls(body string) []string {
-	toks, err := lexer.Lex(body)
+	sites, err := runtimekit.InspectCalls(body)
 	if err != nil {
 		return nil
 	}
 	var calls []string
-	for i := 0; i < len(toks); i++ {
-		if toks[i].Kind != lexer.TokenIdent {
-			continue
-		}
-		parts := []string{toks[i].Text}
-		j := i + 1
-		for j+1 < len(toks) && toks[j].Text == "." && toks[j+1].Kind == lexer.TokenIdent {
-			parts = append(parts, toks[j+1].Text)
-			j += 2
-		}
-		if j < len(toks) && toks[j].Text == "(" {
-			calls = append(calls, strings.Join(parts, "."))
-			i = j - 1
+	for _, site := range sites {
+		if !site.Partial {
+			calls = append(calls, site.Target)
 		}
 	}
+
 	return calls
 }
 

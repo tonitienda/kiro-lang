@@ -1,0 +1,36 @@
+mod basket_pricing
+
+import list
+
+type Item {
+  sku:str
+  unit_cents:i32
+  quantity:i32
+}
+
+type Line {
+  sku:str
+  total_cents:i32
+}
+
+fn purchasable(value:Item) -> bool {
+  return value.quantity > 0
+}
+
+fn price(value:Item, discount_cents:i32 = 0) -> Line {
+  return Line { sku : value.sku total_cents : value.unit_cents * value.quantity - discount_cents }
+}
+
+fn pricer(discount_cents:i32) -> Fn[(value:Item)->Line] {
+  return partial price ( discount_cents : discount_cents )
+}
+
+fn accumulate(state:i32, value:Line) -> i32 {
+  return state + value.total_cents
+}
+
+fn total(items:List[Item], transform:Fn[(value:Item)->Line]) -> i32 {
+  let selected = list.filter ( items : items , predicate : purchasable )
+  let lines = list.map ( items : selected , transform : transform )
+  return list.fold ( items : lines , initial : 0 , reduce : accumulate )
+}

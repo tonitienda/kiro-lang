@@ -200,7 +200,24 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 			return nil, fmt.Errorf("%d:%d: duplicate parameter %q", paramName.Line, paramName.Column, paramName.Text)
 		}
 		parameterNames[paramName.Text] = true
-		params = append(params, ast.Param{Name: paramName.Text, Type: paramType.Text})
+		parameter := ast.Param{Name: paramName.Text, Type: paramType.Text}
+		if p.peekText("=") {
+			p.next()
+			literal := p.next()
+			sign := ""
+			if literal.Text == "-" {
+				sign = "-"
+				literal = p.next()
+				if literal.Kind != lexer.TokenInt {
+					return nil, fmt.Errorf("negative default requires an integer literal")
+				}
+			}
+			if literal.Kind != lexer.TokenString && literal.Kind != lexer.TokenInt && literal.Text != "nil" && literal.Text != "true" && literal.Text != "false" {
+				return nil, fmt.Errorf("%d:%d: defaults must be scalar literals", literal.Line, literal.Column)
+			}
+			parameter.Default = sign + renderToken(literal)
+		}
+		params = append(params, parameter)
 		if p.peekText(",") {
 			p.next()
 		}

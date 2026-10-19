@@ -43,11 +43,13 @@ type FuncSpec struct {
 	ReturnType   string      `json:"return_type"`
 	BlockBody    bool        `json:"block_body"`
 	Body         string      `json:"body"`
+	Effects      []string    `json:"effects,omitempty"`
 }
 
 type ParamSpec struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Default string `json:"default,omitempty"`
 }
 
 func DecodeSpec(raw string) (ProgramSpec, error) {

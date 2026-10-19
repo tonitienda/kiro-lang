@@ -20,7 +20,7 @@ type File struct {
 }
 
 var stdlibModules = map[string]struct{}{
-	"fs": {}, "http": {}, "json": {}, "cli": {}, "env": {}, "log": {}, "ctx": {}, "parse": {}, "test": {}, "maybe": {}, "time": {},
+	"list": {}, "fs": {}, "http": {}, "json": {}, "cli": {}, "env": {}, "log": {}, "ctx": {}, "parse": {}, "test": {}, "maybe": {}, "time": {},
 }
 
 type Project struct {
@@ -91,6 +91,10 @@ func Load(entry string) (*Project, error) {
 		return nil, err
 	}
 	if err := validateCalls(proj); err != nil {
+		return nil, err
+	}
+
+	if err := validateFunctionalContracts(proj); err != nil {
 		return nil, err
 	}
 

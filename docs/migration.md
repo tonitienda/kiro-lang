@@ -2,6 +2,15 @@
 
 Kiro is still pre-1.0 and breaking changes are expected.
 
+## Phase 13: explicit functional values
+
+See [the functional core](functional-core.md) for `Fn` contracts, `partial`, defaults and
+pure collection helpers. Required keyed calls remain unchanged. Select literal defaults
+with `key:default`; no key may be omitted. `let` reassignment now fails; use the existing
+`mut name = value` form. Known value/return mismatches and hidden effects through typed
+aliases now fail checking or callable runtime validation. Numeric strings are no longer
+coerced during arithmetic. Regenerate vendored guides for `phase13-functional-core`.
+
 ## Phase 12: required named arguments
 
 Every value argument must use the corresponding parameter name, including unary calls:
@@ -20,7 +29,8 @@ fn main() -> i32 !io {
 Parameterless calls remain `f()`. Generic type arguments remain positional. Named values
 require commas (an optional trailing comma is accepted), and every parameter must appear
 exactly once. Optional values still require an explicit keyed value such as `coupon: nil`.
-There are no positional/mixed value calls, default arguments, or `f(name)` shorthand.
+There are no positional/mixed value calls or `f(name)` shorthand. Phase 13 adds explicit
+`key:default` selection without relaxing the required-key rule.
 
 Calls bind by name, but evaluate expressions exactly once in source order. Reordering keys
 is safe for pure values; moving effectful expressions may change behavior. The formatter
@@ -51,8 +61,8 @@ uses the implemented `fs.read_file` helper and unwraps its result.
 The checker validates named-call syntax throughout accepted bodies and checks key sets for
 directly resolved functions, supported built-ins and methods whose receiver type it can
 resolve. Aliases/higher-order calls and otherwise unresolved signatures are checked against
-the actual callable at runtime, before evaluating its arguments. Type compatibility, required
-record fields and the other semantic gaps remain separate work.
+the actual callable at runtime, before evaluating its arguments. Phase 13 adds known type and higher-order contract checking. Required record fields and
+other documented semantic gaps remain separate work.
 
 ## Phase 12: explicit case boundaries
 

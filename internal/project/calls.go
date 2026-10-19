@@ -72,7 +72,7 @@ func validateCalls(p *Project) error {
 				if !known {
 					continue
 				}
-				if _, err := runtimekit.ArgumentOrder(parameters, call.Keys); err != nil {
+				if _, err := runtimekit.CheckArgumentKeys(parameters, call.Keys, call.Partial); err != nil {
 					return withSourceLocation(file.Path, file.Src, fmt.Errorf("%d:%d: function %s, call %s: %w", fn.Line, fn.Column, fn.Name, call.Target, err))
 				}
 			}

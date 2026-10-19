@@ -131,7 +131,7 @@ func (l *lexer) eof() bool  { return l.pos >= len(l.src) }
 
 func isKeyword(s string) bool {
 	switch s {
-	case "let", "mut", "when", "return", "spawn", "await", "group", "for", "in", "nil":
+	case "partial", "default", "let", "mut", "when", "return", "spawn", "await", "group", "for", "in", "nil":
 		return true
 	default:
 		return false

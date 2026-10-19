@@ -9,8 +9,9 @@ type stmt interface{}
 type expr interface{}
 
 type letStmt struct {
-	Name  string
-	Value expr
+	Name    string
+	Value   expr
+	Mutable bool
 }
 
 type assignStmt struct {
@@ -36,6 +37,8 @@ type whenCase struct {
 type intExpr struct{ Value int }
 type stringExpr struct{ Value string }
 type nilExpr struct{}
+type defaultExpr struct{}
+type partialExpr struct{ Call *callExpr }
 type identExpr struct{ Name string }
 type selectorExpr struct {
 	Left expr
@@ -106,7 +109,7 @@ func (p *bodyParser) parseStatementsUntil(stopText string) ([]stmt, error) {
 
 func (p *bodyParser) parseStatement() (stmt, error) {
 	if p.peekIsKeyword("let") || p.peekIsKeyword("mut") {
-		p.next()
+		mutable := p.next().Text == "mut"
 		name, err := p.expect(TokenIdent, "")
 		if err != nil {
 			return nil, err
@@ -118,7 +121,7 @@ func (p *bodyParser) parseStatement() (stmt, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &letStmt{Name: name.Text, Value: value}, nil
+		return &letStmt{Name: name.Text, Value: value, Mutable: mutable}, nil
 	}
 	if p.peekIsKeyword("return") {
 		p.next()
@@ -273,7 +276,15 @@ func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
 		if tok.Kind == TokenNewline || tok.Kind == TokenEOF || tok.Text == ")" || tok.Text == "}" || tok.Text == "]" || tok.Text == "," || tok.Text == ":" {
 			break
 		}
-		prec := precedence(tok)
+		operator := tok.Text
+		combined := false
+		if (operator == "=" || operator == "!" || operator == "<" || operator == ">") && p.peekNext().Text == "=" {
+			operator += "="
+			combined = true
+		}
+		operatorToken := tok
+		operatorToken.Text = operator
+		prec := precedence(operatorToken)
 		if prec < minPrec {
 			break
 		}
@@ -299,17 +310,21 @@ func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
 			continue
 		}
 		if tok.Text == "{" {
-			ident, ok := left.(*identExpr)
+			name, ok := recordTypeName(left)
 			if !ok {
 				break
 			}
-			left, err = p.finishStructLiteral(ident.Name)
+			left, err = p.finishStructLiteral(name)
 			if err != nil {
 				return nil, err
 			}
 			continue
 		}
-		op := p.next().Text
+		op := operator
+		p.next()
+		if combined {
+			p.next()
+		}
 		right, err := p.parseExpr(prec + 1)
 		if err != nil {
 			return nil, err
@@ -334,13 +349,25 @@ func (p *bodyParser) parsePrefix() (expr, error) {
 		return &identExpr{Name: tok.Text}, nil
 	case TokenKeyword:
 		switch tok.Text {
+		case "default":
+			return &defaultExpr{}, nil
+		case "partial":
+			ex, err := p.parseExpr(90)
+			if err != nil {
+				return nil, err
+			}
+			call, ok := ex.(*callExpr)
+			if !ok {
+				return nil, fmt.Errorf("partial requires an explicit keyed call")
+			}
+			return &partialExpr{Call: call}, nil
 		case "nil":
 			return &nilExpr{}, nil
 		case "when":
 			p.pos--
 			return p.parseWhen()
 		case "spawn":
-			ex, err := p.parseExpr(100)
+			ex, err := p.parseExpr(90)
 			if err != nil {
 				return nil, err
 			}
@@ -356,6 +383,16 @@ func (p *bodyParser) parsePrefix() (expr, error) {
 		}
 	case TokenSymbol:
 		switch tok.Text {
+		case "-":
+			integer, err := p.expect(TokenInt, "")
+			if err != nil {
+				return nil, fmt.Errorf("negative literals require an integer: %w", err)
+			}
+			n, err := strconv.Atoi("-" + integer.Text)
+			if err != nil {
+				return nil, err
+			}
+			return &intExpr{Value: n}, nil
 		case "(":
 			ex, err := p.parseExpr(0)
 			if err != nil {
@@ -473,8 +510,14 @@ func precedence(tok Token) int {
 	switch tok.Text {
 	case "?", ".", "(", "[", "{":
 		return 90
-	case "+":
+	case "==", "!=":
+		return 5
+	case "<", ">", "<=", ">=":
+		return 7
+	case "+", "-":
 		return 10
+	case "*", "/":
+		return 20
 	default:
 		return -1
 	}
@@ -525,4 +568,16 @@ func (p *bodyParser) peekKindIn(kinds ...TokenKind) bool {
 		}
 	}
 	return false
+}
+
+func recordTypeName(expression expr) (string, bool) {
+	switch n := expression.(type) {
+	case *identExpr:
+		return n.Name, true
+	case *selectorExpr:
+		if prefix, ok := recordTypeName(n.Left); ok {
+			return prefix + "." + n.Name, true
+		}
+	}
+	return "", false
 }

@@ -122,3 +122,26 @@ func writeFile(t *testing.T, path, contents string) {
 		t.Fatalf("write %s: %v", path, err)
 	}
 }
+
+func TestFunctionalExampleNativeBinary(t *testing.T) {
+	for _, tc := range []struct {
+		mode BuildMode
+		want string
+	}{{ModeBuild, "3700\n"}, {ModeTest, "ok\t3 test(s)"}} {
+		t.Run(string(tc.mode), func(t *testing.T) {
+			out := filepath.Join(t.TempDir(), binaryName("functional"))
+			result, err := Build(Options{Entry: filepath.Join("..", "..", "examples", "functional"), Out: out, Mode: tc.mode})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(result.WorkDir)
+			output, err := exec.Command(out).CombinedOutput()
+			if err != nil {
+				t.Fatalf("%v\n%s", err, output)
+			}
+			if !strings.Contains(string(output), tc.want) {
+				t.Fatalf("want %q, got %s", tc.want, output)
+			}
+		})
+	}
+}

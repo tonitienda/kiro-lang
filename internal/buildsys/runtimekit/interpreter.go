@@ -72,6 +72,8 @@ type execContext struct {
 	module   string
 	locals   map[string]value
 	receiver value
+	effects  []string
+	mutable  map[string]bool
 }
 
 type returnSignal struct {
@@ -79,6 +81,9 @@ type returnSignal struct {
 }
 
 func newRuntime(spec ProgramSpec, args []string, stdout, stderr io.Writer) (*runtime, error) {
+	if err := ValidateDeclarations(spec); err != nil {
+		return nil, err
+	}
 	rt := &runtime{spec: spec, stdout: stdout, stderr: stderr, parserMemo: map[string]parsedFunction{}}
 	rt.modules = map[string]*moduleRuntime{}
 	for _, mod := range spec.Modules {
@@ -165,13 +170,18 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 	if len(args) != len(fn.Params) {
 		return nil, fmt.Errorf("call %s.%s requires %d arguments, got %d", module, fn.Name, len(fn.Params), len(args))
 	}
+	for i, param := range fn.Params {
+		if err := rt.validateValue(args[i], param.Type); err != nil {
+			return nil, fmt.Errorf("argument %s: %w", param.Name, err)
+		}
+	}
 	parsed, err := rt.parseFunc(fn)
 	if err != nil {
 		return nil, err
 	}
-	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver}
+	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver, effects: fn.Effects, mutable: map[string]bool{}}
 	for i, param := range fn.Params {
-		ctx.locals[param.Name] = args[i]
+		ctx.locals[param.Name] = ascribeCallable(args[i], param.Type)
 	}
 	if receiver != nil && fn.ReceiverType != "" && len(fn.Params) > 0 {
 		ctx.locals[fn.Params[0].Name] = receiver
@@ -182,7 +192,13 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 			return nil, err
 		}
 		if returned {
-			return val, nil
+			if err := rt.validateValue(val, fn.ReturnType); err != nil {
+				return nil, fmt.Errorf("%s.%s return: %w", module, fn.Name, err)
+			}
+			return ascribeCallable(val, fn.ReturnType), nil
+		}
+		if err := rt.validateValue(nil, fn.ReturnType); err != nil {
+			return nil, fmt.Errorf("%s.%s falls through without a valid return: %w", module, fn.Name, err)
 		}
 		return nil, nil
 	}
@@ -194,6 +210,8 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 }
 
 func (rt *runtime) parseFunc(fn FuncSpec) (parsedFunction, error) {
+	rt.callMu.Lock()
+	defer rt.callMu.Unlock()
 	key := fn.Module + "." + fn.Name + ":" + fn.Body
 	if cached, ok := rt.parserMemo[key]; ok {
 		return cached, nil
@@ -238,17 +256,25 @@ func (ctx *execContext) execStatement(st stmt) (value, bool, error) {
 			return nil, false, err
 		}
 		ctx.locals[node.Name] = val
+		if ctx.mutable == nil {
+			ctx.mutable = map[string]bool{}
+		}
+		ctx.mutable[node.Name] = node.Mutable
 		return val, false, nil
 	case *assignStmt:
+		if _, ok := ctx.locals[node.Name]; !ok {
+			return nil, false, fmt.Errorf("unknown variable %q", node.Name)
+		}
+		if !ctx.mutable[node.Name] {
+			return nil, false, fmt.Errorf("cannot assign to immutable binding %s", node.Name)
+		}
 		val, err := ctx.eval(node.Value)
 		if err != nil {
 			return nil, false, err
 		}
-		if _, ok := ctx.locals[node.Name]; ok {
-			ctx.locals[node.Name] = val
-			return val, false, nil
-		}
-		return nil, false, fmt.Errorf("unknown variable %q", node.Name)
+		ctx.locals[node.Name] = val
+		return val, false, nil
+
 	case *returnStmt:
 		val, err := ctx.eval(node.Value)
 		if err != nil {
@@ -309,6 +335,10 @@ func (ctx *execContext) evalWhen(target expr, cases []whenCase) (value, error) {
 
 func (ctx *execContext) eval(e expr) (value, error) {
 	switch node := e.(type) {
+	case *partialExpr:
+		return ctx.evaluateCall(node.Call, true)
+	case *defaultExpr:
+		return nil, fmt.Errorf("default is only valid as an explicit call argument")
 	case *intExpr:
 		return node.Value, nil
 	case *stringExpr:
@@ -387,6 +417,12 @@ func (ctx *execContext) interpolate(src string) (string, error) {
 }
 
 func (ctx *execContext) resolveIdent(name string) (value, error) {
+	if name == "true" {
+		return true, nil
+	}
+	if name == "false" {
+		return false, nil
+	}
 	if name == "nil" {
 		return nil, nil
 	}
@@ -450,69 +486,7 @@ func (ctx *execContext) resolveSelector(sel *selectorExpr) (value, error) {
 }
 
 func (ctx *execContext) evalCall(call *callExpr) (value, error) {
-	callee, err := ctx.eval(call.Callee)
-	if err != nil {
-		return nil, err
-	}
-	var parameters []string
-	switch fn := callee.(type) {
-	case builtinValue:
-		var known bool
-		parameters, known = BuiltinParameters(fn.Name)
-		if !known {
-			return nil, fmt.Errorf("missing builtin signature for %s", fn.Name)
-		}
-	case functionValue:
-		mod := ctx.rt.modules[fn.Module]
-		if mod == nil {
-			return nil, fmt.Errorf("unknown module %q", fn.Module)
-		}
-		spec, ok := mod.funcs[fn.Name]
-		if !ok {
-			return nil, fmt.Errorf("unknown function %s.%s", fn.Module, fn.Name)
-		}
-		for _, param := range spec.Params {
-			parameters = append(parameters, param.Name)
-		}
-	case methodValue:
-		for _, param := range fn.Method.Params[1:] {
-			parameters = append(parameters, param.Name)
-		}
-	case typeSentinel:
-		return nil, fmt.Errorf("record constructors use %s{field:value}, not function-call syntax", string(fn))
-	default:
-		return nil, fmt.Errorf("expression is not callable: %T", callee)
-	}
-	keys := make([]string, len(call.Args))
-	for i, arg := range call.Args {
-		keys[i] = arg.Name
-	}
-	order, err := ArgumentOrder(parameters, keys)
-	if err != nil {
-		return nil, err
-	}
-	// Validate first, then evaluate exactly once in source order. Binding by key
-	// does not permit a formatter or optimizer to reorder effectful expressions.
-	source := make([]value, len(call.Args))
-	for i, arg := range call.Args {
-		source[i], err = ctx.eval(arg.Value)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args := make([]value, len(parameters))
-	for i, position := range order {
-		args[i] = source[position]
-	}
-	switch fn := callee.(type) {
-	case builtinValue:
-		return fn.Invoke(ctx, call.TypeArgs, args)
-	case functionValue:
-		return ctx.rt.callUser(ctx.rt.modules[fn.Module].funcs[fn.Name], fn.Module, nil, args)
-	case methodValue:
-		return ctx.rt.callUser(fn.Method, fn.Method.Module, fn.Receiver, args)
-	}
-	return nil, fmt.Errorf("unsupported callable")
+	return ctx.evaluateCall(call, false)
 }
 
 func (ctx *execContext) evalBinary(node *binaryExpr) (value, error) {
@@ -524,17 +498,78 @@ func (ctx *execContext) evalBinary(node *binaryExpr) (value, error) {
 	if err != nil {
 		return nil, err
 	}
+	if node.Op == "==" || node.Op == "!=" {
+		equal := false
+		switch l := left.(type) {
+		case int, float64:
+			if ctx.rt.validateValue(left, "i32") == nil && ctx.rt.validateValue(right, "i32") == nil {
+				a, _ := asInt(left)
+				b, _ := asInt(right)
+				equal = a == b
+			}
+		case string:
+			r, ok := right.(string)
+			equal = ok && l == r
+		case bool:
+			r, ok := right.(bool)
+			equal = ok && l == r
+		case nil:
+			equal = right == nil
+		default:
+			equal = valuesEqual(left, right)
+		}
+		if node.Op == "!=" {
+			equal = !equal
+		}
+		return equal, nil
+	}
+	if l, ok := left.(string); ok && node.Op == "+" {
+		if r, ok := right.(string); ok {
+			return l + r, nil
+		}
+	}
+	// JSON numeric fields use float64; accept only integral in-range i32 values.
+	if err := ctx.rt.validateValue(left, "i32"); err != nil {
+		return nil, fmt.Errorf("operator %s: %w", node.Op, err)
+	}
+	if err := ctx.rt.validateValue(right, "i32"); err != nil {
+		return nil, fmt.Errorf("operator %s: %w", node.Op, err)
+	}
+	l, lok := asInt(left)
+	r, rok := asInt(right)
+	if !lok || !rok {
+		return nil, fmt.Errorf("operator %s requires matching numeric operands", node.Op)
+	}
+	switch node.Op {
+	case "<":
+		return l < r, nil
+	case ">":
+		return l > r, nil
+	case "<=":
+		return l <= r, nil
+	case ">=":
+		return l >= r, nil
+	}
+	var result int64
 	switch node.Op {
 	case "+":
-		if li, lok := asInt(left); lok {
-			if ri, rok := asInt(right); rok {
-				return li + ri, nil
-			}
+		result = int64(l) + int64(r)
+	case "-":
+		result = int64(l) - int64(r)
+	case "*":
+		result = int64(l) * int64(r)
+	case "/":
+		if r == 0 {
+			return nil, fmt.Errorf("division by zero")
 		}
-		return fmt.Sprint(toPlain(left)) + fmt.Sprint(toPlain(right)), nil
+		result = int64(l) / int64(r)
 	default:
-		return nil, fmt.Errorf("unsupported operator %q", node.Op)
+		return nil, fmt.Errorf("unsupported operator %s", node.Op)
 	}
+	if result < -2147483648 || result > 2147483647 {
+		return nil, fmt.Errorf("i32 arithmetic overflow")
+	}
+	return int(result), nil
 }
 
 func (ctx *execContext) evalStruct(node *structExpr) (value, error) {
@@ -546,7 +581,11 @@ func (ctx *execContext) evalStruct(node *structExpr) (value, error) {
 		}
 		fields[field.Name] = toPlain(v)
 	}
-	return &structValue{Type: node.TypeName, Fields: fields}, nil
+	name := node.TypeName
+	if i := strings.LastIndex(name, "."); i >= 0 {
+		name = name[i+1:]
+	}
+	return &structValue{Type: name, Fields: fields}, nil
 }
 
 func (ctx *execContext) evalUnwrap(node *unwrapExpr) (value, error) {
@@ -565,8 +604,14 @@ func (ctx *execContext) evalUnwrap(node *unwrapExpr) (value, error) {
 
 func (ctx *execContext) evalSpawn(node *spawnExpr) (value, error) {
 	future := &futureValue{ch: make(chan futureResult, 1)}
+	child := *ctx
+	child.locals = map[string]value{}
+	for name, v := range ctx.locals {
+		child.locals[name] = v
+	}
+	child.mutable = copyMutable(ctx.mutable)
 	go func() {
-		v, err := ctx.eval(node.Value)
+		v, err := child.eval(node.Value)
 		future.ch <- futureResult{val: v, err: err}
 	}()
 	return future, nil
@@ -647,7 +692,7 @@ func builtinGlobal(name string) builtinFn {
 
 func builtinModuleKnown(name string) bool {
 	switch name {
-	case "env", "log", "test", "assert", "parse", "cli", "fs", "http", "json", "ctx":
+	case "list", "env", "log", "test", "assert", "parse", "cli", "fs", "http", "json", "ctx":
 		return true
 	default:
 		return false
@@ -655,6 +700,8 @@ func builtinModuleKnown(name string) bool {
 }
 func builtinModuleFunc(module, name string) builtinFn {
 	switch module + "." + name {
+	case "list.map", "list.filter", "list.fold":
+		return listOperation(name)
 	case "env.get_or":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
 			key := fmt.Sprint(toPlain(args[0]))
