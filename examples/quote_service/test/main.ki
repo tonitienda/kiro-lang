@@ -1,0 +1,119 @@
+mod quote_test
+
+import app
+import catalog
+import http
+import json
+import pricing
+import shipping
+import test
+
+fn test_standard_quote() -> nil {
+  let quote = pricing.quote ( "book" , nil , "standard" , nil ) ?
+  test.eq ( quote.currency , "EUR" )
+  test.eq ( quote.subtotal_cents , 1500 )
+  test.eq ( quote.shipping_cents , 300 )
+  test.eq ( quote.total_cents , 1800 )
+  test.eq ( quote.coupon , nil )
+  return nil
+}
+
+fn test_addon_and_express() -> nil {
+  let quote = pricing.quote ( "book" , "poster" , "express" , nil ) ?
+  test.eq ( quote.subtotal_cents , 2200 )
+  test.eq ( quote.shipping_cents , 800 )
+  test.eq ( quote.total_cents , 3000 )
+  return nil
+}
+
+fn test_free_shipping_preserves_items() -> nil {
+  let quote = pricing.quote ( "book" , "poster" , "express" , "SHIPFREE" ) ?
+  test.eq ( quote.subtotal_cents , 2200 )
+  test.eq ( quote.shipping_cents , 0 )
+  test.eq ( quote.total_cents , 2200 )
+  test.eq ( quote.coupon , "SHIPFREE" )
+  return nil
+}
+
+fn test_poster_can_be_primary() -> nil {
+  let quote = pricing.quote ( "poster" , nil , "standard" , nil ) ?
+  test.eq ( quote.total_cents , 1000 )
+  return nil
+}
+
+fn test_unknown_product() -> nil {
+  test.eq ( catalog.price ( "missing" ) , Err ( "unknown product" ) )
+  return nil
+}
+
+fn test_unknown_addon() -> nil {
+  test.eq ( catalog.addon_price ( "missing" ) , Err ( "unknown product" ) )
+  return nil
+}
+
+fn test_unknown_delivery() -> nil {
+  test.eq ( shipping.base_price ( "teleport" ) , Err ( "unknown delivery method" ) )
+  return nil
+}
+
+fn test_unknown_coupon() -> nil {
+  test.eq ( shipping.price ( "standard" , "INVALID" ) , Err ( "unknown coupon" ) )
+  return nil
+}
+
+fn test_health() -> nil {
+  let response = app.handler ( http.test_req ( "GET" , "/health" , "" ) ) ?
+  test.eq ( response.code , 200 )
+  test.eq ( response.body , "ok" )
+  return nil
+}
+
+fn test_quote_handler() -> nil {
+  let body = json.encode ( InputFixture { sku : "book" addon : "poster" delivery : "express" coupon : nil } ) ?
+  let response = app.handler ( http.test_req ( "POST" , "/quotes" , body ) ) ?
+  let quote = json.decode [ QuoteView ] ( response.body ) ?
+  test.eq ( response.code , 200 )
+  test.eq ( quote.total_cents , 3000 )
+  test.eq ( quote.currency , "EUR" )
+  return nil
+}
+
+fn test_quote_handler_coupon() -> nil {
+  let body = json.encode ( InputFixture { sku : "book" addon : nil delivery : "standard" coupon : "SHIPFREE" } ) ?
+  let response = app.handler ( http.test_req ( "POST" , "/quotes" , body ) ) ?
+  let quote = json.decode [ QuoteView ] ( response.body ) ?
+  test.eq ( quote.total_cents , 1500 )
+  test.eq ( quote.coupon , "SHIPFREE" )
+  return nil
+}
+
+fn test_unknown_route() -> nil {
+  let response = app.handler ( http.test_req ( "GET" , "/missing" , "" ) ) ?
+  test.eq ( response.code , 404 )
+  return nil
+}
+
+fn test_wrong_quote_method() -> nil {
+  let response = app.handler ( http.test_req ( "GET" , "/quotes" , "" ) ) ?
+  test.eq ( response.code , 405 )
+  return nil
+}
+
+fn test_wrong_health_method() -> nil {
+  let response = app.handler ( http.test_req ( "POST" , "/health" , "" ) ) ?
+  test.eq ( response.code , 405 )
+  return nil
+}
+
+type QuoteView {
+  currency:str
+  total_cents:i32
+  coupon:?str
+}
+
+type InputFixture {
+  sku:str
+  addon:?str
+  delivery:str
+  coupon:?str
+}

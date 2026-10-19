@@ -1,5 +1,11 @@
 # Phase 11 Notes - Editor Tooling and LSP Baseline
 
+## Agent-language research slice (2026-10-19)
+
+- Added `examples/quote_service/`, a seven-module integration seed with 14 domain/handler tests, without changing stable-core syntax.
+- Added a research plan and reproducible checker/runtime probes under `docs/research/` and `scripts/probe_agent_contract.py`.
+- The audit distinguishes the Go-hosted executable interpreter from structural `inspect go` stubs and records incomplete type, JSON, result and concurrency enforcement. These findings motivate follow-up work; they do not establish an agent-performance advantage.
+
 ## Editor/tooling status after the simplification pass
 
 - `kiro-lsp` still reuses the compiler parser/formatter stack

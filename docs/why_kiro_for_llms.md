@@ -83,4 +83,4 @@ To stay machine-friendly, Kiro avoids or limits:
 
 ## Design consequence
 
-Kiro is intentionally more opinionated and narrower than a general-purpose language prototype. That tradeoff is deliberate: less choice and less ambiguity generally produce better generated code and more reliable repair.
+Kiro is intentionally more opinionated and narrower than a general-purpose language prototype. The hypothesis is that less choice and less ambiguity improve generated code and repair reliability. That hypothesis needs comparison against existing languages with equally good tooling and guidance; see [the research plan](research/agent_language_iteration.md).

@@ -1,0 +1,13 @@
+mod main
+
+import app
+import config
+import http
+import log
+
+fn main() -> i32 !env !log !net {
+  let address = config.address ( )
+  log.info ( "quote service listening on ${address}" )
+  http.serve ( address , app.handler ) ?
+  return 0
+}

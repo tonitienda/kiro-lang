@@ -10,6 +10,7 @@ The examples directory is meant to teach the canonical Kiro style.
 - `examples/service_parallel/` — structured concurrency with `group`
 - `examples/service_config/` — explicit environment-based config loading
 - `examples/test_demo/` — canonical direct tests with `test.eq`
+- `examples/quote_service/` — multi-module bundle quotation service with 14 domain/handler tests and documented runtime limits
 
 ## What examples should demonstrate
 

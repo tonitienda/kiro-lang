@@ -1,0 +1,20 @@
+mod pricing
+
+import catalog
+import shipping
+
+type Quote {
+  currency:str
+  subtotal_cents:i32
+  shipping_cents:i32
+  total_cents:i32
+  coupon:?str
+}
+
+fn quote(sku:str, addon:?str, delivery:str, coupon:?str) -> R[Quote,str] {
+  let item = catalog.price ( sku ) ?
+  let extra = catalog.addon_price ( addon ) ?
+  let delivery_price = shipping.price ( delivery , coupon ) ?
+  let subtotal = item + extra
+  return Ok ( Quote { currency : "EUR" subtotal_cents : subtotal shipping_cents : delivery_price total_cents : subtotal + delivery_price coupon : coupon } )
+}
