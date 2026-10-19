@@ -4,7 +4,7 @@ Kiro is an **experimental Go-backed language** for **LLM-generated, LLM-reviewed
 
 The repository now treats **aggressive simplification** as a language feature, not a migration inconvenience.
 
-## Why Kiro is optimized for LLMs
+## LLM-oriented design goals
 
 Kiro is designed so a model can:
 
@@ -25,7 +25,13 @@ Kiro optimizes for:
 7. **small explicit surface area**
 8. **high semantic information per token**
 
-Read the rationale in `docs/why_kiro_for_llms.md` and the redesign record in `LLM_REDESIGN_NOTES.md`.
+These are design goals, not a measured advantage over existing languages. Read the rationale in `docs/why_kiro_for_llms.md` and the redesign record in `LLM_REDESIGN_NOTES.md`.
+
+The [agent-language research plan](docs/research/agent_language_iteration.md) records the current implementation audit, comparison methodology, and proposed iterations. The [multi-module quote service](examples/quote_service/README.md) is the first runnable integration example for that work.
+
+### Current backend boundary
+
+Runnable programs currently package a Go-hosted interpreter into a Go executable. `kiro inspect go` currently emits structural stubs, not direct typed lowering of the executable business logic. Checking, runtime semantics, and generated-Go inspection are still incomplete; see the research plan for reproducible probes and limitations.
 
 ## Core language contract
 

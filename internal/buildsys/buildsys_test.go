@@ -92,6 +92,23 @@ fn main() -> i32 {
 	}
 }
 
+func TestQuoteServiceExample(t *testing.T) {
+	entry := filepath.Join("..", "..", "examples", "quote_service")
+	out := filepath.Join(t.TempDir(), binaryName("quote-tests"))
+	result, err := Build(Options{Entry: entry, Out: out, Mode: ModeTest})
+	if err != nil {
+		t.Fatalf("build quote service tests: %v", err)
+	}
+	defer os.RemoveAll(result.WorkDir)
+	output, err := exec.Command(out).CombinedOutput()
+	if err != nil {
+		t.Fatalf("quote service tests failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(string(output), "ok\t14 test(s)") {
+		t.Fatalf("expected the complete quote service suite to execute:\n%s", output)
+	}
+}
+
 func binaryName(base string) string {
 	if runtime.GOOS == "windows" {
 		return base + ".exe"

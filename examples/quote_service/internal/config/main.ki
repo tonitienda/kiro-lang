@@ -1,0 +1,7 @@
+mod config
+
+import env
+
+fn address() -> str !env {
+  return env.get_or ( "KIRO_QUOTE_ADDR" , "127.0.0.1:8080" )
+}
