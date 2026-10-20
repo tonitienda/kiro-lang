@@ -25,6 +25,7 @@ These instructions apply to the full repository.
 
 ## Testing policy
 
+- The versioned Go counterpart and scaffolded native-pilot workflow are documented in `benchmarks/maintenance/GO_PILOT.md`. Keep the original Kiro v1 fixture/cohort unchanged; new fixture/task mappings require explicit versions. Go fixture tests/vet run separately because it is a nested module.
 - For benchmark changes run `python3 -B -m unittest discover -s benchmarks/maintenance/runner -v` and the documented `selftest` with a built Kiro CLI. Distinguish scripted controls from model trials; never run model candidates on the host as an isolation fallback.
 - Add or update tests when changing lexer, parser, formatter, project resolution, or CLI behavior.
 - Run `go test ./...` before finishing.

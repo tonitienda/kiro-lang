@@ -1,0 +1,16 @@
+{
+  "schema": "kiro.benchmark.go-task.v1",
+  "id": "discount-policy",
+  "version": 1,
+  "title": "Add a threshold discount",
+  "requirement": "Recognize coupon SAVE10. When item subtotal is at least 5000 cents, discount item subtotal by 10 percent, truncated to whole cents using integer arithmetic. Below 5000 recognize the coupon but apply zero discount. Delivery charges and card fee remain unchanged, and payment references use the discounted amount plus shipping before the fee. SHIPFREE, absent coupon and unknown coupon behavior must remain unchanged. Preserve all unrelated endpoints and public APIs.",
+  "scope": "One independent change to the supplied baseline; implement and verify without a human review gate.",
+  "acceptance": "Behavior is checked through HTTP against the task and unchanged baseline contracts. Payment-boundary additionally has an explicit structural check. Add or update meaningful public tests.",
+  "limits": "Do not change AGENTS.md, task.json or the Go module identity. Use the declared isolated tool environment. Add meaningful tests; implement, audit and verify without waiting for human source review.",
+  "fixture": "go-maintenance-v1",
+  "source_task": {
+    "id": "discount-policy",
+    "version": 1
+  },
+  "language": "go"
+}
