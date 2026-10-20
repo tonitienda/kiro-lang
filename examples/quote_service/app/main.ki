@@ -11,11 +11,29 @@ type QuoteRequest {
   coupon:?str
 }
 
-fn create_quote(req:http.Req) -> R[http.Resp,str] {
-  let input = json.decode [ QuoteRequest ] ( text : req.body ) ?
-  let quote = pricing.quote ( sku : input.sku , addon : input.addon , delivery : input.delivery , coupon : input.coupon ) ?
+fn invalid_quote(error:pricing.Error) -> http.Resp {
+  when ( error ) {
+  pricing.Error.UnknownProduct ( sku : let sku ) => { return http.text ( code : 422 , body : "unknown product: ${sku}" ) }
+  pricing.Error.UnknownDelivery ( delivery : let delivery ) => { return http.text ( code : 422 , body : "unknown delivery: ${delivery}" ) }
+  pricing.Error.UnknownCoupon ( coupon : let coupon ) => { return http.text ( code : 422 , body : "unknown coupon: ${coupon}" ) }
+  }
+}
+
+fn quote_input(input:QuoteRequest) -> R[http.Resp,str] {
+  when ( pricing.quote ( sku : input.sku , addon : input.addon , delivery : input.delivery , coupon : input.coupon ) ) {
+  Ok ( value : let quote ) => {
   let body = json.encode ( value : quote ) ?
   return Ok ( value : http.json ( code : 200 , body : body ) )
+  }
+  Err ( error : let failure ) => { return Ok ( value : invalid_quote ( error : failure ) ) }
+  }
+}
+
+fn create_quote(req:http.Req) -> R[http.Resp,str] {
+  when ( json.decode [ QuoteRequest ] ( text : req.body ) ) {
+  Ok ( value : let input ) => { return quote_input ( input : input ) }
+  Err ( error : let detail ) => { return Ok ( value : http.text ( code : 400 , body : detail ) ) }
+  }
 }
 
 fn handler(req:http.Req) -> R[http.Resp,str] {

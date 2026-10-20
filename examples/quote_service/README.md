@@ -34,7 +34,7 @@ JSON encoding now contains only data fields, without runtime `_type` metadata.
 - Delivery: `standard` costs 300 cents; `express` costs 800 cents.
 - `SHIPFREE` sets shipping to zero without changing the subtotal. Unknown coupons fail.
 - Use integer cents, not floating point. No taxes, payment, inventory, persistence, or external calls yet.
-- Send all four request fields explicitly, using JSON null for absent add-on/coupon.
+- JSON may omit optional add-on/coupon fields or supply null; source record constructors require all fields.
 
 `GET /health` returns 200; `POST /quotes` returns a JSON quote; other methods on these
 routes return 405; other paths return 404.
@@ -47,23 +47,26 @@ routes return 405; other paths return 404.
 - `internal/catalog/`: product lookup and optional add-on.
 - `internal/shipping/`: delivery validation and coupon policy.
 - `internal/pricing/`: pure composition and totals.
-- `test/`: 16 domain/handler tests, including propagated parent and decoding failures.
+- `test/`: 20 domain/handler tests, including typed conversion, malformed input and each 422 variant.
 
 The example deliberately avoids `spawn`: these in-memory operations have no useful parallel work.
 Introduce concurrency when adding actual independent I/O and testing its lifecycle semantics.
 
-## Known limits exposed by this example
+## Enforced boundaries and remaining limits
 
-- `kiro check` remains incremental, with broader control-flow and exhaustive matching gaps.
-- Typed decoding checks required fields and types and rejects unknown/duplicate fields.
-  Optional JSON addon/coupon fields may be omitted and become nil.
-- A failed `?` now returns Err from its function. New tests verify a pricing failure and a
-  malformed request reaching their caller. The HTTP adapter still turns an unhandled Err
-  into HTTP 500, not a domain-designed 400/422 response.
-- Eager collection helpers and explicit transducers are available, but this example keeps
-  its deliberately bounded two-product quote. Wider iteration/concurrency limits remain.
-- Executables currently package a Go-hosted interpreter. `inspect go` emits stubs;
-  neither path currently gives direct, typed Go lowering of these business functions.
+- Catalog and shipping declare distinct error variants. Pricing converts each explicitly
+  into its own closed error type. Exhaustive matches bind and use payloads.
+- Typed decoding validates shape and fields. Malformed/nonconforming JSON returns HTTP 400;
+  absent optional addon/coupon fields become nil.
+- Each pricing error maps to HTTP 422 with its payload. An unexpected serialization Err
+  still reaches the adapter's HTTP 500 boundary.
+- Add an error variant and checking names the affected converter/handler. Reproduce this
+  without changing the example: `python3 scripts/probe_variant_evolution.py --kiro ./kiro`.
+- This example keeps its bounded two-product quote. List loops and collection helpers are
+  available; cart quantities, bounded totals and overflow policy remain follow-up work.
+- Checking remains incremental; constructor coverage is not arbitrary payload-domain or
+  return-path analysis. Complete concurrency/effect guarantees remain unfinished.
+- Executables package a Go-hosted interpreter; `inspect go` emits structural stubs.
 
 These limits are recorded rather than hidden behind extra example-specific helpers.
 See [the research plan](../../docs/research/agent_language_iteration.md) for proposed follow-ups,

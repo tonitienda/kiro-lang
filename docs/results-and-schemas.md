@@ -66,9 +66,9 @@ fn main()->R[i32,str] !io {
 ```
 
 The HTTP adapter accepts ordinary, partial and typed handler values. An outer `Err`
-becomes HTTP 500; `Ok(http.Resp)` becomes a response. Domain-specific 400/422 handling is
-still an application decision. Matching still compares whole values; general payload
-binding, typed variants and exhaustiveness are not implemented in this batch.
+becomes HTTP 500; `Ok(http.Resp)` becomes a response. Domain-specific status mapping is application code. Phase 16 adds [typed variants and
+exhaustive payload matching](variants-and-matching.md); the quote service now uses these
+to map invalid input to 400 and pricing variants to 422.
 
 ## Closed record contracts
 
@@ -121,8 +121,9 @@ nil tags, nested schemas, duplicate/trailing JSON, integer limits, module collis
 escaped literals and interpolation data. A fuzz property validates successful decoded
 records and checks encode/decode round trips.
 
-The checker remains incremental; legacy unsupported bodies and unresolved expressions
-are not a complete type system. Direct typed Go lowering, general error/variant matching,
-exhaustive handling and complete concurrency semantics remain separate work. Arithmetic
+The checker remains incremental. Phase 16 rejects bodies outside the executable grammar
+and adds finite constructor coverage; it does not establish a complete type system. Direct
+typed Go lowering, arbitrary nested-domain constraint solving and complete concurrency
+semantics remain separate work. Arithmetic
 errors still abort rather than becoming typed domain results. These semantics changes
 have not been measured as an advantage in model generation, repair or auditing.

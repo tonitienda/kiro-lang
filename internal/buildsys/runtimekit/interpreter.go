@@ -76,11 +76,14 @@ type execContext struct {
 	returnType string
 	effects    []string
 	mutable    map[string]bool
+	shadowed   map[string]bool
 }
 
 type returnSignal struct {
 	value value
 }
+
+func (*returnSignal) Error() string { return "function return" }
 
 func newRuntime(spec ProgramSpec, args []string, stdout, stderr io.Writer) (*runtime, error) {
 	if err := ValidateDeclarations(spec); err != nil {
@@ -204,13 +207,18 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 		val, returned, err := ctx.execStatements(parsed.stmts)
 		if err != nil {
 			var propagation *propagationSignal
-			if !errors.As(err, &propagation) {
+			var explicit *returnSignal
+			switch {
+			case errors.As(err, &explicit):
+				val = explicit.value
+			case errors.As(err, &propagation):
+				if parts, ok := genericParts(fn.ReturnType, "R"); !ok || len(parts) != 2 {
+					return nil, fmt.Errorf("? requires an R[T,E] return type in %s.%s", module, fn.Name)
+				}
+				val = propagation.Result
+			default:
 				return nil, err
 			}
-			if parts, ok := genericParts(fn.ReturnType, "R"); !ok || len(parts) != 2 {
-				return nil, fmt.Errorf("? requires an R[T,E] return type in %s.%s", module, fn.Name)
-			}
-			val = propagation.Result
 			returned = true
 		}
 		if returned {
@@ -278,6 +286,9 @@ func (ctx *execContext) execStatement(st stmt) (value, bool, error) {
 			return nil, false, err
 		}
 		ctx.locals[node.Name] = val
+		if ctx.shadowed != nil {
+			ctx.shadowed[node.Name] = true
+		}
 		if ctx.mutable == nil {
 			ctx.mutable = map[string]bool{}
 		}
@@ -311,10 +322,9 @@ func (ctx *execContext) execStatement(st stmt) (value, bool, error) {
 		if err != nil {
 			return nil, false, err
 		}
-		if sig, ok := val.(returnSignal); ok {
-			return sig.value, true, nil
-		}
 		return val, false, nil
+	case *forStmt:
+		return ctx.execFor(node)
 	case *groupStmt:
 		val, returned, err := ctx.execStatements(node.Body)
 		return val, returned, err
@@ -329,28 +339,50 @@ func (ctx *execContext) evalWhen(target expr, cases []whenCase) (value, error) {
 		return nil, err
 	}
 	for _, c := range cases {
+		bindings := map[string]value{}
 		matched := c.Wildcard
 		if !matched {
-			pat, err := ctx.eval(c.Pattern)
+			matched, err = ctx.matchPattern(c.Pattern, matchValue, bindings)
 			if err != nil {
 				return nil, err
 			}
-			matched = valuesEqual(matchValue, pat)
 		}
 		if !matched {
 			continue
 		}
-		if len(c.Body) > 0 {
-			val, returned, err := ctx.execStatements(c.Body)
-			if err != nil {
-				return nil, err
-			}
-			if returned {
-				return returnSignal{value: val}, nil
-			}
-			return val, nil
+		child := *ctx
+		child.locals = copyLocals(ctx.locals)
+		child.mutable = copyMutable(ctx.mutable)
+		child.shadowed = map[string]bool{}
+		for k, v := range bindings {
+			child.locals[k] = v
+			child.mutable[k] = false
+			child.shadowed[k] = true
 		}
-		return ctx.eval(c.Expr)
+		var val value
+		returned := false
+		if c.Expr != nil {
+			val, err = child.eval(c.Expr)
+		} else {
+			val, returned, err = child.execStatements(c.Body)
+		}
+		for k := range ctx.locals {
+			if ctx.mutable[k] {
+				if !child.shadowed[k] {
+					ctx.locals[k] = child.locals[k]
+				}
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
+		if returned {
+			if ctx.returnType == "" {
+				return nil, fmt.Errorf("return requires an enclosing function")
+			}
+			return nil, &returnSignal{value: val}
+		}
+		return val, nil
 	}
 	return nil, nil
 }
@@ -481,7 +513,7 @@ func (ctx *execContext) resolveIdent(name string) (value, error) {
 			return functionValue{Module: ctx.module, Name: fn.Name}, nil
 		}
 		if _, ok := mod.types[name]; ok {
-			return typeSentinel(name), nil
+			return typeSentinel(ctx.module + "." + name), nil
 		}
 	}
 	if builtinGlobal(name) != nil {
@@ -514,8 +546,12 @@ func (ctx *execContext) resolveSelector(sel *selectorExpr) (value, error) {
 				return functionValue{Module: string(v), Name: fn.Name}, nil
 			}
 			if _, ok := mod.types[sel.Name]; ok {
-				return typeSentinel(sel.Name), nil
+				return typeSentinel(string(v) + "." + sel.Name), nil
 			}
+		}
+	case typeSentinel:
+		if constructor, ok := ctx.rt.variantConstructor(string(v)+"."+sel.Name, ctx.module); ok {
+			return constructor, nil
 		}
 	case *structValue:
 		if method, ok := ctx.rt.lookupMethod(ctx.rt.qualifyType(v.Type, v.Module), sel.Name); ok {
@@ -623,6 +659,9 @@ func (ctx *execContext) evalStruct(node *structExpr) (value, error) {
 	schema, err := ctx.rt.recordSchema(node.TypeName, ctx.module)
 	if err != nil {
 		return nil, err
+	}
+	if len(schema.Type.Variants) > 0 {
+		return nil, fmt.Errorf("variant type %s requires a named constructor", node.TypeName)
 	}
 	keys := []string{}
 	for _, field := range node.Fields {
@@ -919,6 +958,8 @@ func valuesEqual(a, b value) bool {
 
 func toPlain(v value) any {
 	switch x := v.(type) {
+	case *variantValue:
+		return map[string]any{"_type": x.Module + "." + x.Type, "_variant": x.Tag, "fields": toPlain(x.Fields)}
 	case *structValue:
 		out := map[string]any{"_type": x.Type}
 		for k, v := range x.Fields {

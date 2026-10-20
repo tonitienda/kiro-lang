@@ -50,6 +50,14 @@ func renderGoFile(f project.File) string {
 				b.WriteString(fmt.Sprintf("\t%s string // kiro:%s\n", strings.Title(field.Name), field.Type))
 			}
 			b.WriteString("}\n\n")
+			for _, v := range decl.Variants {
+				fmt.Fprintf(&b, "// variant %s.%s (inspection stub)\n", decl.Name, v.Name)
+				fmt.Fprintf(&b, "type %s_%s struct {\n", decl.Name, v.Name)
+				for _, f := range v.Fields {
+					fmt.Fprintf(&b, "\t%s string // kiro:%s\n", strings.Title(f.Name), f.Type)
+				}
+				b.WriteString("}\n\n")
+			}
 		case ast.FuncDecl:
 			b.WriteString(fmt.Sprintf("// from %s: fn %s\n", f.Rel, decl.Name))
 			b.WriteString("// fn " + decl.Name + " translated as stub\n")

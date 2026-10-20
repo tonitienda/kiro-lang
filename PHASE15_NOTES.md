@@ -35,3 +35,6 @@ rejection of the old non-result entry signature. Loop execution remains an obser
 No general tagged-variant syntax, payload-binding/exhaustiveness analysis, automatic error
 conversion, native typed Go lowering or complete concurrency guarantees are claimed. The
 Phase 14 allocation measurements are historical and do not characterize the new checks.
+
+Phase 16 adds typed variants, exhaustive recovery, explicit error conversion and executable
+list loops, and rejects unparseable bodies during checking; see `PHASE16_NOTES.md`.

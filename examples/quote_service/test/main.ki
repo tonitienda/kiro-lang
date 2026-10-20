@@ -8,7 +8,7 @@ import pricing
 import shipping
 import test
 
-fn test_standard_quote() -> R[nil,str] {
+fn test_standard_quote() -> R[nil,pricing.Error] {
   let quote = pricing.quote ( sku : "book" , addon : nil , delivery : "standard" , coupon : nil ) ?
   test.eq ( actual : quote.currency , expected : "EUR" )
   test.eq ( actual : quote.subtotal_cents , expected : 1500 )
@@ -18,7 +18,7 @@ fn test_standard_quote() -> R[nil,str] {
   return Ok ( value : nil )
 }
 
-fn test_addon_and_express() -> R[nil,str] {
+fn test_addon_and_express() -> R[nil,pricing.Error] {
   let quote = pricing.quote ( sku : "book" , addon : "poster" , delivery : "express" , coupon : nil ) ?
   test.eq ( actual : quote.subtotal_cents , expected : 2200 )
   test.eq ( actual : quote.shipping_cents , expected : 800 )
@@ -26,7 +26,7 @@ fn test_addon_and_express() -> R[nil,str] {
   return Ok ( value : nil )
 }
 
-fn test_free_shipping_preserves_items() -> R[nil,str] {
+fn test_free_shipping_preserves_items() -> R[nil,pricing.Error] {
   let quote = pricing.quote ( sku : "book" , addon : "poster" , delivery : "express" , coupon : "SHIPFREE" ) ?
   test.eq ( actual : quote.subtotal_cents , expected : 2200 )
   test.eq ( actual : quote.shipping_cents , expected : 0 )
@@ -35,29 +35,29 @@ fn test_free_shipping_preserves_items() -> R[nil,str] {
   return Ok ( value : nil )
 }
 
-fn test_poster_can_be_primary() -> R[nil,str] {
+fn test_poster_can_be_primary() -> R[nil,pricing.Error] {
   let quote = pricing.quote ( sku : "poster" , addon : nil , delivery : "standard" , coupon : nil ) ?
   test.eq ( actual : quote.total_cents , expected : 1000 )
   return Ok ( value : nil )
 }
 
 fn test_unknown_product() -> nil {
-  test.eq ( actual : catalog.price ( sku : "missing" ) , expected : Err ( error : "unknown product" ) )
+  test.eq ( actual : catalog.price ( sku : "missing" ) , expected : Err ( error : catalog.Error.UnknownProduct ( sku : "missing" ) ) )
   return nil
 }
 
 fn test_unknown_addon() -> nil {
-  test.eq ( actual : catalog.addon_price ( sku : "missing" ) , expected : Err ( error : "unknown product" ) )
+  test.eq ( actual : catalog.addon_price ( sku : "missing" ) , expected : Err ( error : catalog.Error.UnknownProduct ( sku : "missing" ) ) )
   return nil
 }
 
 fn test_unknown_delivery() -> nil {
-  test.eq ( actual : shipping.base_price ( delivery : "teleport" ) , expected : Err ( error : "unknown delivery method" ) )
+  test.eq ( actual : shipping.base_price ( delivery : "teleport" ) , expected : Err ( error : shipping.Error.UnknownDelivery ( delivery : "teleport" ) ) )
   return nil
 }
 
 fn test_unknown_coupon() -> nil {
-  test.eq ( actual : shipping.price ( delivery : "standard" , coupon : "INVALID" ) , expected : Err ( error : "unknown coupon" ) )
+  test.eq ( actual : shipping.price ( delivery : "standard" , coupon : "INVALID" ) , expected : Err ( error : shipping.Error.UnknownCoupon ( coupon : "INVALID" ) ) )
   return nil
 }
 
@@ -121,12 +121,41 @@ type InputFixture {
 }
 
 fn test_quote_failure_reaches_caller() -> nil {
-  test.eq ( actual : pricing.quote ( sku : "missing" , addon : nil , delivery : "standard" , coupon : nil ) , expected : Err ( error : "unknown product" ) )
+  test.eq ( actual : pricing.quote ( sku : "missing" , addon : nil , delivery : "standard" , coupon : nil ) , expected : Err ( error : pricing.Error.UnknownProduct ( sku : "missing" ) ) )
   return nil
 }
 
-fn test_bad_request_reaches_caller() -> nil {
+fn test_bad_request_reaches_caller() -> R[nil,str] {
   let request = http.test_req ( method : "POST" , path : "/quotes" , body : "{}" )
-  test.eq ( actual : app.create_quote ( req : request ) , expected : Err ( error : "$: QuoteRequest: missing required field \"sku\"" ) )
-  return nil
+  let response = app.create_quote ( req : request ) ?
+  test.eq ( actual : response.code , expected : 400 )
+  test.eq ( actual : response.body , expected : "$: QuoteRequest: missing required field \"sku\"" )
+  return Ok ( value : nil )
+}
+
+fn test_malformed_json() -> R[nil,str] {
+  let response = app.handler ( req : http.test_req ( method : "POST" , path : "/quotes" , body : "{" ) ) ?
+  test.eq ( actual : response.code , expected : 400 )
+  return Ok ( value : nil )
+}
+
+fn test_product_response() -> R[nil,str] {
+  let response = app.handler ( req : http.test_req ( method : "POST" , path : "/quotes" , body : "{\"sku\":\"missing\",\"delivery\":\"standard\"}" ) ) ?
+  test.eq ( actual : response.code , expected : 422 )
+  test.eq ( actual : response.body , expected : "unknown product: missing" )
+  return Ok ( value : nil )
+}
+
+fn test_delivery_response() -> R[nil,str] {
+  let response = app.handler ( req : http.test_req ( method : "POST" , path : "/quotes" , body : "{\"sku\":\"book\",\"delivery\":\"teleport\"}" ) ) ?
+  test.eq ( actual : response.code , expected : 422 )
+  test.eq ( actual : response.body , expected : "unknown delivery: teleport" )
+  return Ok ( value : nil )
+}
+
+fn test_coupon_response() -> R[nil,str] {
+  let response = app.handler ( req : http.test_req ( method : "POST" , path : "/quotes" , body : "{\"sku\":\"book\",\"delivery\":\"standard\",\"coupon\":\"INVALID\"}" ) ) ?
+  test.eq ( actual : response.code , expected : 422 )
+  test.eq ( actual : response.body , expected : "unknown coupon: INVALID" )
+  return Ok ( value : nil )
 }

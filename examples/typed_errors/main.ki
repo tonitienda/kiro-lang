@@ -1,0 +1,133 @@
+mod main
+
+import json
+import test
+
+type Failure {
+  variant Missing {
+    key:str
+  }
+  variant Invalid {
+    amount:i32
+  }
+  variant Offline {
+  }
+}
+
+type PublicError {
+  variant Rejected {
+    detail:str
+  }
+}
+
+fn describe(error:Failure) -> str {
+  return when ( error ) {
+  Failure.Missing ( key : let key ) => "missing: ${key}"
+  Failure.Invalid ( amount : let amount ) => "invalid: ${amount}"
+  Failure.Offline ( ) => "offline"
+  }
+}
+
+fn convert(error:Failure) -> PublicError {
+  return PublicError.Rejected ( detail : describe ( error : error ) )
+}
+
+fn fetch() -> R[i32,Failure] {
+  return Err ( error : Failure.Missing ( key : "item" ) )
+}
+
+fn boundary() -> R[i32,PublicError] {
+  when ( fetch ( ) ) {
+  Ok ( value : let number ) => { return Ok ( value : number ) }
+  Err ( error : let failure ) => { return Err ( error : convert ( error : failure ) ) }
+  }
+}
+
+fn invoke(value:Failure, describe:Fn[(error:Failure)->str]) -> str {
+  return describe ( error : value )
+}
+
+fn block_expression(error:Failure) -> str {
+  let ignored = when ( error ) {
+  Failure.Missing ( key : let key ) => { return key }
+  Failure.Invalid ( amount : _ ) => { return "invalid" }
+  Failure.Offline ( ) => { return "offline" }
+  }
+  return "unreachable"
+}
+
+fn test_payloads() -> nil {
+  test.eq ( actual : block_expression ( error : Failure.Missing ( key : "sku" ) ) , expected : "sku" )
+  test.eq ( actual : block_expression ( error : Failure.Offline ( ) ) , expected : "offline" )
+  test.eq ( actual : describe ( error : Failure.Missing ( key : "sku" ) ) , expected : "missing: sku" )
+  test.eq ( actual : describe ( error : Failure.Invalid ( amount : 0 ) ) , expected : "invalid: 0" )
+  test.eq ( actual : describe ( error : Failure.Offline ( ) ) , expected : "offline" )
+  return nil
+}
+
+fn test_conversion() -> nil {
+  test.eq ( actual : boundary ( ) , expected : Err ( error : PublicError.Rejected ( detail : "missing: item" ) ) )
+  return nil
+}
+
+fn test_constructor_partial() -> nil {
+  let missing = partial Failure.Missing ( key : "item" )
+  test.eq ( actual : missing ( ) , expected : Failure.Missing ( key : "item" ) )
+  test.eq ( actual : invoke ( value : missing ( ) , describe : describe ) , expected : "missing: item" )
+  return nil
+}
+
+fn test_json_round_trip() -> R[nil,str] {
+  let original = Failure.Invalid ( amount : 0 )
+  let wire = json.encode ( value : original ) ?
+  test.eq ( actual : wire , expected : "{\"Invalid\":{\"amount\":0}}" )
+  test.eq ( actual : json.decode [ Failure ] ( text : wire ) ? , expected : original )
+  return Ok ( value : nil )
+}
+
+fn test_result_nil() -> nil {
+  let value = when ( Err ( error : nil ) ) {
+  Ok ( value : _ ) => "success"
+  Err ( error : let payload ) => "error"
+  }
+  test.eq ( actual : value , expected : "error" )
+  return nil
+}
+
+fn sum(items:List[i32]) -> i32 {
+  mut total = 0
+  for item in items { total = total + item }
+  return total
+}
+
+fn early(items:List[i32]) -> R[i32,Failure] {
+  for item in items {
+  let value = fetch ( ) ?
+  return Ok ( value : value )
+  }
+  return Ok ( value : 0 )
+}
+
+fn test_loops() -> nil {
+  test.eq ( actual : sum ( items : [ 1 , 2 , 3 ] ) , expected : 6 )
+  test.eq ( actual : sum ( items : [ ] ) , expected : 0 )
+  test.eq ( actual : early ( items : [ 1 ] ) , expected : Err ( error : Failure.Missing ( key : "item" ) ) )
+  test.eq ( actual : early ( items : [ ] ) , expected : Ok ( value : 0 ) )
+  return nil
+}
+
+fn test_pattern_scope() -> nil {
+  mut key = "outside"
+  when ( Failure.Missing ( key : "inside" ) ) {
+  Failure.Missing ( key : let key ) => { test.eq ( actual : key , expected : "inside" ) }
+  Failure.Invalid ( amount : _ ) => { test.eq ( actual : 1 , expected : 0 ) }
+  Failure.Offline ( ) => { test.eq ( actual : 1 , expected : 0 ) }
+  }
+  test.eq ( actual : key , expected : "outside" )
+  return nil
+}
+
+fn main() -> i32 !io {
+  println ( value : describe ( error : Failure.Missing ( key : "item" ) ) )
+  return 0
+}

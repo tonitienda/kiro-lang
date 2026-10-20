@@ -204,3 +204,27 @@ fn run()->R[Any,str] {return json.decode[Any](text:"{\"value\":\"line\\n\"}")}
 		t.Fatalf("escaped literal changed:\n%s", once)
 	}
 }
+
+func TestVariantDeclarationsAndPatternsRoundTrip(t *testing.T) {
+	source := `mod main
+type Failure {variant Missing {key:str} variant Offline {}}
+fn label(error:Failure)->str {return when (error) {
+Failure.Missing(key:let key) => key
+Failure.Offline() => "offline"
+}}
+`
+	once, err := Source(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	twice, err := Source(once)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if once != twice {
+		t.Fatalf("non-idempotent:\n%s\n%s", once, twice)
+	}
+	if !strings.Contains(once, "variant Missing") || !strings.Contains(once, "let key") {
+		t.Fatal(once)
+	}
+}

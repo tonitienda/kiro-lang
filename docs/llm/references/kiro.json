@@ -1,6 +1,6 @@
 {
   "language": "Kiro",
-  "version": "phase15-results-schemas",
+  "version": "phase16-typed-errors",
   "skill_format": "codex-skill-v1",
   "extensions": [
     ".ki"
@@ -25,7 +25,12 @@
     "transducers": "Transform[Input,Output]; immutable pure stateless stages; per-item first-then order; no intermediate data lists",
     "records": "closed schemas; all source fields explicitly keyed; nested validation; declaration module identity",
     "json": "json.decode[T] requires schema; reject missing required/unknown/duplicate fields, wrong types and out-of-range/non-integer i32 text; omitted optionals become nil; no internal metadata on wire",
-    "strings": "Go quoted-string escapes; source spelling preserved by fmt; interpolation inserts data once without re-evaluation"
+    "strings": "Go quoted-string escapes; source spelling preserved by fmt; interpolation inserts data once without re-evaluation",
+    "variants": "type Error { variant Missing { key:str } variant Offline {} }; pure keyed constructors Error.Missing(key:value), Error.Offline(); module identity retained",
+    "patterns": "explicit let payload binders or _; no executed calls/interpolation; exhaustive total declared-variant arms, no catch-all; known R covers Ok/Err or wildcard; nested when for payload decisions",
+    "error_conversion": "explicit typed functions and exhaustive when; no implicit wrapping or union inference",
+    "loops": "for item in finiteList { ... }; immutable iteration binding, scoped locals, outer mut updates, return and ?",
+    "body_checking": "all bodies must parse executable grammar; unknown identifiers rejected; some unknown expression types deferred to runtime"
   },
   "keywords": [
     "mod",
@@ -34,7 +39,6 @@
     "fn",
     "let",
     "return",
-    "if",
     "when",
     "group",
     "spawn",
@@ -42,7 +46,9 @@
     "nil",
     "mut",
     "partial",
-    "default"
+    "default",
+    "for",
+    "in"
   ],
   "effects": [
     "env",
@@ -260,5 +266,16 @@
       "items",
       "through"
     ]
-  }
+  },
+  "unsupported_syntax": [
+    "if",
+    "while",
+    "break",
+    "continue",
+    "defer",
+    "map literals"
+  ],
+  "contextual_keywords": [
+    "variant"
+  ]
 }

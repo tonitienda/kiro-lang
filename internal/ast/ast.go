@@ -22,13 +22,19 @@ func (d ConstDecl) GetDoc() []string { return d.Doc }
 func (ConstDecl) declNode()          {}
 
 type TypeDecl struct {
-	Doc    []string
-	Name   string
-	Fields []Field
+	Doc      []string
+	Name     string
+	Fields   []Field
+	Variants []Variant
 }
 
 func (d TypeDecl) GetDoc() []string { return d.Doc }
 func (TypeDecl) declNode()          {}
+
+type Variant struct {
+	Name   string
+	Fields []Field
+}
 
 type Field struct {
 	Name string

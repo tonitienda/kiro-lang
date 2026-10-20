@@ -145,6 +145,38 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 			p.next()
 			break
 		}
+		if p.peekText("variant") {
+			p.next()
+			tag, err := p.expect(lexer.TokenIdent)
+			if err != nil {
+				return nil, err
+			}
+			if _, err := p.expectText("{"); err != nil {
+				return nil, err
+			}
+			v := ast.Variant{Name: tag.Text}
+			for {
+				p.skipNewlines()
+				if p.peekText("}") {
+					p.next()
+					break
+				}
+				field, err := p.expect(lexer.TokenIdent)
+				if err != nil {
+					return nil, err
+				}
+				if _, err := p.expectText(":"); err != nil {
+					return nil, err
+				}
+				typ, err := p.parseTypeRef()
+				if err != nil {
+					return nil, err
+				}
+				v.Fields = append(v.Fields, ast.Field{Name: field.Text, Type: typ.Text})
+			}
+			decl.Variants = append(decl.Variants, v)
+			continue
+		}
 		fname, err := p.expect(lexer.TokenIdent)
 		if err != nil {
 			return nil, err

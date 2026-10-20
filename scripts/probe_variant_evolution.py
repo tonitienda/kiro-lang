@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Assert that adding an error variant invalidates the affected quote-service handler.
+
+This tests compiler diagnostics, not agent repair performance. Source is copied into
+an isolated temporary directory; the repository example is never modified.
+"""
+import argparse
+import json
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--kiro", required=True)
+    args = parser.parse_args()
+    binary = str(Path(args.kiro).resolve())
+    example = Path(__file__).resolve().parents[1] / "examples/quote_service"
+    mutations = [
+        ("internal/catalog/main.ki", "OutOfStock", "pricing.from_catalog"),
+        ("internal/shipping/main.ki", "Timeout", "pricing.from_shipping"),
+        ("internal/pricing/main.ki", "PriceOverflow", "app.invalid_quote"),
+    ]
+    observations = []
+    for relative, tag, handler in mutations:
+        with tempfile.TemporaryDirectory(prefix="kiro-variant-evolution-") as temp:
+            project = Path(temp) / "quote"
+            shutil.copytree(example, project)
+            baseline = subprocess.run([binary, "check", str(project)], text=True, capture_output=True)
+            if baseline.returncode:
+                raise RuntimeError("baseline failed: " + baseline.stderr)
+            source = project / relative
+            text = source.read_text()
+            marker = "type Error {"
+            if text.count(marker) != 1:
+                raise RuntimeError("expected one Error declaration in " + relative)
+            source.write_text(text.replace(marker, marker + "\n  variant " + tag + " {}", 1))
+            result = subprocess.run([binary, "check", str(project)], text=True, capture_output=True)
+            if result.returncode == 0 or handler not in result.stderr or "missing " + tag not in result.stderr:
+                raise RuntimeError("mutation did not produce expected diagnostic: " + result.stdout + result.stderr)
+            observations.append({"added_variant": tag, "handler": handler, "exit_code": result.returncode, "diagnostic": result.stderr.strip()})
+    print(json.dumps({"kind": "compiler-mutation-check-not-agent-benchmark", "observations": observations}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

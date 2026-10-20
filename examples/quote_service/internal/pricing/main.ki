@@ -3,6 +3,45 @@ mod pricing
 import catalog
 import shipping
 
+type Error {
+  variant UnknownProduct {
+    sku:str
+  }
+  variant UnknownDelivery {
+    delivery:str
+  }
+  variant UnknownCoupon {
+    coupon:str
+  }
+}
+
+fn from_catalog(error:catalog.Error) -> Error {
+  when ( error ) {
+  catalog.Error.UnknownProduct ( sku : let sku ) => { return Error.UnknownProduct ( sku : sku ) }
+  }
+}
+
+fn from_shipping(error:shipping.Error) -> Error {
+  when ( error ) {
+  shipping.Error.UnknownDelivery ( delivery : let delivery ) => { return Error.UnknownDelivery ( delivery : delivery ) }
+  shipping.Error.UnknownCoupon ( coupon : let coupon ) => { return Error.UnknownCoupon ( coupon : coupon ) }
+  }
+}
+
+fn item_price(sku:?str) -> R[i32,Error] {
+  when ( catalog.addon_price ( sku : sku ) ) {
+  Ok ( value : let amount ) => { return Ok ( value : amount ) }
+  Err ( error : let failure ) => { return Err ( error : from_catalog ( error : failure ) ) }
+  }
+}
+
+fn delivery_price(delivery:str, coupon:?str) -> R[i32,Error] {
+  when ( shipping.price ( delivery : delivery , coupon : coupon ) ) {
+  Ok ( value : let amount ) => { return Ok ( value : amount ) }
+  Err ( error : let failure ) => { return Err ( error : from_shipping ( error : failure ) ) }
+  }
+}
+
 type Quote {
   currency:str
   subtotal_cents:i32
@@ -11,10 +50,10 @@ type Quote {
   coupon:?str
 }
 
-fn quote(sku:str, addon:?str, delivery:str, coupon:?str) -> R[Quote,str] {
-  let item = catalog.price ( sku : sku ) ?
-  let extra = catalog.addon_price ( sku : addon ) ?
-  let delivery_price = shipping.price ( delivery : delivery , coupon : coupon ) ?
+fn quote(sku:str, addon:?str, delivery:str, coupon:?str) -> R[Quote,Error] {
+  let item = item_price ( sku : sku ) ?
+  let extra = item_price ( sku : addon ) ?
+  let delivery_price = delivery_price ( delivery : delivery , coupon : coupon ) ?
   let subtotal = item + extra
   return Ok ( value : Quote { currency : "EUR" subtotal_cents : subtotal shipping_cents : delivery_price total_cents : subtotal + delivery_price coupon : coupon } )
 }

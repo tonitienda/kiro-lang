@@ -23,7 +23,32 @@ type functionalChecker struct {
 func ValidateDeclarations(spec ProgramSpec) error {
 	rt := &runtime{}
 	for _, mod := range spec.Modules {
+		seenTypes := map[string]bool{}
 		for _, typ := range mod.Types {
+			if seenTypes[typ.Name] {
+				return fmt.Errorf("%s: duplicate type %s", mod.Name, typ.Name)
+			}
+			seenTypes[typ.Name] = true
+			if len(typ.Variants) > 0 && len(typ.Fields) > 0 {
+				return fmt.Errorf("%s.%s cannot mix record fields and variants", mod.Name, typ.Name)
+			}
+			tags := map[string]bool{}
+			for _, v := range typ.Variants {
+				if tags[v.Name] {
+					return fmt.Errorf("%s.%s: duplicate variant %s", mod.Name, typ.Name, v.Name)
+				}
+				tags[v.Name] = true
+				fields := map[string]bool{}
+				for _, f := range v.Fields {
+					if fields[f.Name] {
+						return fmt.Errorf("%s.%s.%s: duplicate field %s", mod.Name, typ.Name, v.Name, f.Name)
+					}
+					fields[f.Name] = true
+					if err := validateTypeContract(f.Type); err != nil {
+						return err
+					}
+				}
+			}
 			seen := map[string]bool{}
 			for _, field := range typ.Fields {
 				if seen[field.Name] {
@@ -72,14 +97,7 @@ func ValidateFunctionalContracts(spec ProgramSpec) error {
 		for _, fn := range mod.Funcs {
 			parsed, err := rt.parseFunc(fn)
 			if err != nil {
-				functional := strings.Contains(fn.Body, "partial") || strings.Contains(fn.Body, "default") || strings.Contains(fn.Body, "list .") || strings.Contains(fn.Body, "list.") || (strings.Contains(fn.ReturnType, "Fn[") || strings.Contains(fn.ReturnType, "Transform["))
-				for _, p := range fn.Params {
-					functional = functional || strings.Contains(p.Type, "Fn[") || strings.Contains(p.Type, "Transform[")
-				}
-				if functional {
-					return fmt.Errorf("%s.%s functional body: %w", mod.Name, fn.Name, err)
-				}
-				continue
+				return fmt.Errorf("%s.%s body: %w", mod.Name, fn.Name, err)
 			}
 			c := &functionalChecker{rt: rt, module: mod.Name, env: map[string]inferredValue{}, effects: fn.Effects, returns: rt.qualifyType(fn.ReturnType, mod.Name), mutable: map[string]bool{}}
 			for _, p := range fn.Params {
@@ -143,28 +161,30 @@ func (c *functionalChecker) statements(stmts []stmt) error {
 					return err
 				}
 			}
+		case *forStmt:
+			items, err := c.infer(n.Items)
+			if err != nil {
+				return err
+			}
+			parts, ok := genericParts(items.Type, "List")
+			if !ok || len(parts) != 1 {
+				return fmt.Errorf("for requires a known List, got %s", items.Type)
+			}
+			child := *c
+			child.env = copyInferred(c.env)
+			child.mutable = copyMutable(c.mutable)
+			child.env[n.Name] = inferredValue{Type: parts[0]}
+			child.mutable[n.Name] = false
+			if err := child.statements(n.Body); err != nil {
+				return err
+			}
 		case *groupStmt:
 			if err := c.statements(n.Body); err != nil {
 				return err
 			}
 		case *whenStmt:
-			if _, err := c.infer(n.Value); err != nil {
+			if _, err := c.checkWhen(n.Value, n.Cases); err != nil {
 				return err
-			}
-			excludedNil := false
-			for _, arm := range n.Cases {
-				child := c.branch(n.Value, arm, excludedNil)
-				if err := child.statements(arm.Body); err != nil {
-					return err
-				}
-				if arm.Expr != nil {
-					if _, err := child.infer(arm.Expr); err != nil {
-						return err
-					}
-				}
-				if _, nilPattern := arm.Pattern.(*nilExpr); nilPattern {
-					excludedNil = true
-				}
 			}
 		}
 	}
@@ -216,8 +236,31 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 			v.Builtin = n.Name
 			return v, nil
 		}
-		return unknown, nil
+		if v, ok := c.rt.modules[c.module].consts[n.Name]; ok {
+			switch v.(type) {
+			case string:
+				return inferredValue{Type: "str"}, nil
+			case int:
+				return inferredValue{Type: "i32"}, nil
+			case bool:
+				return inferredValue{Type: "bool"}, nil
+			}
+		}
+		return unknown, fmt.Errorf("unknown identifier %q", n.Name)
+	case *bindingExpr:
+		return unknown, fmt.Errorf("let payload bindings are only valid in when patterns")
 	case *selectorExpr:
+		if name := expressionName(n); name != "" {
+			root := strings.Split(name, ".")[0]
+			if _, local := c.env[root]; !local {
+				if ctor, ok := c.rt.variantConstructor(name, c.module); ok {
+					return functionInference(c.rt.qualifySignature(ctor.signature(), ctor.Schema.Module)), nil
+				}
+				if schema, err := c.rt.recordSchema(expressionName(n.Left), c.module); err == nil && len(schema.Type.Variants) > 0 {
+					return unknown, fmt.Errorf("unknown variant %s", name)
+				}
+			}
+		}
 		if root, ok := n.Left.(*identExpr); ok {
 			if _, local := c.env[root.Name]; !local {
 				if root.Name == "list" && n.Name == "fold" {
@@ -300,6 +343,9 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 		if err != nil {
 			return unknown, err
 		}
+		if len(schema.Type.Variants) > 0 {
+			return unknown, fmt.Errorf("variant type %s requires a named constructor", n.TypeName)
+		}
 		keys := []string{}
 		for _, field := range n.Fields {
 			keys = append(keys, field.Name)
@@ -352,25 +398,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 	case *awaitExpr:
 		return c.infer(n.Value)
 	case *whenExpr:
-		if _, err := c.infer(n.Value); err != nil {
-			return unknown, err
-		}
-		excludedNil := false
-		for _, arm := range n.Cases {
-			child := c.branch(n.Value, arm, excludedNil)
-			if err := child.statements(arm.Body); err != nil {
-				return unknown, err
-			}
-			if arm.Expr != nil {
-				if _, err := child.infer(arm.Expr); err != nil {
-					return unknown, err
-				}
-			}
-			if _, nilPattern := arm.Pattern.(*nilExpr); nilPattern {
-				excludedNil = true
-			}
-		}
-		return unknown, nil
+		return c.checkWhen(n.Value, n.Cases)
 	case *sequenceExpr:
 		var last = inferredValue{Type: "nil"}
 		for _, item := range n.Items {

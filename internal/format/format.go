@@ -43,6 +43,13 @@ func Print(file *ast.File) string {
 			for _, f := range decl.Fields {
 				fmt.Fprintf(&b, "  %s:%s\n", f.Name, f.Type)
 			}
+			for _, v := range decl.Variants {
+				fmt.Fprintf(&b, "  variant %s {\n", v.Name)
+				for _, f := range v.Fields {
+					fmt.Fprintf(&b, "    %s:%s\n", f.Name, f.Type)
+				}
+				b.WriteString("  }\n")
+			}
 			b.WriteString("}")
 		case ast.FuncDecl:
 			b.WriteString(decl.Signature())

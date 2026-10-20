@@ -90,6 +90,10 @@ func checkRecordKeys(typ TypeSpec, keys []string, all bool) error {
 }
 
 func (rt *runtime) validateRecord(v value, typ, module string) error {
+	schemaType, schemaErr := rt.recordSchema(typ, module)
+	if schemaErr == nil && len(schemaType.Type.Variants) > 0 {
+		return rt.validateVariant(v, schemaType)
+	}
 	record, ok := v.(*structValue)
 	if !ok {
 		return fmt.Errorf("expected %s record, got %T", typ, v)
@@ -166,7 +170,11 @@ func (rt *runtime) jsonSchemaType(typ, module string, seen map[string]bool) (str
 		return full, nil
 	}
 	seen[full] = true
-	for _, field := range schema.Type.Fields {
+	fields := append([]FieldSpec{}, schema.Type.Fields...)
+	for _, v := range schema.Type.Variants {
+		fields = append(fields, v.Fields...)
+	}
+	for _, field := range fields {
 		if _, err := rt.jsonSchemaType(field.Type, schema.Module, seen); err != nil {
 			return "", fmt.Errorf("%s.%s: %w", full, field.Name, err)
 		}

@@ -33,6 +33,13 @@ func validateFunctionalContracts(p *Project) error {
 				for _, f := range d.Fields {
 					typ.Fields = append(typ.Fields, runtimekit.FieldSpec{Name: f.Name, Type: f.Type})
 				}
+				for _, v := range d.Variants {
+					variant := runtimekit.VariantSpec{Name: v.Name}
+					for _, f := range v.Fields {
+						variant.Fields = append(variant.Fields, runtimekit.FieldSpec{Name: f.Name, Type: f.Type})
+					}
+					typ.Variants = append(typ.Variants, variant)
+				}
 				mod.Types = append(mod.Types, typ)
 			case ast.ConstDecl:
 				mod.Consts = append(mod.Consts, runtimekit.ConstSpec{Name: d.Name, Value: d.Value, ValueKind: d.ValueKind})

@@ -151,13 +151,14 @@ stage, early-termination/completion protocol, stream adapter or general pipeline
 Checking resolves supported executable expressions, aliases and function contracts. It
 rejects known argument/return type mismatches and narrows an optional in a wildcard arm
 following an explicit `nil` case. Unknown expression types are deferred to runtime checks.
-Legacy frontend-only control constructs are still outside the executable checker; a body
-using the new functional constructs must parse in the executable subset.
+Phase 16 requires every body to parse in the executable grammar; unsupported frontend-only
+constructs now fail checking. List loops execute with checked iteration types.
 
 Runtime calls validate parameter and return contracts, including nested lists, results and
 function signatures. Phase 15 adds closed nested record schemas, module-qualified references, strict typed JSON
 and compositional failed-result propagation; see [results-and-schemas.md](results-and-schemas.md).
-Exhaustive typed variants and complete concurrency/effect enforcement remain unfinished.
+Phase 16 adds [typed variants and finite constructor coverage](variants-and-matching.md).
+Complete concurrency/effect enforcement remains unfinished.
 Effects here are declared operational contracts, not a security sandbox. Functions reached
 through host callbacks and unsupported syntax still need broader analysis. `kiro inspect
 go` remains structural output, while runnable builds use the Go-hosted interpreter.
@@ -168,5 +169,5 @@ integers. Negative integer literals are supported. Arithmetic errors currently a
 execution rather than returning a typed result.
 
 No implicit currying, anonymous functions, lazy collections, pipeline operator syntax, tagged
-optionals/unit or new variant syntax are introduced in this pass. Those require separate
-semantic work and controlled comparison experiments.
+optionals/unit are introduced by the functional core. Phase 16 adds variant syntax
+separately; comparative benefits still require controlled experiments.

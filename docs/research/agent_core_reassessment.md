@@ -9,13 +9,14 @@ A more capable agent can identify hypotheses and implementation defects; that do
 establish that its preferred syntax will outperform alternatives. Measure the proposals
 using the [research protocol](agent_language_iteration.md).
 
-Current implementation addendum: Phases 13–15 implement typed callables, explicit partial
+Current implementation addendum: Phases 13–16 implement typed callables, explicit partial
 application and literal defaults, eager collection operations, and explicit fused transforms.
 [Results and closed schemas](../results-and-schemas.md) now enforce function-local error
 propagation, explicit nil result tags, record construction and typed JSON boundaries.
 Known return-type mismatches fail checking and runtime callable contracts are validated.
-Tagged absence/unit, exhaustive variants and complete effect/concurrency semantics remain
-proposals or known gaps. These changes have not been benchmarked against alternative
+Phase 16 adds [typed variants and exhaustive recovery](../variants-and-matching.md),
+explicit conversions and executable list loops. Tagged absence/unit and complete
+effect/concurrency semantics remain proposals or known gaps. These changes have not been benchmarked against alternative
 languages or model versions.
 
 ## Main conclusion
@@ -38,7 +39,7 @@ removing a human constraint does not itself justify replacing text with JSON or 
 | Keep block functions and explicit returns for now | Clear exit sites and one existing convention; no measured reason to reintroduce expression-body aliases | Retained |
 | Keep results, absence, effects and concurrency conceptually separate | Agents/tools can ask independent questions about each | Retained concepts; existing enforcement remains incomplete |
 | Introduce tagged optionals and a distinct unit value | Absence, an empty result and failure should not share an untagged representation | Recommended next semantic change; syntax below is a proposal |
-| Add typed variants and exhaustive result/error matching | Auditors need to inspect and recover from failures, not just abort execution or compare strings | Recommended next semantic change; not implemented |
+| Add typed variants and exhaustive result/error matching | Auditors need to inspect and recover from failures, not just abort execution or compare strings | Implemented in Phase 16 with explicit payload bindings and finite constructor coverage |
 | Add resolved structural queries/editing | Local reasoning should not require rereading and rediscovering the whole program | Proposed agent/tool interface |
 | Require keyed value arguments | Roles are explicit at every call and key sets can be checked | Implemented, breaking; comparative benefit remains to be measured |
 | Compare checkable contracts | Explicit invariants may improve independent validation | Experimental candidate |
@@ -74,7 +75,7 @@ grammar/locality trade-off, not a claim of lower token cost.
 Tests cover continuation after a case block, nesting, selectors, record-containing calls,
 parenthesized record expressions and rejection of the old form. Frontend validation here
 checks delimiters; it is not a replacement for a complete body/type checker. The current
-runtime's `when` still performs value dispatch, not exhaustive typed variant matching.
+runtime retains primitive value dispatch; Phase 16 adds typed constructor patterns and coverage checks.
 
 ### Formatting is a semantic operation
 
@@ -84,14 +85,15 @@ preserves string contents. Retain canonical formatting, but test token/literal p
 and execution behavior in addition to formatting idempotence. Full semantics-preservation
 for every construct is not established by this fix.
 
-## Recommended next semantic change: tagged absence, unit and typed errors
+## Original proposal: tagged absence, unit and typed errors
 
-Current `nil` doubles as an absent optional value and a no-value function return. Current
+At the PR #24 baseline, `nil` doubles as an absent optional value and a no-value function return. Current
 optionals also permit bare values in examples without explicit construction, and the
 implementation does not validate narrowing. That is too weak a foundation for independent
 automated audits.
 
-Proposed vocabulary (not accepted as a new supported core yet):
+Original proposed vocabulary (the spelling below remains illustrative; Phase 16 implements
+variants with keyed constructors and keeps `R[T,E]`, `?T` and nil):
 
 - `Option[T]` with `Some(value)` and `None` for absence.
 - `Result[T,E]` with `Ok(value)` and `Err(error)` for fallibility.
@@ -245,5 +247,7 @@ is inferred from eliminating intermediate lists.
 Phase 15 implements function-local result propagation, explicit nil-capable result tags,
 closed record schemas and typed JSON validation; see `../results-and-schemas.md`. Original
 probes are retained with additional result-boundary/schema probes to avoid conflating a
-new signature rejection with evidence of correct data validation. Typed variants and
-exhaustiveness, broader body execution and complete concurrency remain open.
+new signature rejection with evidence of correct data validation. Phase 16 adds typed
+variants/coverage, list loop execution and rejection of every unparseable body. Complete
+concurrency semantics remain open. See `scripts/probe_variant_evolution.py` for a compiler
+mutation check across the quote service’s three error boundaries.

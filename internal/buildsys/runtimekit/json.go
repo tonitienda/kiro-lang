@@ -176,6 +176,44 @@ func (rt *runtime) decodeJSONValue(raw value, typ, module, path string) (value, 
 	if !ok {
 		return failure()
 	}
+	if len(schema.Type.Variants) > 0 {
+		if len(object) != 1 {
+			return nil, fmt.Errorf("%s: expected exactly one variant tag for %s", path, typ)
+		}
+		for _, tag := range schema.Type.Variants {
+			raw, exists := object[tag.Name]
+			if !exists {
+				continue
+			}
+			payload, ok := raw.(map[string]any)
+			if !ok {
+				return nil, fmt.Errorf("%s.%s: expected payload object", path, tag.Name)
+			}
+			keys := []string{}
+			for key := range payload {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			if err := checkRecordKeys(TypeSpec{Name: tag.Name, Fields: tag.Fields}, keys, false); err != nil {
+				return nil, fmt.Errorf("%s: %w", path, err)
+			}
+			fields := map[string]any{}
+			for _, f := range tag.Fields {
+				item, exists := payload[f.Name]
+				if !exists {
+					fields[f.Name] = nil
+					continue
+				}
+				v, err := rt.decodeJSONValue(item, f.Type, schema.Module, path+"."+tag.Name+"."+f.Name)
+				if err != nil {
+					return nil, err
+				}
+				fields[f.Name] = v
+			}
+			return &variantValue{Type: schema.Type.Name, Module: schema.Module, Tag: tag.Name, Fields: fields}, nil
+		}
+		return nil, fmt.Errorf("%s: unknown variant tag for %s", path, typ)
+	}
 	keys := []string{}
 	for key := range object {
 		keys = append(keys, key)
@@ -215,6 +253,9 @@ func jsonWire(v value) (any, error) {
 	switch x := v.(type) {
 	case nil, string, int, float64, bool, json.Number:
 		return x, nil
+	case *variantValue:
+		fields, err := jsonWire(x.Fields)
+		return map[string]any{x.Tag: fields}, err
 	case *structValue:
 		return jsonWire(x.Fields)
 	case resultValue:

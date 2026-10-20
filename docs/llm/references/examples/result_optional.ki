@@ -12,10 +12,10 @@ fn parse_id(raw:str) -> R[i32,str] {
 }
 
 fn maybe_email(id:i32) -> ?str {
-  if id == 1 {
-  return "ops@kiro.dev"
+  when ( id ) {
+  1 => { return "ops@kiro.dev" }
+  _ => { return nil }
   }
-  return nil
 }
 
 fn load_user(raw:str) -> R[User,str] {

@@ -1,0 +1,13 @@
+mod main
+
+type Failure {
+  variant Missing {
+    key:str
+  }
+  variant Offline {
+  }
+}
+
+fn run(error:Failure) -> nil {
+  when ( error ) { _ => { return nil } }
+}

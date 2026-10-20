@@ -28,6 +28,10 @@ Use this bundle when a repository contains Kiro source files.
 - Execute a plan eagerly with `list.transduce(items:xs, through:plan, initial:zero, reduce:r)` or materialize only its final list with `list.collect(items:xs, through:plan)`. Each item completes its stages/reduction before the next item. Rejection skips later stages; the first failure aborts. This can expose a different first error from separate eager passes.
 - `list.reduce` is an ordered left fold with a required initial value. The old `list.fold` name is rejected; do not add aliases or imply automatic/parallel fusion.
 - Use `let` for immutable bindings; the mutable form is `mut name = value`. Partial captures remain stable after rebinding.
+- Declare closed variants as `type Error { variant Missing { key:str } variant Offline {} }`; construct with `Error.Missing(key:"sku")` or `Error.Offline()`. Constructors are pure typed callables and support partials.
+- Bind payloads as `Error.Missing(key:let key)` or ignore with `key:_`. Pattern calls only destructure; they never invoke functions. All declared variant tags require total explicit arms; no wildcard catch-all. Result matches cover Ok/Err or a final wildcard. Use a nested when for payload decisions.
+- Convert error channels explicitly with typed functions and exhaustive matches; `?` never wraps/converts unrelated errors automatically.
+- Use `for item in items { ... }` for finite lists. Iteration bindings are immutable and body locals are scoped; outer `mut` updates, nested loops, return and `?` work. Unsupported if/while/break/continue/defer/map literals fail checking.
 - Delimit case dispatch as `when (value) { pattern => { ... } }`; the old unbraced form is rejected.
 - Declare only real operational effects: `env`, `fs`, `io`, `log`, `net`, `panic`, `proc`, `time`.
 - Use `R[T,E]` for failure. `?` requires an enclosing result-returning function and a compatible error type: Err returns from that function, not from its caller. Ok(nil) and Err(nil) are distinct. Runtime/assertion failures are not domain results.
@@ -64,4 +68,4 @@ For service-shaped projects, also run the documented tests/build commands such a
 
 ## Enforcement boundary
 
-Known expression contracts, closed record schemas and function-local result propagation are checked before builds and at runtime boundaries. This remains an incremental checker: broader control flow, exhaustive variant/payload matching and full concurrency/effect enforcement remain incomplete. Do not describe these as guaranteed or invent unsupported variants, lambdas, pipeline operators, stateful transducer stages or lazy sequences.
+All bodies must parse in the executable grammar. Known expression contracts, closed record/variant schemas, constructor coverage and function-local result propagation are checked before builds; runtime contracts validate actual values. This remains an incremental checker: arbitrary nested-domain exhaustiveness, return-path analysis and full concurrency/effect enforcement remain incomplete. Do not invent lambdas, pipeline operators, stateful transducer stages or lazy sequences.

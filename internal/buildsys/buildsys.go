@@ -67,6 +67,12 @@ type ConstSpec struct {
 }
 
 type TypeSpec struct {
+	Name     string        `json:"name"`
+	Fields   []FieldSpec   `json:"fields"`
+	Variants []VariantSpec `json:"variants,omitempty"`
+}
+
+type VariantSpec struct {
 	Name   string      `json:"name"`
 	Fields []FieldSpec `json:"fields"`
 }
@@ -165,7 +171,15 @@ func projectToSpec(proj *project.Project, mode string) ProgramSpec {
 				for _, f := range d.Fields {
 					fields = append(fields, FieldSpec{Name: f.Name, Type: f.Type})
 				}
-				mod.Types = append(mod.Types, TypeSpec{Name: d.Name, Fields: fields})
+				typ := TypeSpec{Name: d.Name, Fields: fields}
+				for _, v := range d.Variants {
+					variant := VariantSpec{Name: v.Name}
+					for _, f := range v.Fields {
+						variant.Fields = append(variant.Fields, FieldSpec{Name: f.Name, Type: f.Type})
+					}
+					typ.Variants = append(typ.Variants, variant)
+				}
+				mod.Types = append(mod.Types, typ)
 			case ast.FuncDecl:
 				params := make([]ParamSpec, 0, len(d.Params))
 				for _, p := range d.Params {

@@ -37,6 +37,7 @@ type whenCase struct {
 type intExpr struct{ Value int }
 type stringExpr struct{ Value string }
 type nilExpr struct{}
+type bindingExpr struct{ Name string }
 type defaultExpr struct{}
 type partialExpr struct{ Call *callExpr }
 type identExpr struct{ Name string }
@@ -78,8 +79,9 @@ type awaitExpr struct{ Value expr }
 type listExpr struct{ Items []expr }
 
 type bodyParser struct {
-	tokens []Token
-	pos    int
+	tokens     []Token
+	pos        int
+	stopStruct bool
 }
 
 func newBodyParser(src string) (*bodyParser, error) {
@@ -122,6 +124,32 @@ func (p *bodyParser) parseStatement() (stmt, error) {
 			return nil, err
 		}
 		return &letStmt{Name: name.Text, Value: value, Mutable: mutable}, nil
+	}
+	if p.peekIsKeyword("for") {
+		p.next()
+		name, err := p.expect(TokenIdent, "")
+		if err != nil {
+			return nil, err
+		}
+		if p.next().Text != "in" {
+			return nil, fmt.Errorf("for requires 'in'")
+		}
+		p.stopStruct = true
+		items, err := p.parseExpr(0)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := p.expect(TokenSymbol, "{"); err != nil {
+			return nil, err
+		}
+		body, err := p.parseStatementsUntil("}")
+		if err != nil {
+			return nil, err
+		}
+		if _, err := p.expect(TokenSymbol, "}"); err != nil {
+			return nil, err
+		}
+		return &forStmt{Name: name.Text, Items: items, Body: body}, nil
 	}
 	if p.peekIsKeyword("return") {
 		p.next()
@@ -267,6 +295,8 @@ func (p *bodyParser) parseSequenceExprUntil(stops ...TokenKind) (expr, error) {
 }
 
 func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
+	stopStruct := p.stopStruct
+	p.stopStruct = false
 	left, err := p.parsePrefix()
 	if err != nil {
 		return nil, err
@@ -310,6 +340,9 @@ func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
 			continue
 		}
 		if tok.Text == "{" {
+			if stopStruct {
+				break
+			}
 			name, ok := recordTypeName(left)
 			if !ok {
 				break
@@ -353,6 +386,12 @@ func (p *bodyParser) parsePrefix() (expr, error) {
 		return &identExpr{Name: tok.Text}, nil
 	case TokenKeyword:
 		switch tok.Text {
+		case "let":
+			name, err := p.expect(TokenIdent, "")
+			if err != nil {
+				return nil, err
+			}
+			return &bindingExpr{Name: name.Text}, nil
 		case "default":
 			return &defaultExpr{}, nil
 		case "partial":

@@ -30,3 +30,6 @@ See `PHASE14_NOTES.md` for ordered execution and allocation limits.
 
 Phase 15 implements compositional result propagation and closed record/JSON schemas.
 See `PHASE15_NOTES.md` and `docs/results-and-schemas.md` for current enforcement and limits.
+
+Phase 16 adds typed variants, exhaustive recovery, explicit error conversion and executable
+list loops, and rejects unparseable bodies during checking; see `PHASE16_NOTES.md`.

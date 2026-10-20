@@ -66,6 +66,8 @@ func (rt *runtime) callableType(callee value) (FunctionType, error) {
 		return fn.Signature, nil
 	case *partialValue:
 		return fn.Signature, nil
+	case variantConstructor:
+		return rt.qualifySignature(fn.signature(), fn.Schema.Module), nil
 	case typeSentinel:
 		return FunctionType{}, fmt.Errorf("record constructors use %s{field:value}, not function-call syntax", string(fn))
 	}
@@ -87,6 +89,12 @@ func (rt *runtime) invokeCallable(callee value, args []value) (value, error) {
 	}
 	var result value
 	switch fn := callee.(type) {
+	case variantConstructor:
+		fields := map[string]any{}
+		for i, p := range sig.Params {
+			fields[p.Name] = ascribeValue(args[i], p.Type, sig.Module)
+		}
+		result = &variantValue{Type: fn.Schema.Type.Name, Module: fn.Schema.Module, Tag: fn.Variant.Name, Fields: fields}
 	case builtinValue:
 		ctx := &execContext{rt: rt, module: sig.Module, locals: map[string]value{}, effects: sig.Effects}
 		result, err = fn.Invoke(ctx, nil, args)
@@ -278,6 +286,18 @@ func (ctx *execContext) evaluateCall(call *callExpr, partial bool) (value, error
 
 func freezeValue(v value) (value, error) {
 	switch x := v.(type) {
+	case variantConstructor:
+		return x, nil
+	case *variantValue:
+		fields := map[string]any{}
+		for k, v := range x.Fields {
+			copy, err := freezeValue(v)
+			if err != nil {
+				return nil, err
+			}
+			fields[k] = copy
+		}
+		return &variantValue{Type: x.Type, Module: x.Module, Tag: x.Tag, Fields: fields}, nil
 	case nil, string, int, float64, bool, functionValue, builtinValue:
 		return v, nil
 	case *structValue:

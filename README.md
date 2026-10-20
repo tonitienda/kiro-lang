@@ -29,7 +29,7 @@ These are design goals, not a measured advantage over existing languages. Read t
 
 The [agent-language research plan](docs/research/agent_language_iteration.md) records the current implementation audit, comparison methodology, and proposed iterations. The [multi-module quote service](examples/quote_service/README.md) is the first runnable integration example for that work.
 
-The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, required named value arguments (`f(name: expression)`), and preserves literal contents during formatting. Phase 13 adds [typed function values, explicit partial application, visible defaults and eager pure collection transforms](docs/functional-core.md), demonstrated by the [functional basket example](examples/functional/README.md). Phase 14 adds explicit ordered transducers without intermediate data lists and renames `fold` to `reduce`. Phase 15 adds [compositional results and validated records/JSON](docs/results-and-schemas.md), demonstrated by [validated aggregation](examples/validated_results/README.md). Tagged optional/unit values, exhaustive typed errors and structural agent tools remain proposals.
+The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, required named value arguments (`f(name: expression)`), and preserves literal contents during formatting. Phase 13 adds [typed function values, explicit partial application, visible defaults and eager pure collection transforms](docs/functional-core.md), demonstrated by the [functional basket example](examples/functional/README.md). Phase 14 adds explicit ordered transducers without intermediate data lists and renames `fold` to `reduce`. Phase 15 adds [compositional results and validated records/JSON](docs/results-and-schemas.md), demonstrated by [validated aggregation](examples/validated_results/README.md). Phase 16 adds [typed variants, exhaustive payload matching, explicit error conversion and executable list loops](docs/variants-and-matching.md), demonstrated by [typed errors](examples/typed_errors/README.md) and the quote service’s 400/422 responses. Tagged optional/unit values and structural agent tools remain proposals.
 
 ### Current backend boundary
 
@@ -48,6 +48,8 @@ Kiro now teaches one canonical style:
 - **`R[T,E]`** for fallibility
 - **`?`** propagates an error from the current result-returning function
 - **closed record schemas and strict typed JSON**, including nested fields and integer bounds
+- **closed typed variants** with explicit payload bindings and exhaustive matching
+- **finite list loops** with scoped immutable iteration bindings
 - **`?T`** for optional values
 - **`nil`** only where an optional or `nil` return type is allowed
 - **`group` + `spawn` + `await`** for visible structured concurrency

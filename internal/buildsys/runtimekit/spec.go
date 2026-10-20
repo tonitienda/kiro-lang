@@ -26,6 +26,12 @@ type ConstSpec struct {
 }
 
 type TypeSpec struct {
+	Name     string        `json:"name"`
+	Fields   []FieldSpec   `json:"fields"`
+	Variants []VariantSpec `json:"variants,omitempty"`
+}
+
+type VariantSpec struct {
 	Name   string      `json:"name"`
 	Fields []FieldSpec `json:"fields"`
 }

@@ -48,6 +48,7 @@ fn route(path:str) -> R[http.Resp, str] {
 - `import <name>` and `import <name>/<name>`
 - `const <Name> = <string|int|ident>`
 - `type <Name> { <field>:<type> ... }`
+- `type <Name> { variant <Tag> { <field>:<type> ... } ... }`
 - `fn <name>(<params>) -> <type> { <body> }`
 - `fn <name>(<params>) -> <type> !effect... { <body> }`
 - `fn (<recv>:<Type>) <name>(<params>) -> <type> { <body> }`
@@ -64,7 +65,7 @@ Use `Transform[Input,Output]` for explicit first-then mapping/filtering plans an
 `list.transduce` or `list.collect` to execute them. `list.reduce` is the canonical ordered
 left fold; `list.fold` is rejected. See [functional-core.md](functional-core.md) for eager
 collection helpers and enforcement
-limits. The frontend accepts some historical control-flow forms that do not yet execute.
+limits. Checking rejects bodies outside the executable grammar.
 
 ## Removed form
 
@@ -84,3 +85,12 @@ Current keywords include: `mod`, `import`, `const`, `type`, `fn`, `let`, `mut`, 
 Source record literals require every field explicitly, including optional nils. Typed JSON
 decoding validates closed schemas; escaped strings and function/module boundaries preserve
 values. See [results-and-schemas.md](results-and-schemas.md) for the implemented semantics.
+
+## Typed errors and list loops
+
+Declare `type Error { variant Missing { key:str } variant Offline {} }` and construct
+`Error.Missing(key:"sku")`. Match payloads with `Error.Missing(key:let key)` or `_`.
+Declared variant matches require every tag explicitly; known result matches cover Ok/Err.
+Use ordinary typed functions for error conversion. `for item in list { ... }` executes
+finite list loops; unsupported if/while/defer/map syntax is rejected at checking.
+See [variants and matching](variants-and-matching.md) for coverage and scope rules.

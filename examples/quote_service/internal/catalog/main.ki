@@ -1,6 +1,12 @@
 mod catalog
 
-fn price(sku:str) -> R[i32,str] {
+type Error {
+  variant UnknownProduct {
+    sku:str
+  }
+}
+
+fn price(sku:str) -> R[i32,Error] {
   when ( sku ) {
   "book" => {
   return Ok ( value : 1500 )
@@ -9,12 +15,12 @@ fn price(sku:str) -> R[i32,str] {
   return Ok ( value : 700 )
   }
   _ => {
-  return Err ( error : "unknown product" )
+  return Err ( error : Error.UnknownProduct ( sku : sku ) )
   }
   }
 }
 
-fn addon_price(sku:?str) -> R[i32,str] {
+fn addon_price(sku:?str) -> R[i32,Error] {
   when ( sku ) {
   nil => {
   return Ok ( value : 0 )

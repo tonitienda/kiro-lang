@@ -129,3 +129,15 @@ between this implemented change and later type/verification proposals.
 - use `R[T,E]` for pure fallible transforms
 - use `fn handler(req:http.Req) -> R[http.Resp,str]`
 - use `group` / `spawn` / `await` for visible structured concurrency
+
+## Phase 16: variants, matching and executable bodies
+
+Replace stringly domain errors with explicitly declared keyed variant constructors where
+useful. Bind payloads with `let` in patterns. Match every declared variant with a total
+arm; replace variant wildcards with explicit arms, and use nested matches for payload
+decisions. Convert unrelated error channels explicitly before propagating with `?`.
+
+Every body must now parse in the executable grammar; unsupported maps, if/while,
+break/continue and defer no longer pass checking silently. Use when and finite list for
+loops/collection operations. Branch and loop locals do not escape their scope.
+See [the contract](variants-and-matching.md). Regenerate vendored guide snapshots.

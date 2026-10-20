@@ -90,7 +90,7 @@ func TestQuoteServiceExample(t *testing.T) {
 	if err != nil {
 		t.Fatalf("quote service tests failed: %v\n%s", err, output)
 	}
-	if !strings.Contains(string(output), "ok\t16 test(s)") {
+	if !strings.Contains(string(output), "ok\t20 test(s)") {
 		t.Fatalf("expected the complete quote service suite to execute:\n%s", output)
 	}
 }
@@ -223,5 +223,23 @@ return 0
 				t.Fatalf("want failure=%v %q; got %v %s", tc.fail, tc.want, err, output)
 			}
 		})
+	}
+}
+
+func TestTypedErrorsExampleNativeBinary(t *testing.T) {
+	for _, tc := range []struct {
+		mode BuildMode
+		want string
+	}{{ModeRun, "missing: item\n"}, {ModeTest, "ok\t7 test(s)"}} {
+		out := filepath.Join(t.TempDir(), binaryName("typed-errors"))
+		result, err := Build(Options{Entry: filepath.Join("..", "..", "examples", "typed_errors"), Out: out, Mode: tc.mode})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.RemoveAll(result.WorkDir)
+		output, err := exec.Command(out).CombinedOutput()
+		if err != nil || !strings.Contains(string(output), tc.want) {
+			t.Fatalf("mode %s: err=%v output=%s", tc.mode, err, output)
+		}
 	}
 }
