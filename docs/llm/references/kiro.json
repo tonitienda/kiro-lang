@@ -1,6 +1,6 @@
 {
   "language": "Kiro",
-  "version": "phase18-opt-in-analysis",
+  "version": "phase19-language-reference",
   "skill_format": "codex-skill-v1",
   "extensions": [
     ".ki"
@@ -147,10 +147,11 @@
     "read_first": [
       ".kiro/skill/SKILL.md",
       ".kiro/skill/references/kiro.json",
+      ".kiro/skill/references/language.md",
       "AGENTS.md"
     ],
     "edit_scope": "Read the vendored skill before editing .ki files.",
-    "version_pin": ".kiro/version.json records the Kiro version that produced the scaffold."
+    "version_pin": ".kiro/version.json records compiler release fields, guide revision and language reference schema/path/SHA-256."
   },
   "experimental_areas": [
     "generated-Go API stability",
@@ -283,6 +284,7 @@
     "schema": "kiro.tools.v1",
     "discovery": [
       "kiro describe --json",
+      "kiro describe --reference --json",
       "kiro describe json.decode --json",
       "kiro symbols . --json",
       "kiro symbols . --symbol module.name --json"
@@ -323,5 +325,9 @@
       },
       "limits": "no complete interprocedural points-to/heap analysis, field-sensitive slicing, architectural optimum or automatic behavior-preserving refactor proof"
     }
+  },
+  "language_reference": {
+    "schema": "kiro.language-reference.v1",
+    "path": "references/language.md"
   }
 }

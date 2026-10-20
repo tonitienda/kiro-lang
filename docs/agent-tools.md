@@ -150,3 +150,12 @@ Phase 18 adds [explicit analysis commands](analysis-tools.md) for dependency/imp
 metrics, cycles, candidate boundaries, user-selected architecture rules, context slices,
 Kiro coverage and bounded targeted mutation. They never run as a side effect of check,
 lint, formatting or LSP feedback. Agents choose relevant tools; users choose hooks.
+
+## Bundled language reference (Phase 19)
+
+`kiro describe --reference` prints the authoritative language reference; adding `--json`
+returns its exact text plus guide version, schema/path and SHA-256 in the existing envelope.
+It cannot be combined with a builtin name. Ordinary `describe --json` exposes the identity
+without the text. Scaffolds vendor the same document and record its identity separately
+from compiler release fields. See [language-reference.md](language-reference.md) and the
+[onboarding protocol](research/benchmark_onboarding.md). Expensive analysis remains opt-in.

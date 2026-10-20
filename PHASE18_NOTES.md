@@ -45,3 +45,6 @@ remain explicit; users choose their own analysis cadence and hooks.
   overhead bound. Opt-in operations on the same project took roughly 11–17 ms for static
   queries, 35 ms for coverage and 98 ms for the two-mutant run. Costs vary with project,
   tests, machine and effects; no analysis is scheduled by ordinary check.
+
+Phase 19 adds the bundled authoritative language reference and executable documentation
+checks; see `PHASE19_NOTES.md`. Analysis remains explicitly invoked.

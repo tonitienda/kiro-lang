@@ -1,5 +1,8 @@
 # Language tour
 
+Current syntax and semantics: [language reference](language-reference.md). This page is
+a secondary overview; historical milestones do not define additional executable syntax.
+
 This tour teaches the canonical Kiro surface.
 
 ## Module, type, and function declarations

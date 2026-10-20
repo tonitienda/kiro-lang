@@ -26,7 +26,7 @@ Core commands:
   fmt <paths...> [--check [--json]]       Format or check canonical source
   check <entry-or-path> [--json]          Validate semantic contracts (first error)
   lint <entry-or-path> [--json]           Check semantics and canonical formatting
-  describe [builtin] [--json]            Discover language and builtin contracts
+  describe [builtin | --reference] [--json]            Discover language and builtin contracts
   symbols <path> [--symbol ID] [--json]   Inspect declarations, even during semantic repairs
   inspect go <entry-or-path> [--out-dir]  Emit generated Go for inspection
   build <entry-or-path> [--out <file>] [--keep-gen]
@@ -483,8 +483,10 @@ kiro inspect go . --out-dir .kiro-gen
 }
 
 type scaffoldVersionMetadata struct {
-	KiroVersion  string `json:"kiro_version"`
-	SkillVersion string `json:"skill_version"`
+	KiroVersion       string                      `json:"kiro_version"`
+	SkillVersion      string                      `json:"skill_version"`
+	GuideVersion      string                      `json:"guide_version"`
+	LanguageReference llmassets.ReferenceMetadata `json:"language_reference"`
 }
 
 func writeScaffoldSkillBundle(root string) error {
@@ -511,9 +513,15 @@ func writeScaffoldSkillBundle(root string) error {
 	}); err != nil {
 		return err
 	}
+	bundle, err := llmassets.Metadata()
+	if err != nil {
+		return err
+	}
 	meta, err := json.MarshalIndent(scaffoldVersionMetadata{
-		KiroVersion:  version.KiroVersion,
-		SkillVersion: version.KiroVersion,
+		KiroVersion:       version.KiroVersion,
+		SkillVersion:      version.KiroVersion,
+		GuideVersion:      bundle.GuideVersion,
+		LanguageReference: bundle.Reference,
 	}, "", "  ")
 	if err != nil {
 		return err
@@ -521,7 +529,7 @@ func writeScaffoldSkillBundle(root string) error {
 	if err := os.WriteFile(filepath.Join(root, ".kiro", "version.json"), append(meta, '\n'), 0o644); err != nil {
 		return err
 	}
-	readme := "# Project-local Kiro metadata\n\nThis hidden directory keeps the vendored Kiro skill snapshot that was copied into the project when `kiro new` ran.\n\n- read `.kiro/skill/SKILL.md` before editing `.ki` files\n- use `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n- `.kiro/version.json` records which Kiro version produced this scaffold\n- run `kiro fmt` and `kiro check` after edits\n"
+	readme := "# Project-local Kiro metadata\n\nThis hidden directory keeps the vendored Kiro skill snapshot that was copied into the project when `kiro new` ran.\n\n- read `.kiro/skill/SKILL.md` before editing `.ki` files\n- use `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n- `references/language.md` is the authoritative language reference\n- `.kiro/version.json` records compiler/guide versions and the reference SHA-256\n- run `kiro fmt` and `kiro check` after edits\n"
 	return os.WriteFile(filepath.Join(root, ".kiro", "README.md"), []byte(readme), 0o644)
 }
 
@@ -534,7 +542,7 @@ func writeScaffoldAgentGuidance(root, template string, vendorSkill bool) error {
 			"Before editing any `.ki` files:\n" +
 			"1. Read `.kiro/skill/SKILL.md`\n" +
 			"2. Treat `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n" +
-			"3. Follow only the canonical syntax and stable-core rules described there\n\n" +
+			"3. Use `.kiro/skill/references/language.md` as the authoritative language reference; do not infer syntax from other languages\n\n" +
 			"After changes:\n" +
 			"- run `kiro fmt .`\n" +
 			"- run `kiro check .`\n" +
@@ -546,7 +554,7 @@ func writeScaffoldAgentGuidance(root, template string, vendorSkill bool) error {
 			"Before editing any `.ki` files:\n" +
 			"1. Read `.kiro/skill/SKILL.md`\n" +
 			"2. Treat `.kiro/skill/references/kiro.json` as the compact machine-readable summary\n" +
-			"3. Follow only the canonical syntax and stable-core rules described there\n\n" +
+			"3. Use `.kiro/skill/references/language.md` as the authoritative language reference; do not infer syntax from other languages\n\n" +
 			"After changes:\n" +
 			"- run `kiro fmt .`\n" +
 			"- run `kiro check .`\n" +
@@ -569,6 +577,6 @@ func writeScaffoldAgentGuidance(root, template string, vendorSkill bool) error {
 			"- run `kiro fmt .`\n" +
 			"- run `kiro check .`\n"
 	}
-	body += "\nFor agent discovery use `kiro describe --json` and `kiro symbols . --json`. For structured verification use `kiro check . --json`, `kiro lint . --json`, or read-only `kiro fmt . --check --json`.\n"
+	body += "\nRetrieve the installed language reference with `kiro describe --reference` (or `--reference --json`). For agent discovery use `kiro describe --json` and `kiro symbols . --json`. For structured verification use `kiro check . --json`, `kiro lint . --json`, or read-only `kiro fmt . --check --json`.\n"
 	return os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte(body), 0o644)
 }

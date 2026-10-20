@@ -246,14 +246,40 @@ func runAgentFmt(args []string) error {
 }
 func runDescribe(args []string) error {
 	name := ""
+	reference := false
 	for _, arg := range args {
+		if arg == "--reference" {
+			if reference {
+				return usageFailure("describe", args, "--reference must appear once")
+			}
+			reference = true
+			continue
+		}
 		if arg == "--json" {
 			continue
 		}
 		if strings.HasPrefix(arg, "-") || name != "" {
-			return usageFailure("describe", args, "usage: kiro describe [builtin] [--json]")
+			return usageFailure("describe", args, "usage: kiro describe [builtin | --reference] [--json]")
 		}
 		name = arg
+	}
+	if reference && name != "" {
+		return usageFailure("describe", args, "--reference cannot be combined with a builtin name")
+	}
+	metadata, err := llmassets.Metadata()
+	if err != nil {
+		return err
+	}
+	if reference {
+		content, err := llmassets.Files.ReadFile(metadata.Reference.Path)
+		if err != nil {
+			return err
+		}
+		if !jsonRequested(args) {
+			_, err = fmt.Print(string(content))
+			return err
+		}
+		return outputReport("describe", map[string]any{"guide_version": metadata.GuideVersion, "language_reference": metadata.Reference, "content": string(content)}, nil, true)
 	}
 	raw, err := llmassets.Files.ReadFile("references/kiro.json")
 	if err != nil {
@@ -276,7 +302,7 @@ func runDescribe(args []string) error {
 		}
 		return outputReport("describe", map[string]any{"name": name, "contract": value}, nil, jsonRequested(args))
 	}
-	return outputReport("describe", map[string]any{"compiler_version": version.KiroVersion, "guide_version": manifest["version"], "stable_core": manifest["stable_core"], "unsupported_syntax": manifest["unsupported_syntax"], "commands": []string{"check <path> --json", "lint <path> --json", "fmt <paths...> --check --json", "describe [builtin] --json", "symbols <path> [--symbol module.name] --json", "analyze <operation> <path> [options] --json", "lsp"}, "optional_analysis": manifest["agent_tools"].(map[string]any)["optional_analysis"], "diagnostic_codes": runtimekit.DiagnosticCodes(), "builtins": builtins, "limits": []string{"base builtin signatures use Any where specialization depends on arguments, schemas or callbacks", "check reports the first compiler error; lint checks formatting after semantic success", "symbols describe declarations, not resolved dynamic callers"}}, nil, jsonRequested(args))
+	return outputReport("describe", map[string]any{"compiler_version": version.KiroVersion, "guide_version": manifest["version"], "language_reference": metadata.Reference, "stable_core": manifest["stable_core"], "unsupported_syntax": manifest["unsupported_syntax"], "commands": []string{"check <path> --json", "lint <path> --json", "fmt <paths...> --check --json", "describe [builtin | --reference] --json", "symbols <path> [--symbol module.name] --json", "analyze <operation> <path> [options] --json", "lsp"}, "optional_analysis": manifest["agent_tools"].(map[string]any)["optional_analysis"], "diagnostic_codes": runtimekit.DiagnosticCodes(), "builtins": builtins, "limits": []string{"base builtin signatures use Any where specialization depends on arguments, schemas or callbacks", "check reports the first compiler error; lint checks formatting after semantic success", "symbols describe declarations, not resolved dynamic callers"}}, nil, jsonRequested(args))
 }
 func runSymbols(args []string) error {
 	entry, filter := "", ""

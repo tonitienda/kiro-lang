@@ -1,6 +1,9 @@
 # Concurrency with `group`, `spawn`, and `await`
 
-Kiro keeps concurrency explicit and local.
+Kiro keeps task creation and synchronization explicit. See the current
+[language reference](llm/references/language.md#effects-and-concurrency): group does not
+yet enforce joining/cancellation, and ctx helpers do not implement real deadlines.
+Always await tasks explicitly; there is no ownership/race-freedom guarantee.
 
 ## Canonical pattern
 

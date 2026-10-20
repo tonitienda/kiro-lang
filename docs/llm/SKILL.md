@@ -11,7 +11,13 @@ Use this bundle when a repository contains Kiro source files.
 
 1. `references/kiro.json` for the compact machine-readable contract.
 2. The example closest to the task in `references/examples/`.
-3. The repository's root `AGENTS.md` for project-local workflow.
+3. `references/language.md` for authoritative syntax/semantics and the sections relevant to the task.
+4. The repository's root `AGENTS.md` for project-local workflow.
+
+No training-time familiarity with Kiro is assumed. The reference overrides historical
+phase notes and proposal syntax; report compiler/reference disagreements with versions
+and a minimal example. Retrieve the installed copy with `kiro describe --reference --json`
+if no vendored reference is available. Match its guide revision/hash to the compiler used.
 
 ## Stable-core rules
 
@@ -39,7 +45,7 @@ Use this bundle when a repository contains Kiro source files.
 - Source record literals must supply every field exactly once, including explicit nil optionals. Unknown/duplicate/missing fields and invalid field types fail. Qualify ambiguous record names by module.
 - `json.decode[T](text:body)` requires a schema. JSON rejects missing required, unknown and duplicate fields, wrong nested/list types and trailing data. Omitted optional JSON fields become nil. i32 requires in-range integer text (no decimal/exponent spelling). JSON encoding emits data fields without internal `_type` metadata.
 - Preserve escaped string spelling while editing/formatting. Evaluation decodes Go-style escapes once; inserted interpolation data is not executable source.
-- Use `group`, `spawn`, and `await` for structured concurrency. Spawn a result-returning function, await its result, then use `?`; do not place inline propagation inside a spawn expression.
+- Use `group`, `spawn`, and `await` for explicit concurrency; await every task yourself. Group does not yet enforce joining/cancellation, and ctx helpers do not implement deadlines. Spawn a result-returning function, await its result, then use `?`; do not place inline propagation inside a spawn expression.
 - Prefer documented stdlib module names directly: `env`, `fs`, `http`, `json`, `log`, `parse`, `test`, `time`, `list`.
 - Keep formatting canonical with `kiro fmt`.
 

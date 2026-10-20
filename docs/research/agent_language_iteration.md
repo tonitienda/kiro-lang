@@ -335,3 +335,11 @@ treatment and selectively expose analysis to agents in another treatment. Record
 analysis cost, retrieved context, affected-caller omissions, refactoring churn and subsequent
 task outcomes. Clustering scores and coverage alone do not establish agent benefit.
 Tools are never automatically installed as hooks or run in compiler/linter/LSP paths.
+
+## Phase 19 experiment prerequisite
+
+Use the [onboarding and reporting protocol](benchmark_onboarding.md) before fresh-session
+maintenance trials or a Go comparison. Pin the bundled language reference/guide/compiler;
+account for documentation reads and tool costs, preserve unsuccessful trials, and separate
+public fixed acceptance checks from checks truly withheld from the implementing agent.
+The reference conformance tests are infrastructure, not a model benchmark result.
