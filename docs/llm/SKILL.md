@@ -65,6 +65,18 @@ Use this bundle when a repository contains Kiro source files.
 - Respect location_kind: declaration spans identify the enclosing function, not the exact faulty expression. Compiler ranges are one-based Unicode code points; LSP converts to zero-based UTF-16.
 - A function whose return type rejects nil must return on every path. A loop may be empty and ? may succeed; add a fallback return. Nil/optional/Any fallthrough remains permitted.
 
+## Optional analysis for maintenance
+
+Expensive analysis is explicitly invoked; do not run every analyzer after every edit or add mandatory hooks without a project requirement. Normal check/lint/LSP commands do not run these tools.
+
+- Before a structural change, consider `kiro analyze graph . --symbol module.fn --json` or `kiro analyze impact . --symbol module.fn --json`. Unknown calls remain visible; an unlisted caller is not proven unaffected.
+- For difficult functions, consider `kiro analyze metrics . --symbol module.fn --json` or `kiro analyze slice . --symbol module.fn --value return --json`. Slices select conservative data/control context, not removable code.
+- To inspect architecture, use `kiro analyze cycles . --json` and, when useful, `kiro analyze boundaries . --max-nodes 200 --json`. Candidate groups are hypotheses with crossing edges, not automatic refactors or required score targets.
+- Enforce policies only on explicit request: `kiro analyze rules . --rules architecture.json --json`. No rules file is auto-discovered. Users choose any CI/hooks.
+- For test evidence, use `kiro analyze coverage . --timeout 10s --max-steps 100000 --json`. This executes Kiro tests with fresh interpreters and per-test attribution; effects still execute.
+- For assertion quality, explicitly target a covered function: `kiro analyze mutate . --symbol module.fn --max-mutants 10 --total-timeout 60s --json`. Invalid/time-limited mutants are not kills; survivors may be equivalent. `--fail-on-survivor` is an optional user-selected gate.
+- Coverage/mutation run in bounded subprocesses; neither is static, neither runs in ordinary check, and neither is a security sandbox. Save full reports outside the source tree and use focused queries to keep context small.
+
 ## Verification workflow
 
 After edits, follow the repo guidance and at minimum run:

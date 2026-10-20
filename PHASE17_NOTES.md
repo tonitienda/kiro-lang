@@ -30,3 +30,6 @@ semantics, source-hash stability, formatter no-write/preflight behavior, native 
 workspace overlays/diagnostic clearing, Unicode ranges, and deterministic maintenance probes.
 No full call graph, inferred-local query, rename/structural edit protocol, complete static
 type system, native typed Go lowering or concurrency/effect sandbox is claimed.
+
+Phase 18 adds explicitly invoked analysis, coverage and mutation tools. They do not run in
+normal compiler/linter/LSP workflows; see `PHASE18_NOTES.md` and `docs/analysis-tools.md`.

@@ -36,6 +36,7 @@ Core commands:
   test <entry-or-path> [--keep-gen]
                                           Build and run Kiro tests discovered via test_* functions
   new <hello|service> [--no-skill]        Scaffold a starter project with local AGENTS/skill guidance
+  analyze <operation> <path> [--json]     Opt-in graph/impact/metrics/cycles/boundaries/rules/slice/coverage/mutate
   lsp                                     Run language server over stdio
   compat [root] [--mode fmt,check,inspect]
                                           Run compatibility fixture checks
@@ -67,6 +68,10 @@ func Run(args []string) error {
 		return runAgentFmt(args[1:])
 	case "check":
 		return runCheck(args[1:])
+	case "analyze":
+		return runAnalyze(args[1:])
+	case "__analysis-test":
+		return runAnalysisWorker(args[1:])
 	case "lint":
 		return runAnalysis(args[1:], true)
 	case "describe":

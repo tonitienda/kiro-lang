@@ -243,3 +243,18 @@ func TestTypedErrorsExampleNativeBinary(t *testing.T) {
 		}
 	}
 }
+
+func TestOptInAnalysisNotPackagedInNativeRuntime(t *testing.T) {
+	dir := t.TempDir()
+	if err := emitWorkDir(dir, ProgramSpec{}); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"analysis.go", "coverage.go", "mutations.go", "analysis_test.go"} {
+		if _, err := os.Stat(filepath.Join(dir, "kiro_runtime", name)); !os.IsNotExist(err) {
+			t.Fatalf("opt-in implementation packaged: %s", name)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(dir, "kiro_runtime", "observation_stub.go")); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -71,3 +71,15 @@ Introduce concurrency when adding actual independent I/O and testing its lifecyc
 These limits are recorded rather than hidden behind extra example-specific helpers.
 See [the research plan](../../docs/research/agent_language_iteration.md) for proposed follow-ups,
 comparison controls, and the article/video direction.
+
+## Optional analysis
+
+```bash
+kiro analyze impact examples/quote_service --symbol pricing.quote --json
+kiro analyze slice examples/quote_service --symbol pricing.quote --value return --json
+kiro analyze rules examples/quote_service --rules examples/quote_service/architecture.json --json
+kiro analyze coverage examples/quote_service --json
+kiro analyze mutate examples/quote_service --symbol pricing.quote --max-mutants 4 --json
+```
+
+These are explicit calls, not compiler/linter gates. See [costs, contracts and limits](../../docs/analysis-tools.md).

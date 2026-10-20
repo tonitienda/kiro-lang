@@ -13,6 +13,7 @@ import (
 )
 
 type runtime struct {
+	coverage   *coverageRecorder
 	spec       ProgramSpec
 	modules    map[string]*moduleRuntime
 	entry      *moduleRuntime
@@ -69,14 +70,15 @@ type futureResult struct {
 }
 
 type execContext struct {
-	rt         *runtime
-	module     string
-	locals     map[string]value
-	receiver   value
-	returnType string
-	effects    []string
-	mutable    map[string]bool
-	shadowed   map[string]bool
+	traceFunction string
+	rt            *runtime
+	module        string
+	locals        map[string]value
+	receiver      value
+	returnType    string
+	effects       []string
+	mutable       map[string]bool
+	shadowed      map[string]bool
 }
 
 type returnSignal struct {
@@ -181,6 +183,12 @@ func (rt *runtime) runTests() (int, error) {
 }
 
 func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []value) (value, error) {
+	if rt.coverage != nil {
+		if err := rt.coverage.enter(fn); err != nil {
+			return nil, err
+		}
+		defer rt.coverage.leave()
+	}
 	if receiver != nil && fn.ReceiverType != "" {
 		args = append([]value{receiver}, args...)
 	}
@@ -197,6 +205,9 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 		return nil, err
 	}
 	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver, effects: fn.Effects, returnType: fn.ReturnType, mutable: map[string]bool{}}
+	if rt.coverage != nil {
+		ctx.traceFunction = FunctionID(fn)
+	}
 	for i, param := range fn.Params {
 		ctx.locals[param.Name] = ascribeValue(args[i], rt.qualifyType(param.Type, module), module)
 	}
@@ -279,6 +290,12 @@ func (ctx *execContext) execStatements(stmts []stmt) (value, bool, error) {
 }
 
 func (ctx *execContext) execStatement(st stmt) (value, bool, error) {
+	if ctx.rt.coverage != nil {
+		if err := ctx.rt.coverage.step(); err != nil {
+			return nil, false, err
+		}
+		ctx.rt.coverage.hit(st, "statement")
+	}
 	switch node := st.(type) {
 	case *letStmt:
 		val, err := ctx.eval(node.Value)
@@ -338,7 +355,8 @@ func (ctx *execContext) evalWhen(target expr, cases []whenCase) (value, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range cases {
+	for caseIndex := range cases {
+		c := cases[caseIndex]
 		bindings := map[string]value{}
 		matched := c.Wildcard
 		if !matched {
@@ -349,6 +367,9 @@ func (ctx *execContext) evalWhen(target expr, cases []whenCase) (value, error) {
 		}
 		if !matched {
 			continue
+		}
+		if ctx.rt.coverage != nil {
+			ctx.rt.coverage.hit(&cases[caseIndex], "arm")
 		}
 		child := *ctx
 		child.locals = copyLocals(ctx.locals)
@@ -384,6 +405,9 @@ func (ctx *execContext) evalWhen(target expr, cases []whenCase) (value, error) {
 		}
 		return val, nil
 	}
+	if ctx.rt.coverage != nil {
+		ctx.rt.coverage.hit(target, "no_match")
+	}
 	return nil, nil
 }
 
@@ -396,6 +420,9 @@ func (ctx *execContext) eval(e expr) (value, error) {
 	case *intExpr:
 		return node.Value, nil
 	case *stringExpr:
+		if ctx.rt.coverage != nil {
+			return ctx.trackedString(node)
+		}
 		return ctx.interpolate(node.Value)
 	case *nilExpr:
 		return nil, nil
@@ -696,8 +723,14 @@ func (ctx *execContext) evalUnwrap(node *unwrapExpr) (value, error) {
 	if result, ok := v.(resultValue); ok {
 		switch result.Kind {
 		case resultErr:
+			if ctx.rt.coverage != nil {
+				ctx.rt.coverage.hit(node, "err")
+			}
 			return nil, &propagationSignal{Result: result}
 		case resultOK:
+			if ctx.rt.coverage != nil {
+				ctx.rt.coverage.hit(node, "ok")
+			}
 			return result.Value, nil
 		default:
 			return nil, fmt.Errorf("invalid result tag")
@@ -715,7 +748,13 @@ func (ctx *execContext) evalSpawn(node *spawnExpr) (value, error) {
 		child.locals[name] = v
 	}
 	child.mutable = copyMutable(ctx.mutable)
+	if ctx.rt.coverage != nil {
+		ctx.rt.coverage.spawn()
+	}
 	go func() {
+		if child.rt.coverage != nil {
+			defer child.rt.coverage.completeTask()
+		}
 		v, err := child.eval(node.Value)
 		future.ch <- futureResult{val: v, err: err}
 	}()

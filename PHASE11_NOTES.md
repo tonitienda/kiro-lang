@@ -46,3 +46,6 @@ list loops, and rejects unparseable bodies during checking; see `PHASE16_NOTES.m
 
 Phase 17 adds structured compiler feedback, discovery commands, formatter checks, conservative
 return-path analysis and semantic LSP overlays; see `PHASE17_NOTES.md` and `docs/agent-tools.md`.
+
+Phase 18 adds explicitly invoked analysis, coverage and mutation tools. They do not run in
+normal compiler/linter/LSP workflows; see `PHASE18_NOTES.md` and `docs/analysis-tools.md`.

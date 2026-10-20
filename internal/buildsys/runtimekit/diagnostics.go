@@ -87,6 +87,22 @@ func DiagnosticCodes() map[string]string {
 		"KIRO_UNKNOWN_SYMBOL":     "An identifier cannot be resolved in its scope.",
 		"KIRO_EFFECT_REQUIRED":    "A call requires an undeclared operational effect.",
 		"KIRO_FORMAT_REQUIRED":    "Source differs from canonical formatting.",
+		"KIRO_MUTATION_SURVIVOR":  "An explicitly requested mutation gate found surviving mutations.",
+		"KIRO_ANALYSIS":           "Explicit analysis could not complete.",
+		"KIRO_ANALYSIS_BUDGET":    "Explicit analysis exceeded its selected budget.",
+		"KIRO_ARCHITECTURE":       "An explicitly requested architecture rule failed.",
+		"KIRO_TEST_FAILED":        "Explicit coverage tests failed or could not finish.",
 		"KIRO_USAGE":              "Command arguments are invalid.",
 	}
+}
+
+func FunctionID(fn FuncSpec) string {
+	if fn.ReceiverType != "" {
+		receiver := fn.ReceiverType
+		if !strings.Contains(receiver, ".") {
+			receiver = fn.Module + "." + receiver
+		}
+		return receiver + "." + fn.Name
+	}
+	return fn.Module + "." + fn.Name
 }

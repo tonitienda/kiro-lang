@@ -26,6 +26,9 @@ func (ctx *execContext) execFor(loop *forStmt) (value, bool, error) {
 		return nil, false, fmt.Errorf("for requires a List, got %T", v)
 	}
 	for _, item := range items {
+		if ctx.rt.coverage != nil {
+			ctx.rt.coverage.hit(loop, "body")
+		}
 		child := *ctx
 		child.locals = copyLocals(ctx.locals)
 		child.mutable = copyMutable(ctx.mutable)
@@ -41,6 +44,9 @@ func (ctx *execContext) execFor(loop *forStmt) (value, bool, error) {
 		if err != nil || returned {
 			return result, returned, err
 		}
+	}
+	if ctx.rt.coverage != nil {
+		ctx.rt.coverage.hit(loop, "exit")
 	}
 	return nil, false, nil
 }

@@ -143,3 +143,10 @@ record agent version, prompts, tokens, agent tool calls, repair attempts and ela
 and retain failed runs. Go/guided-Go treatments and comparative model runs remain to be
 prepared before making performance claims. The existing variant evolution probe now checks
 codes/symbols/missing tags through JSON rather than parsing diagnostic prose.
+
+## Optional maintenance analysis
+
+Phase 18 adds [explicit analysis commands](analysis-tools.md) for dependency/impact queries,
+metrics, cycles, candidate boundaries, user-selected architecture rules, context slices,
+Kiro coverage and bounded targeted mutation. They never run as a side effect of check,
+lint, formatting or LSP feedback. Agents choose relevant tools; users choose hooks.

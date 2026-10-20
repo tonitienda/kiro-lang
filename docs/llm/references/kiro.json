@@ -1,6 +1,6 @@
 {
   "language": "Kiro",
-  "version": "phase17-agent-tools",
+  "version": "phase18-opt-in-analysis",
   "skill_format": "codex-skill-v1",
   "extensions": [
     ".ki"
@@ -295,6 +295,33 @@
     ],
     "diagnostics": "stable native codes and structured fields; first compiler error; legacy fallback categories; declaration spans are not expression edit targets",
     "symbols": "declared contracts only; syntax validation; source snapshot SHA-256; no resolved caller graph",
-    "lsp": "shared semantic diagnostics with unsaved overlays; zero-based UTF-16 ranges; project root recommended"
+    "lsp": "shared semantic diagnostics with unsaved overlays; zero-based UTF-16 ranges; project root recommended",
+    "optional_analysis": {
+      "command": "kiro analyze <operation> <path> [options] --json",
+      "data_schema": "kiro.analysis.v1",
+      "operations": [
+        "graph",
+        "impact",
+        "metrics",
+        "cycles",
+        "boundaries",
+        "rules",
+        "slice",
+        "coverage",
+        "mutate"
+      ],
+      "automatic_in_compiler": false,
+      "policy": "agents choose cost/benefit; users opt into hooks; no background or mandatory analysis",
+      "static": "graph/impact/metrics/cycles/boundaries/rules/slice; possible and unresolved dependencies explicit; boundary proposals do not refactor code",
+      "dynamic": "coverage traces Kiro functions/statements/branches per test; mutate explicitly selects a covered function; subprocess timeouts and budgets",
+      "defaults": {
+        "boundary_nodes": 200,
+        "mutants": 10,
+        "test_steps": 100000,
+        "worker_timeout": "10s",
+        "mutation_total_timeout": "60s"
+      },
+      "limits": "no complete interprocedural points-to/heap analysis, field-sensitive slicing, architectural optimum or automatic behavior-preserving refactor proof"
+    }
   }
 }

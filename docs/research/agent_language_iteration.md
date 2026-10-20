@@ -325,3 +325,13 @@ and declared-symbol discovery, source revisions and shared semantic LSP diagnost
 tasks and evaluates fixed domain/HTTP acceptance behavior in isolated copies. Agent tokens,
 repair attempts and model comparisons remain unmeasured; verification time is labeled
 separately. The variant mutation probe consumes codes, symbols and missing tags directly.
+
+## Phase 18: analysis as an optional experimental treatment
+
+[Explicit analysis tools](../analysis-tools.md) add dependencies/impact, metrics, SCCs,
+explainable candidate boundaries, architecture rules, local/interprocedural context slicing,
+Kiro execution coverage and targeted mutation. Keep ordinary commands as the control
+treatment and selectively expose analysis to agents in another treatment. Record the
+analysis cost, retrieved context, affected-caller omissions, refactoring churn and subsequent
+task outcomes. Clustering scores and coverage alone do not establish agent benefit.
+Tools are never automatically installed as hooks or run in compiler/linter/LSP paths.

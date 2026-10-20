@@ -227,6 +227,9 @@ func emitWorkDir(workDir string, spec ProgramSpec) error {
 		return err
 	}
 	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), "_test.go") || entry.Name() == "analysis.go" || entry.Name() == "coverage.go" || entry.Name() == "mutations.go" {
+			continue
+		}
 		data, err := runtimeKit.ReadFile(filepath.Join("runtimekit", entry.Name()))
 		if err != nil {
 			return err
@@ -235,6 +238,22 @@ func emitWorkDir(workDir string, spec ProgramSpec) error {
 		if err := os.WriteFile(filepath.Join(workDir, "kiro_runtime", entry.Name()), []byte(content), 0o644); err != nil {
 			return err
 		}
+	}
+	// Analysis implementations are CLI-only. Native programs retain just nil
+	// observation hooks; graph extraction/tracing/mutation code is never packaged.
+	stub := `package kiro_runtime
+
+type coverageRecorder struct{}
+func (*coverageRecorder) enter(FuncSpec)error{return nil}
+func (*coverageRecorder) leave(){}
+func (*coverageRecorder) spawn(){}
+func (*coverageRecorder) completeTask(){}
+func (*coverageRecorder) step()error{return nil}
+func (*coverageRecorder) hit(any,string){}
+func (ctx *execContext) trackedString(node *stringExpr)(value,error){return ctx.interpolate(node.Value)}
+`
+	if err := os.WriteFile(filepath.Join(workDir, "kiro_runtime", "observation_stub.go"), []byte(stub), 0644); err != nil {
+		return err
 	}
 	raw, err := json.Marshal(spec)
 	if err != nil {

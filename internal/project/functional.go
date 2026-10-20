@@ -7,7 +7,7 @@ import (
 )
 
 // Keep semantic checking independent of generated Go and the build pipeline.
-func validateFunctionalContracts(p *Project) error {
+func (p *Project) RuntimeSpec() runtimekit.ProgramSpec {
 	spec := runtimekit.ProgramSpec{EntryModule: p.Files[0].AST.Module}
 	modules := map[string]*runtimekit.ModuleSpec{}
 	for _, file := range p.Files {
@@ -55,6 +55,11 @@ func validateFunctionalContracts(p *Project) error {
 	for _, name := range names {
 		spec.Modules = append(spec.Modules, *modules[name])
 	}
+	return spec
+}
+
+func validateFunctionalContracts(p *Project) error {
+	spec := p.RuntimeSpec()
 	err := runtimekit.ValidateFunctionalContracts(spec)
 	if err != nil {
 		d := runtimekit.DiagnosticOf(err, "KIRO_CHECK_FAILED")
