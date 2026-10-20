@@ -83,8 +83,8 @@ func ValidateDeclarations(spec ProgramSpec) error {
 	return nil
 }
 
-// ValidateFunctionalContracts reasons over the executable expression tree. Older
-// frontend-only control constructs remain outside this incremental checker.
+// ValidateFunctionalContracts checks every body in the executable grammar.
+// Inference remains incremental; return-path analysis is conservative.
 func ValidateFunctionalContracts(spec ProgramSpec) error {
 	if err := ValidateDeclarations(spec); err != nil {
 		return err
@@ -97,7 +97,7 @@ func ValidateFunctionalContracts(spec ProgramSpec) error {
 		for _, fn := range mod.Funcs {
 			parsed, err := rt.parseFunc(fn)
 			if err != nil {
-				return fmt.Errorf("%s.%s body: %w", mod.Name, fn.Name, err)
+				return FunctionDiagnostic(fmt.Errorf("body: %w", err), fn, "KIRO_SYNTAX")
 			}
 			c := &functionalChecker{rt: rt, module: mod.Name, env: map[string]inferredValue{}, effects: fn.Effects, returns: rt.qualifyType(fn.ReturnType, mod.Name), mutable: map[string]bool{}}
 			for _, p := range fn.Params {
@@ -108,7 +108,14 @@ func ValidateFunctionalContracts(spec ProgramSpec) error {
 				c.env[p.Name] = v
 			}
 			if err := c.statements(parsed.stmts); err != nil {
-				return fmt.Errorf("%s.%s: %w", mod.Name, fn.Name, err)
+				return FunctionDiagnostic(err, fn, "KIRO_CHECK_FAILED")
+			}
+			if fn.BlockBody && needsReturn(fn.ReturnType) && !statementsReturn(parsed.stmts) {
+				d := NewDiagnostic("KIRO_MISSING_RETURN", "not every path returns "+fn.ReturnType)
+				d.Expected = fn.ReturnType
+				d.Actual = "fallthrough nil"
+				d.Hint = "return a value on every path; loops may be empty and ? may succeed"
+				return FunctionDiagnostic(d, fn, "KIRO_CHECK_FAILED")
 			}
 		}
 	}
@@ -147,7 +154,7 @@ func (c *functionalChecker) statements(stmts []stmt) error {
 				return err
 			}
 			if !strings.HasPrefix(c.returns, "Fn[") && !compatibleValueTypes(v.Type, c.returns) {
-				return fmt.Errorf("return type: expected %s, got %s", c.returns, v.Type)
+				return TypeMismatch(fmt.Sprintf("return type: expected %s, got %s", c.returns, v.Type), c.returns, v.Type)
 			}
 			if strings.HasPrefix(c.returns, "Fn[") {
 				wanted, _ := ParseFunctionType(c.returns)
@@ -246,7 +253,9 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 				return inferredValue{Type: "bool"}, nil
 			}
 		}
-		return unknown, fmt.Errorf("unknown identifier %q", n.Name)
+		d := NewDiagnostic("KIRO_UNKNOWN_SYMBOL", fmt.Sprintf("unknown identifier %q", n.Name))
+		d.Target = n.Name
+		return unknown, d
 	case *bindingExpr:
 		return unknown, fmt.Errorf("let payload bindings are only valid in when patterns")
 	case *selectorExpr:
@@ -323,7 +332,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 		}
 		if parts, ok := genericParts(v.Type, "R"); ok && len(parts) == 2 {
 			if parts[1] != "Any" && !contractAcceptsType(enclosing[1], parts[1]) {
-				return unknown, fmt.Errorf("? error type %s is incompatible with enclosing error type %s", parts[1], enclosing[1])
+				return unknown, TypeMismatch(fmt.Sprintf("? error type %s is incompatible with enclosing error type %s", parts[1], enclosing[1]), enclosing[1], parts[1])
 			}
 			if strings.HasPrefix(parts[0], "Fn[") {
 				signature, err := ParseFunctionType(parts[0])
@@ -335,7 +344,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 			return inferredValue{Type: parts[0]}, nil
 		}
 		if v.Type != "Any" {
-			return unknown, fmt.Errorf("invalid ? on non-result value of type %s", v.Type)
+			return unknown, TypeMismatch(fmt.Sprintf("invalid ? on non-result value of type %s", v.Type), "R[T,E]", v.Type)
 		}
 		return unknown, nil
 	case *structExpr:
@@ -360,7 +369,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 			}
 			expected := c.rt.qualifyType(schema.fieldType(field.Name), schema.Module)
 			if !compatibleValueTypes(v.Type, expected) {
-				return unknown, fmt.Errorf("%s.%s: expected %s, got %s", n.TypeName, field.Name, expected, v.Type)
+				return unknown, TypeMismatch(fmt.Sprintf("%s.%s: expected %s, got %s", n.TypeName, field.Name, expected, v.Type), expected, v.Type)
 			}
 		}
 		return inferredValue{Type: schema.Module + "." + schema.Type.Name}, nil
@@ -487,7 +496,7 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 		}
 		values[arg.Name] = v
 		if !strings.HasPrefix(parameter.Type, "Fn[") && !compatibleValueTypes(v.Type, parameter.Type) {
-			return unknown, fmt.Errorf("argument %s: expected %s, got %s", arg.Name, parameter.Type, v.Type)
+			return unknown, TypeMismatch(fmt.Sprintf("argument %s: expected %s, got %s", arg.Name, parameter.Type, v.Type), parameter.Type, v.Type)
 		}
 		if strings.HasPrefix(parameter.Type, "Fn[") {
 			wanted, err := ParseFunctionType(parameter.Type)

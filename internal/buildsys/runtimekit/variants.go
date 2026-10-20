@@ -323,7 +323,11 @@ func (c *functionalChecker) checkWhen(subject expr, arms []whenCase) (inferredVa
 		}
 	}
 	if len(missing) > 0 {
-		return unknown, fmt.Errorf("non-exhaustive when on %s: missing %s (bind payloads with let or _; use a nested when for payload decisions)", value.Type, strings.Join(missing, ", "))
+		d := NewDiagnostic("KIRO_NON_EXHAUSTIVE", fmt.Sprintf("non-exhaustive when on %s: missing %s (bind payloads with let or _; use a nested when for payload decisions)", value.Type, strings.Join(missing, ", ")))
+		d.Expected = value.Type
+		d.Missing = missing
+		d.Hint = "add total explicit arms; bind payloads with let or _ and use nested when for payload decisions"
+		return unknown, d
 	}
 	if resultType != "" {
 		v := inferredValue{Type: resultType}

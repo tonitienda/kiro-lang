@@ -99,6 +99,9 @@ func TestRunNewHello(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "hello", "main.ki")); err != nil {
 		t.Fatalf("hello template missing: %v", err)
 	}
+	if err := Run([]string{"lint", "hello"}); err != nil {
+		t.Fatal(err)
+	}
 	assertScaffoldSkillBundle(t, filepath.Join(dir, "hello"))
 }
 
@@ -144,6 +147,9 @@ func TestRunNewService(t *testing.T) {
 		if _, err := os.Stat(filepath.Join(dir, p)); err != nil {
 			t.Fatalf("service template file missing %s: %v", p, err)
 		}
+	}
+	if err := Run([]string{"lint", "service"}); err != nil {
+		t.Fatal(err)
 	}
 	assertScaffoldSkillBundle(t, filepath.Join(dir, "service"))
 }

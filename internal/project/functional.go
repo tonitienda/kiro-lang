@@ -19,7 +19,7 @@ func validateFunctionalContracts(p *Project) error {
 		for _, declaration := range file.AST.Decls {
 			switch d := declaration.(type) {
 			case ast.FuncDecl:
-				fn := runtimekit.FuncSpec{Module: mod.Name, Name: d.Name, ReturnType: d.ReturnType, Body: d.Body, BlockBody: d.BlockBody, Effects: d.CanonicalEffectNames()}
+				fn := runtimekit.FuncSpec{Module: mod.Name, Name: d.Name, File: file.Path, Line: d.Line, Column: d.Column, ReturnType: d.ReturnType, Body: d.Body, BlockBody: d.BlockBody, Effects: d.CanonicalEffectNames()}
 				if d.Receiver != nil {
 					fn.ReceiverType = d.Receiver.Type
 					fn.Params = append(fn.Params, runtimekit.ParamSpec{Name: d.Receiver.Name, Type: d.Receiver.Type})
@@ -55,5 +55,14 @@ func validateFunctionalContracts(p *Project) error {
 	for _, name := range names {
 		spec.Modules = append(spec.Modules, *modules[name])
 	}
-	return runtimekit.ValidateFunctionalContracts(spec)
+	err := runtimekit.ValidateFunctionalContracts(spec)
+	if err != nil {
+		d := runtimekit.DiagnosticOf(err, "KIRO_CHECK_FAILED")
+		for _, file := range p.Files {
+			if file.Path == d.File {
+				return withSourceLocation(file.Path, file.Src, err)
+			}
+		}
+	}
+	return err
 }

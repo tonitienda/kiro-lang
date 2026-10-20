@@ -15,7 +15,6 @@ import (
 	"github.com/kiro-lang/kiro/internal/buildsys"
 	"github.com/kiro-lang/kiro/internal/codegen"
 	"github.com/kiro-lang/kiro/internal/compat"
-	"github.com/kiro-lang/kiro/internal/format"
 	"github.com/kiro-lang/kiro/internal/lsp"
 	"github.com/kiro-lang/kiro/internal/project"
 	"github.com/kiro-lang/kiro/internal/version"
@@ -24,8 +23,11 @@ import (
 const usageText = `usage: kiro <command> [args]
 
 Core commands:
-  fmt <paths...>                          Format .ki files deterministically
-  check <entry-or-path>                   Parse and validate a module/project
+  fmt <paths...> [--check [--json]]       Format or check canonical source
+  check <entry-or-path> [--json]          Validate semantic contracts (first error)
+  lint <entry-or-path> [--json]           Check semantics and canonical formatting
+  describe [builtin] [--json]            Discover language and builtin contracts
+  symbols <path> [--symbol ID] [--json]   Inspect declarations, even during semantic repairs
   inspect go <entry-or-path> [--out-dir]  Emit generated Go for inspection
   build <entry-or-path> [--out <file>] [--keep-gen]
                                           Build a native executable from Kiro source
@@ -41,8 +43,9 @@ Core commands:
 Use 'kiro help' to print this message.`
 
 type ExitError struct {
-	Code int
-	Err  error
+	Code     int
+	Err      error
+	Reported bool
 }
 
 func (e *ExitError) Error() string {
@@ -61,9 +64,15 @@ func Run(args []string) error {
 		fmt.Println(usageText)
 		return nil
 	case "fmt":
-		return runFmt(args[1:])
+		return runAgentFmt(args[1:])
 	case "check":
 		return runCheck(args[1:])
+	case "lint":
+		return runAnalysis(args[1:], true)
+	case "describe":
+		return runDescribe(args[1:])
+	case "symbols":
+		return runSymbols(args[1:])
 	case "compat":
 		return runCompat(args[1:])
 	case "inspect":
@@ -250,17 +259,7 @@ func runCompat(args []string) error {
 	return compat.Run(compat.RunOptions{Root: root, Modes: modes})
 }
 
-func runCheck(args []string) error {
-	if len(args) != 1 {
-		return errors.New("usage: kiro check <entry-or-path>")
-	}
-	proj, err := project.Load(args[0])
-	if err != nil {
-		return err
-	}
-	fmt.Printf("check ok: %d files\n", len(proj.Files))
-	return nil
-}
+func runCheck(args []string) error { return runAnalysis(args, false) }
 
 func runInspect(args []string) error {
 	if len(args) < 2 || args[0] != "go" {
@@ -337,6 +336,9 @@ fn main() -> i32 !io {
   return 0
 }
 `), 0o644); err != nil {
+		return err
+	}
+	if err := runAgentFmt([]string{"hello"}); err != nil {
 		return err
 	}
 	if err := writeScaffoldAgentGuidance("hello", "hello", vendorSkill); err != nil {
@@ -458,6 +460,9 @@ kiro inspect go . --out-dir .kiro-gen
 	if err := os.WriteFile("service/README.md", []byte(readme), 0o644); err != nil {
 		return err
 	}
+	if err := runAgentFmt([]string{"service"}); err != nil {
+		return err
+	}
 	if err := writeScaffoldAgentGuidance("service", "service", vendorSkill); err != nil {
 		return err
 	}
@@ -559,51 +564,6 @@ func writeScaffoldAgentGuidance(root, template string, vendorSkill bool) error {
 			"- run `kiro fmt .`\n" +
 			"- run `kiro check .`\n"
 	}
+	body += "\nFor agent discovery use `kiro describe --json` and `kiro symbols . --json`. For structured verification use `kiro check . --json`, `kiro lint . --json`, or read-only `kiro fmt . --check --json`.\n"
 	return os.WriteFile(filepath.Join(root, "AGENTS.md"), []byte(body), 0o644)
-}
-
-func runFmt(paths []string) error {
-	if len(paths) == 0 {
-		return errors.New("usage: kiro fmt <paths...>")
-	}
-	for _, path := range paths {
-		if err := formatPath(path); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func formatPath(path string) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-	if info.IsDir() {
-		return filepath.WalkDir(path, func(p string, d os.DirEntry, walkErr error) error {
-			if walkErr != nil {
-				return walkErr
-			}
-			if d.IsDir() || !strings.HasSuffix(d.Name(), ".ki") {
-				return nil
-			}
-			return formatFile(p)
-		})
-	}
-	if strings.HasSuffix(path, ".ki") {
-		return formatFile(path)
-	}
-	return nil
-}
-
-func formatFile(path string) error {
-	in, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	out, err := format.Source(string(in))
-	if err != nil {
-		return fmt.Errorf("%s: %w", path, err)
-	}
-	return os.WriteFile(path, []byte(out), 0o644)
 }

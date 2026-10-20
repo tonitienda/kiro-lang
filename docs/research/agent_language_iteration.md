@@ -278,7 +278,8 @@ zero-success arm has an ordinary numeric cost-per-success estimate.
 
 1. **Make the contract true.** Align frontend and executable grammars; implement compositional
    results, schema checking and useful source locations; verify lifecycle claims. Stable error
-   codes and structured diagnostics are candidates, not existing features.
+   codes and structured diagnostics are implemented in Phase 17; coverage still includes
+   broad fallback categories for legacy errors.
 2. **Make changes local.** Test whether explicit signatures, effects and module/API summaries
    reduce retrieval and repair work. Consider an agent-facing dependency/contract query before
    inventing another surface notation. Optimize these interfaces for agent consumers; human
@@ -315,3 +316,12 @@ reproducible failures. Check naming/search confusion with other projects using â
 promotional spend. Verify release support on the advertised platforms rather than assuming it.
 Start with an open invitation and concrete tasks; collect completion, failures and feedback
 from volunteers before deciding whether paid promotion is useful.
+
+## Phase 17 experiment infrastructure
+
+[Agent tools](../agent-tools.md) now provide structured check/lint/format feedback, builtin
+and declared-symbol discovery, source revisions and shared semantic LSP diagnostics.
+`scripts/agent_maintenance.py` prepares stock-error, delivery-schema and coupon-minimum
+tasks and evaluates fixed domain/HTTP acceptance behavior in isolated copies. Agent tokens,
+repair attempts and model comparisons remain unmeasured; verification time is labeled
+separately. The variant mutation probe consumes codes, symbols and missing tags directly.

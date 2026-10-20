@@ -49,7 +49,8 @@ Expression arms must have the same inferred type. Block arms support explicit re
 local propagation. Bindings do not escape the arm; writes to existing mutable outer bindings
 remain visible. A declaration shadowing an outer name remains local. Unknown identifiers
 are rejected. Unknown *expression types* can still reach runtime contract checks: this is
-not a complete static type system or a proof that every function path returns a value.
+not a complete static type system. Phase 17 adds conservative return-path checking;
+see [agent tools](agent-tools.md) for its structural rules and limits.
 
 ## Explicit error conversion
 

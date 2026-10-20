@@ -32,3 +32,6 @@ Coverage is finite constructor coverage, not arbitrary nested-domain constraint 
 complete return-path/type inference. Tagged optionals/unit, native typed Go lowering,
 structured diagnostics/queries and complete concurrency/effect enforcement remain future
 work. No comparative model or performance claim is made.
+
+Phase 17 adds structured compiler feedback, discovery commands, formatter checks, conservative
+return-path analysis and semantic LSP overlays; see `PHASE17_NOTES.md` and `docs/agent-tools.md`.

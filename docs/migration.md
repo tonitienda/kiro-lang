@@ -141,3 +141,11 @@ Every body must now parse in the executable grammar; unsupported maps, if/while,
 break/continue and defer no longer pass checking silently. Use when and finite list for
 loops/collection operations. Branch and loop locals do not escape their scope.
 See [the contract](variants-and-matching.md). Regenerate vendored guide snapshots.
+
+## Phase 17: feedback tools and return paths
+
+Non-nil function contracts must return on every successful path. Add a fallback after
+loops or successful ? operations; primitive dispatch needs complete exit coverage.
+Use `kiro check . --json` for structured feedback, `kiro describe --json` and `kiro symbols . --json` for discovery, and `kiro lint . --json` for semantic plus canonical-format validation.
+Formatter directory traversal now skips hidden directories; check mode never writes.
+See [agent tools](agent-tools.md) and regenerate guide snapshots.

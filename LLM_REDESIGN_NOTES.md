@@ -132,3 +132,6 @@ See `PHASE15_NOTES.md` and `docs/results-and-schemas.md` for current enforcement
 
 Phase 16 adds typed variants, exhaustive recovery, explicit error conversion and executable
 list loops, and rejects unparseable bodies during checking; see `PHASE16_NOTES.md`.
+
+Phase 17 adds structured compiler feedback, discovery commands, formatter checks, conservative
+return-path analysis and semantic LSP overlays; see `PHASE17_NOTES.md` and `docs/agent-tools.md`.

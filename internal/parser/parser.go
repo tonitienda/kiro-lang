@@ -101,7 +101,7 @@ func (p *Parser) parseConstDecl() (ast.Decl, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ast.ConstDecl{Doc: p.takePendingDoc(), Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
+	return ast.ConstDecl{Line: name.Line, Column: name.Column, Doc: p.takePendingDoc(), Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
 }
 
 func (p *Parser) expectConstValue() (lexer.Token, error) {
@@ -138,7 +138,7 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 	if _, err := p.expectText("{"); err != nil {
 		return nil, err
 	}
-	decl := ast.TypeDecl{Doc: p.takePendingDoc(), Name: name.Text}
+	decl := ast.TypeDecl{Line: name.Line, Column: name.Column, Doc: p.takePendingDoc(), Name: name.Text}
 	for {
 		p.skipNewlines()
 		if p.peekText("}") {
@@ -154,7 +154,7 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 			if _, err := p.expectText("{"); err != nil {
 				return nil, err
 			}
-			v := ast.Variant{Name: tag.Text}
+			v := ast.Variant{Line: tag.Line, Column: tag.Column, Name: tag.Text}
 			for {
 				p.skipNewlines()
 				if p.peekText("}") {
@@ -293,7 +293,12 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		decl.BlockBody = true
 		decl.Body = body
 		if _, err := runtimekit.InspectCalls(body); err != nil {
-			return nil, fmt.Errorf("%d:%d: function %s: %w", decl.Line, decl.Column, decl.Name, err)
+			d := runtimekit.DiagnosticOf(err, "KIRO_SYNTAX")
+			d.Message = fmt.Sprintf("%d:%d: function %s: %v", decl.Line, decl.Column, decl.Name, err)
+			d.Symbol = decl.Name
+			d.Range = runtimekit.DeclarationRange(decl.Line, decl.Column, len([]rune(decl.Name)))
+			d.LocationKind = "declaration"
+			return nil, &d
 		}
 		return decl, nil
 	}
@@ -484,7 +489,12 @@ func (p *Parser) expectKeyword(k string) error {
 func (p *Parser) expect(kind lexer.TokenKind) (lexer.Token, error) {
 	t := p.next()
 	if t.Kind != kind {
-		return lexer.Token{}, fmt.Errorf("expected %s at %d:%d", kind, t.Line, t.Column)
+		d := runtimekit.NewDiagnostic("KIRO_SYNTAX", fmt.Sprintf("expected %s at %d:%d", kind, t.Line, t.Column))
+		d.Expected = string(kind)
+		d.Actual = string(t.Kind)
+		d.Range = runtimekit.DeclarationRange(t.Line, t.Column, max(1, len([]rune(t.Text))))
+		d.LocationKind = "token"
+		return lexer.Token{}, d
 	}
 	return t, nil
 }
@@ -492,7 +502,12 @@ func (p *Parser) expect(kind lexer.TokenKind) (lexer.Token, error) {
 func (p *Parser) expectText(s string) (lexer.Token, error) {
 	t := p.next()
 	if t.Text != s {
-		return lexer.Token{}, fmt.Errorf("expected %q at %d:%d", s, t.Line, t.Column)
+		d := runtimekit.NewDiagnostic("KIRO_SYNTAX", fmt.Sprintf("expected %q at %d:%d", s, t.Line, t.Column))
+		d.Expected = s
+		d.Actual = t.Text
+		d.Range = runtimekit.DeclarationRange(t.Line, t.Column, max(1, len([]rune(t.Text))))
+		d.LocationKind = "token"
+		return lexer.Token{}, d
 	}
 	return t, nil
 }

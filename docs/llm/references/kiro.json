@@ -1,6 +1,6 @@
 {
   "language": "Kiro",
-  "version": "phase16-typed-errors",
+  "version": "phase17-agent-tools",
   "skill_format": "codex-skill-v1",
   "extensions": [
     ".ki"
@@ -30,7 +30,8 @@
     "patterns": "explicit let payload binders or _; no executed calls/interpolation; exhaustive total declared-variant arms, no catch-all; known R covers Ok/Err or wildcard; nested when for payload decisions",
     "error_conversion": "explicit typed functions and exhaustive when; no implicit wrapping or union inference",
     "loops": "for item in finiteList { ... }; immutable iteration binding, scoped locals, outer mut updates, return and ?",
-    "body_checking": "all bodies must parse executable grammar; unknown identifiers rejected; some unknown expression types deferred to runtime"
+    "body_checking": "all bodies must parse executable grammar; unknown identifiers rejected; some unknown expression types deferred to runtime",
+    "return_paths": "non-nil return contracts need an explicit return on every successful path; loops may be empty and ? may succeed; nil/optional/Any fallthrough admitted"
   },
   "keywords": [
     "mod",
@@ -277,5 +278,23 @@
   ],
   "contextual_keywords": [
     "variant"
-  ]
+  ],
+  "agent_tools": {
+    "schema": "kiro.tools.v1",
+    "discovery": [
+      "kiro describe --json",
+      "kiro describe json.decode --json",
+      "kiro symbols . --json",
+      "kiro symbols . --symbol module.name --json"
+    ],
+    "verification": [
+      "kiro check . --json",
+      "kiro lint . --json",
+      "kiro fmt . --check --json",
+      "kiro test ."
+    ],
+    "diagnostics": "stable native codes and structured fields; first compiler error; legacy fallback categories; declaration spans are not expression edit targets",
+    "symbols": "declared contracts only; syntax validation; source snapshot SHA-256; no resolved caller graph",
+    "lsp": "shared semantic diagnostics with unsaved overlays; zero-based UTF-16 ranges; project root recommended"
+  }
 }

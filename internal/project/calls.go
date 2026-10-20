@@ -76,7 +76,13 @@ func validateCalls(p *Project) error {
 					continue
 				}
 				if _, err := runtimekit.CheckArgumentKeys(parameters, call.Keys, call.Partial); err != nil {
-					return withSourceLocation(file.Path, file.Src, fmt.Errorf("%d:%d: function %s, call %s: %w", fn.Line, fn.Column, fn.Name, call.Target, err))
+					d := runtimekit.DiagnosticOf(err, "KIRO_CHECK_FAILED")
+					d.Message = fmt.Sprintf("function %s, call %s: %v", fn.Name, call.Target, err)
+					d.Symbol = file.AST.Module + "." + fn.Name
+					d.Target = call.Target
+					d.Range = runtimekit.DeclarationRange(fn.Line, fn.Column, len([]rune(fn.Name)))
+					d.LocationKind = "declaration"
+					return withSourceLocation(file.Path, file.Src, &d)
 				}
 			}
 		}

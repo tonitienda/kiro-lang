@@ -166,7 +166,10 @@ func effectsAllowed(actual, allowed []string) error {
 			}
 		}
 		if !found {
-			return fmt.Errorf("effect !%s is not allowed by the caller/function-type contract", effect)
+			d := NewDiagnostic("KIRO_EFFECT_REQUIRED", fmt.Sprintf("effect !%s is not allowed by the caller/function-type contract", effect))
+			d.Missing = []string{effect}
+			d.Hint = "declare the effect or use a callable with a compatible effect contract"
+			return d
 		}
 	}
 	return nil
@@ -471,4 +474,15 @@ func specializeSignature(sig FunctionType, name string, typeArgs []string) (Func
 	}
 	sig.ReturnType = "R[" + typeArgs[0] + ",str]"
 	return sig, validateTypeContract(typeArgs[0])
+}
+
+// BuiltinContracts exposes the same unspecialized contracts used for execution.
+// Generic/callback-dependent checks remain in specialization and collection rules.
+func BuiltinContracts() map[string]FunctionType {
+	out := map[string]FunctionType{}
+	for name := range builtinParameters {
+		signature, _ := builtinFunctionType(name)
+		out[name] = signature
+	}
+	return out
 }

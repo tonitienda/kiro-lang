@@ -86,7 +86,14 @@ func validateEffects(p *Project) error {
 				}
 				sort.Strings(missing)
 				msg := fmt.Errorf("%d:%d: missing effect declaration: %q calls %q\nexpected: add %q to %s\nhint: effects model operational impurity and must be declared at the caller boundary", fn.Line, fn.Column, fn.Name, call, "!"+missing[0], fn.Signature())
-				return withSourceLocation(file.Path, file.Src, msg)
+				d := runtimekit.NewDiagnostic("KIRO_EFFECT_REQUIRED", msg.Error())
+				d.Symbol = file.AST.Module + "." + fn.Name
+				d.Target = call
+				d.Missing = missing
+				d.Hint = "declare required operational effects at the caller boundary"
+				d.Range = runtimekit.DeclarationRange(fn.Line, fn.Column, len([]rune(fn.Name)))
+				d.LocationKind = "declaration"
+				return withSourceLocation(file.Path, file.Src, d)
 			}
 		}
 	}

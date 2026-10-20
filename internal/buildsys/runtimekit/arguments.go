@@ -55,10 +55,18 @@ func ArgumentOrder(parameters, keys []string) ([]int, error) {
 	positions := map[string]int{}
 	for i, key := range keys {
 		if _, duplicate := positions[key]; duplicate {
-			return nil, fmt.Errorf("duplicate argument %q\nhint: supply each argument exactly once", key)
+			d := NewDiagnostic("KIRO_ARGUMENT_DUPLICATE", fmt.Sprintf("duplicate argument %q\nhint: supply each argument exactly once", key))
+			d.Target = key
+			d.Hint = "supply each argument exactly once"
+			return nil, d
 		}
 		if !expected[key] {
-			return nil, fmt.Errorf("unknown argument %q\nexpected: %s\nhint: use the declared parameter names", key, strings.Join(parameters, ", "))
+			d := NewDiagnostic("KIRO_ARGUMENT_UNKNOWN", fmt.Sprintf("unknown argument %q\nexpected: %s\nhint: use the declared parameter names", key, strings.Join(parameters, ", ")))
+			d.Target = key
+			d.Expected = strings.Join(parameters, ", ")
+			d.Actual = strings.Join(keys, ", ")
+			d.Hint = "use the declared parameter names"
+			return nil, d
 		}
 		positions[key] = i
 	}
@@ -66,7 +74,12 @@ func ArgumentOrder(parameters, keys []string) ([]int, error) {
 	for i, parameter := range parameters {
 		position, ok := positions[parameter]
 		if !ok {
-			return nil, fmt.Errorf("missing argument %q\nhint: supply %s: expression; optional values still require an explicit argument", parameter, parameter)
+			d := NewDiagnostic("KIRO_ARGUMENT_MISSING", fmt.Sprintf("missing argument %q\nhint: supply %s: expression; optional values still require an explicit argument", parameter, parameter))
+			d.Missing = []string{parameter}
+			d.Expected = strings.Join(parameters, ", ")
+			d.Actual = strings.Join(keys, ", ")
+			d.Hint = "supply " + parameter + ": expression; optionals still require an explicit argument"
+			return nil, d
 		}
 		order[i] = position
 	}

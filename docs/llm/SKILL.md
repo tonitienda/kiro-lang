@@ -57,15 +57,25 @@ Use this bundle when a repository contains Kiro source files.
 - Do not return `nil` from non-optional types.
 - Scope spawned tasks inside a readable `group { ... }` block.
 
+## Agent discovery and feedback
+
+- Run `kiro describe --json` for language capabilities, diagnostic codes and builtin base contracts; `kiro describe json.decode --json` narrows one signature. Generic/callback specialization still applies.
+- Run `kiro symbols . --json` or `kiro symbols . --symbol module.name --json` for declared signatures, defaults, effects, fields, constructors and source revision. This works during semantic repairs but validates syntax only; it is not a resolved call graph.
+- Use `kiro check . --json` and inspect code/expected/actual/missing/symbol/hint fields. Checking is first-error; repair and rerun. Broad fallback codes retain legacy messages.
+- Respect location_kind: declaration spans identify the enclosing function, not the exact faulty expression. Compiler ranges are one-based Unicode code points; LSP converts to zero-based UTF-16.
+- A function whose return type rejects nil must return on every path. A loop may be empty and ? may succeed; add a fallback return. Nil/optional/Any fallthrough remains permitted.
+
 ## Verification workflow
 
 After edits, follow the repo guidance and at minimum run:
 
 - `kiro fmt <paths...>`
-- `kiro check <entry-or-path>`
+- `kiro check <entry-or-path> --json`
+- `kiro lint <entry-or-path> --json` (semantic contracts, then canonical formatting)
+- Use `kiro fmt <paths...> --check --json` for a read-only formatting check.
 
 For service-shaped projects, also run the documented tests/build commands such as `kiro test .`.
 
 ## Enforcement boundary
 
-All bodies must parse in the executable grammar. Known expression contracts, closed record/variant schemas, constructor coverage and function-local result propagation are checked before builds; runtime contracts validate actual values. This remains an incremental checker: arbitrary nested-domain exhaustiveness, return-path analysis and full concurrency/effect enforcement remain incomplete. Do not invent lambdas, pipeline operators, stateful transducer stages or lazy sequences.
+All bodies must parse in the executable grammar. Known expression contracts, closed record/variant schemas, constructor coverage and function-local result propagation are checked before builds; runtime contracts validate actual values. This remains an incremental checker: arbitrary nested-domain exhaustiveness, interprocedural reasoning and full concurrency/effect enforcement remain incomplete. Conservative return-path checking is enforced. Do not invent lambdas, pipeline operators, stateful transducer stages or lazy sequences.

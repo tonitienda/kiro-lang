@@ -197,7 +197,9 @@ queries over the same resolved program used for checking/execution, for example:
 - a stable diagnostic code, source/node identity, expected/actual values and evidence;
 - a structural edit with a source revision/precondition, followed by revalidation.
 
-These are proposed interfaces, not currently supported CLI commands. Use canonical text as
+Phase 17 implements a first subset: structured JSON checks, builtin discovery, declaration
+queries with source revisions, and semantic LSP overlays. Resolved caller/callee queries,
+inferred-local views and revision-guarded structural edits remain proposals. Use canonical text as
 the current serialization. A typed IR can become the common program representation without
 forcing every model to author verbose JSON ASTs. Measure text and structured editing against
 the same task and include schema/tool-learning costs.
@@ -251,3 +253,7 @@ new signature rejection with evidence of correct data validation. Phase 16 adds 
 variants/coverage, list loop execution and rejection of every unparseable body. Complete
 concurrency semantics remain open. See `scripts/probe_variant_evolution.py` for a compiler
 mutation check across the quote service’s three error boundaries.
+
+Phase 17 supplies conservative return-path checking and the [agent feedback protocol](../agent-tools.md).
+The maintenance runner prepares three tasks and verifies fixed acceptance behavior; it
+does not yet establish agent repair success, token savings or comparative performance.

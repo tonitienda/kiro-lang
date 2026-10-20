@@ -12,6 +12,8 @@ type Decl interface {
 }
 
 type ConstDecl struct {
+	Line      int
+	Column    int
 	Doc       []string
 	Name      string
 	Value     string
@@ -22,6 +24,8 @@ func (d ConstDecl) GetDoc() []string { return d.Doc }
 func (ConstDecl) declNode()          {}
 
 type TypeDecl struct {
+	Line     int
+	Column   int
 	Doc      []string
 	Name     string
 	Fields   []Field
@@ -32,6 +36,8 @@ func (d TypeDecl) GetDoc() []string { return d.Doc }
 func (TypeDecl) declNode()          {}
 
 type Variant struct {
+	Line   int
+	Column int
 	Name   string
 	Fields []Field
 }

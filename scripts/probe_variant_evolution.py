@@ -28,7 +28,7 @@ def main():
         with tempfile.TemporaryDirectory(prefix="kiro-variant-evolution-") as temp:
             project = Path(temp) / "quote"
             shutil.copytree(example, project)
-            baseline = subprocess.run([binary, "check", str(project)], text=True, capture_output=True)
+            baseline = subprocess.run([binary, "check", str(project), "--json"], text=True, capture_output=True)
             if baseline.returncode:
                 raise RuntimeError("baseline failed: " + baseline.stderr)
             source = project / relative
@@ -37,10 +37,15 @@ def main():
             if text.count(marker) != 1:
                 raise RuntimeError("expected one Error declaration in " + relative)
             source.write_text(text.replace(marker, marker + "\n  variant " + tag + " {}", 1))
-            result = subprocess.run([binary, "check", str(project)], text=True, capture_output=True)
-            if result.returncode == 0 or handler not in result.stderr or "missing " + tag not in result.stderr:
-                raise RuntimeError("mutation did not produce expected diagnostic: " + result.stdout + result.stderr)
-            observations.append({"added_variant": tag, "handler": handler, "exit_code": result.returncode, "diagnostic": result.stderr.strip()})
+            result = subprocess.run([binary, "check", str(project), "--json"], text=True, capture_output=True)
+            report = json.loads(result.stdout)
+            diagnostic = report["diagnostics"][0] if report["diagnostics"] else {}
+            if (result.returncode == 0 or result.stderr or diagnostic.get("code") != "KIRO_NON_EXHAUSTIVE"
+                    or diagnostic.get("symbol") != handler or tag not in diagnostic.get("missing", [])):
+                raise RuntimeError("mutation did not produce expected structured diagnostic: " + result.stdout + result.stderr)
+            observations.append({"added_variant": tag, "handler": handler, "exit_code": result.returncode,
+                                 "code": diagnostic["code"], "file": diagnostic.get("file"),
+                                 "location_kind": diagnostic.get("location_kind"), "missing": diagnostic["missing"]})
     print(json.dumps({"kind": "compiler-mutation-check-not-agent-benchmark", "observations": observations}, indent=2))
 
 

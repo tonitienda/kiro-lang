@@ -42,6 +42,9 @@ type FieldSpec struct {
 }
 
 type FuncSpec struct {
+	File         string      `json:"file,omitempty"`
+	Line         int         `json:"line,omitempty"`
+	Column       int         `json:"column,omitempty"`
 	Module       string      `json:"module"`
 	Name         string      `json:"name"`
 	ReceiverType string      `json:"receiver_type,omitempty"`

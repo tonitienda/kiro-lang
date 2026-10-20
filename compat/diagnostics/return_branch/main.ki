@@ -1,0 +1,5 @@
+mod main
+
+fn value(number:i32) -> i32 {
+  when ( number ) { 1 => { return 1 } }
+}

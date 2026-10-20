@@ -1,4 +1,4 @@
-# Editor setup (Phase 11)
+# Editor setup
 
 Kiro ships a language server and a packaged VS Code extension for normal users.
 
@@ -6,12 +6,12 @@ Kiro ships a language server and a packaged VS Code extension for normal users.
 
 Current editor support intentionally focuses on:
 
-- diagnostics (reusing the parser/check pipeline)
+- semantic diagnostics with compiler codes and structured data, including unsaved workspace overlays
 - hover on declarations in the current document
 - go-to-definition for local and top-level symbols in the current document
 - formatting via the canonical `kiro fmt` formatter implementation
 - document symbols (outline)
-- basic completion
+- deterministic completion with builtin signatures and variant constructors
 - TextMate syntax highlighting for `.ki` files in VS Code
 
 Deferred features are listed in `PHASE11_NOTES.md`.
@@ -131,3 +131,7 @@ Editor diagnostics and formatting are intentionally aligned with CLI behavior:
 - diagnostics come from the same parse/check stack used by `kiro check`
 - formatting uses the same formatter implementation used by `kiro fmt`
 - generated-Go inspection (`kiro inspect go`) remains the debugging backstop for runtime/codegen investigation
+
+Phase 17 aligns diagnostics with `kiro check --json` and converts source columns to LSP
+UTF-16 ranges. Open the Kiro project root for cross-module checking. Hover/definition remain
+document-local, and project diagnostics remain first-error. See [agent tools](agent-tools.md).
