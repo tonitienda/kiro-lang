@@ -155,9 +155,9 @@ Legacy frontend-only control constructs are still outside the executable checker
 using the new functional constructs must parse in the executable subset.
 
 Runtime calls validate parameter and return contracts, including nested lists, results and
-function signatures. Records currently check nominal names, not full field schemas or
-module-distinct type identity. JSON validation, compositional failed-result propagation,
-exhaustive typed variants, and complete concurrency/effect enforcement remain unfinished.
+function signatures. Phase 15 adds closed nested record schemas, module-qualified references, strict typed JSON
+and compositional failed-result propagation; see [results-and-schemas.md](results-and-schemas.md).
+Exhaustive typed variants and complete concurrency/effect enforcement remain unfinished.
 Effects here are declared operational contracts, not a security sandbox. Functions reached
 through host callbacks and unsupported syntax still need broader analysis. `kiro inspect
 go` remains structural output, while runnable builds use the Go-hosted interpreter.

@@ -8,7 +8,7 @@ type Msg {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when (req.path) {
+  when ( req.path ) {
   "/health" => {
   let body = json.encode ( value : Msg { status : "ok" } ) ?
   return Ok ( value : http.json ( code : 200 , body : body ) )
@@ -19,7 +19,7 @@ fn app(req:http.Req) -> R[http.Resp,str] {
   }
 }
 
-fn main() -> i32 !net {
+fn main() -> R[i32,str] !net {
   http.serve ( addr : ":8080" , handler : app ) ?
-  return 0
+  return Ok ( value : 0 )
 }

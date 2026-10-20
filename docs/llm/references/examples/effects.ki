@@ -3,12 +3,12 @@ mod main
 import env
 import log
 
-fn load_port() -> R[str, str] !env {
-  return Ok(value : env.get_or(key : "PORT", fallback : ":8080"))
+fn load_port() -> R[str,str] !env {
+  return Ok ( value : env.get_or ( key : "PORT" , fallback : ":8080" ) )
 }
 
-fn main() -> i32 !env !log {
-  let port = load_port()?
-  log.info(message : "port ${port}")
-  return 0
+fn main() -> R[i32,str] !env !log {
+  let port = load_port ( ) ?
+  log.info ( message : "port ${port}" )
+  return Ok ( value : 0 )
 }

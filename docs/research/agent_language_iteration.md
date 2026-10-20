@@ -87,7 +87,8 @@ The language already has useful design ingredients: one function form, canonical
 explicit operational effects, results distinct from optionals, visible concurrency constructs,
 project conventions and a compact agent skill. Their benefits remain hypotheses to measure.
 
-The implementation does not yet enforce the full apparent contract:
+After Phase 15, the implementation enforces result and schema boundaries while retaining
+several broader gaps:
 
 | Area | Evidence in the current source | Consequence |
 | --- | --- | --- |
@@ -95,8 +96,8 @@ The implementation does not yet enforce the full apparent contract:
 | Go inspection | `internal/codegen/gogen.go` emits stub functions and string fields | Inspection is not yet a faithful view of executable business logic |
 | Body checking | `project.Load` parses files, resolves imports and checks effects; bodies remain largely text in the frontend AST | A successful `check` is not a full type/semantic guarantee |
 | Runtime syntax | The body parser has a narrower grammar than the frontend/guide | Even documented code can pass `check` and then fail on execution |
-| Results | `evalUnwrap` converts failed results to Go errors | Failed `?` does not currently compose as an ordinary returned `Err` |
-| JSON | `json.decode[T]` labels maps without checking declared fields; encoding adds `_type` | Invalid payloads can cross a nominally typed boundary; runtime metadata leaks into JSON |
+| Results | `?` propagates a tagged Err from the current result-returning function; adapters handle unhandled failures | Callers can inspect errors, including nil payloads; exhaustive payload matching remains future work |
+| JSON | `json.decode[T]` validates closed nested schemas, required fields and integer bounds; encoding emits data fields | Malformed typed data returns Err; `Any` deliberately bypasses schema constraints |
 | Concurrency | `group` executes a block; spawned futures are not registered with the group; context helpers return strings | Syntax alone does not establish join/cancellation/timeout guarantees |
 
 The last row is source inspection, not a concurrent stress-test result. Do not describe the
@@ -119,10 +120,18 @@ All four probes passed `check` on the starting implementation:
 | Sum a list with documented `for` syntax | Fails: `expected IDENT, got NEWLINE` | Do checked examples actually execute? |
 | Compare a propagated failure with `Err(...)` in the caller | Aborts with the domain error before the assertion | Can callers inspect a failure after propagation? |
 
-Phase 13 rerun: the return-type probe now fails `check` and `run` with `expected i32,
+Historical Phase 13 rerun: the return-type probe now fails `check` and `run` with `expected i32,
 got str`. JSON required fields still pass without schema validation; the documented loop
 still passes checking but fails execution; a propagated failure still aborts before the
 caller assertion. The observation script intentionally preserves all four inputs.
+
+Phase 15 rerun: the wrong-return probe remains rejected. The original JSON probe is
+now rejected for using `?` in a non-result entry function; that alone does not test schema
+validation. The added `json_required_field_result_boundary` probe passes checking and
+returns an unhandled Err for the missing required field at execution. The original result
+propagation assertion now succeeds. Added nil-tag and missing-record probes check the new
+representation and construction boundary. The documented loop still passes checking but
+fails execution. Original inputs are retained alongside the new probes.
 
 These are implementation findings, not measurements of agent performance. Fixes should
 be accompanied by negative compiler/runtime tests, not just more optimistic documentation.
@@ -130,7 +139,7 @@ be accompanied by negative compiler/runtime tests, not just more optimistic docu
 ## Larger example and incremental requirements
 
 The first slice is [the quote service](../../examples/quote_service/README.md): seven source
-modules and 14 domain/handler tests. It exercises modules, HTTP methods, typed-looking JSON,
+modules and originally 14 domain/handler tests (16 after the Phase 15 failure-boundary additions). It exercises modules, HTTP methods, typed-looking JSON,
 pure rules, integer cents, optional fields and error-producing leaf operations.
 It deliberately stays within the executable subset. Its two product positions are a real
 scope limit, not a substitute for arbitrary collection handling.

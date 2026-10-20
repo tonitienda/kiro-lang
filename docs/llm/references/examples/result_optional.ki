@@ -7,18 +7,18 @@ type User {
   email:?str
 }
 
-fn parse_id(raw:str) -> R[i32, str] {
-  return parse.i32(text : raw)
+fn parse_id(raw:str) -> R[i32,str] {
+  return parse.i32 ( text : raw )
 }
 
 fn maybe_email(id:i32) -> ?str {
   if id == 1 {
-    return "ops@kiro.dev"
+  return "ops@kiro.dev"
   }
   return nil
 }
 
-fn load_user(raw:str) -> R[User, str] {
-  let id = parse_id(raw : raw)?
-  return Ok(value : User{id:id email:maybe_email(id : id)})
+fn load_user(raw:str) -> R[User,str] {
+  let id = parse_id ( raw : raw ) ?
+  return Ok ( value : User { id : id email : maybe_email ( id : id ) } )
 }

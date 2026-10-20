@@ -69,6 +69,33 @@ fn main() -> i32 {
 ''',
 }
 
+# Preserve the original four probes. Add a result-returning JSON boundary so the
+# new signature rule cannot masquerade as evidence that schema validation works.
+PROBES["json_required_field_result_boundary"] = """mod main
+import json
+type Input { quantity:i32 }
+fn main()->R[i32,str] !io {
+  let input = json.decode[Input](text:"{}")?
+  println(value:json.encode(value:input)?)
+  return Ok(value:0)
+}
+"""
+PROBES["explicit_nil_tags"] = """mod main
+import test
+fn main()->i32 {
+  test.eq(actual:Ok(value:nil) == Err(error:nil),expected:false)
+  return 0
+}
+"""
+PROBES["required_record_literal"] = """mod main
+type Input { quantity:i32 }
+fn main()->i32 {
+  let input = Input{}
+  return 0
+}
+"""
+
+
 
 def invoke(command, cwd):
     try:

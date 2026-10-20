@@ -17,7 +17,7 @@ fn slow_b() -> str {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when (req.path) {
+  when ( req.path ) {
   "/parallel" => {
   group {
   let ta = spawn slow_a ( )
@@ -34,7 +34,7 @@ fn app(req:http.Req) -> R[http.Resp,str] {
   }
 }
 
-fn main() -> i32 !net {
+fn main() -> R[i32,str] !net {
   http.serve ( addr : ":8080" , handler : app ) ?
-  return 0
+  return Ok ( value : 0 )
 }

@@ -3,7 +3,7 @@ mod main
 import http
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when (req.path) {
+  when ( req.path ) {
   "/health" => {
   return Ok ( value : http.text ( code : 200 , body : "ok" ) )
   }
@@ -13,7 +13,7 @@ fn app(req:http.Req) -> R[http.Resp,str] {
   }
 }
 
-fn main() -> i32 !net {
+fn main() -> R[i32,str] !net {
   http.serve ( addr : ":8080" , handler : app ) ?
-  return 0
+  return Ok ( value : 0 )
 }

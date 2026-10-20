@@ -15,8 +15,8 @@ fn load_config() -> R[AppConfig,str] !env {
   return Ok ( value : AppConfig { port : port env : app_env } )
 }
 
-fn main() -> i32 !env !io {
+fn main() -> R[i32,str] !env !io {
   let cfg = load_config ( ) ?
   println ( value : "starting ${cfg.port} (${cfg.env})" )
-  return 0
+  return Ok ( value : 0 )
 }

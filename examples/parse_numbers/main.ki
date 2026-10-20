@@ -2,8 +2,8 @@ mod main
 
 import parse
 
-fn main() -> i32 !io {
+fn main() -> R[i32,str] !io {
   let n = parse.i32 ( text : "42" ) ?
   println ( value : "${n}" )
-  return 0
+  return Ok ( value : 0 )
 }

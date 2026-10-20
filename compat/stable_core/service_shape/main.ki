@@ -5,9 +5,9 @@ import internal/config
 import http
 import log
 
-fn main() -> i32 !env !log !net {
+fn main() -> R[i32,str] !env !log !net {
   let cfg = config.load()?
   log.info(message : "starting ${cfg.port}")
   http.serve(addr : cfg.port, handler : app.handler)?
-  return 0
+  return Ok ( value : 0 )
 }

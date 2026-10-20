@@ -7,7 +7,7 @@ These instructions apply to the full repository.
 - Follow `docs/phase1-spec.md` for foundation and `docs/roadmap-phase2.md` for incremental history.
 - For current language direction and limits, read `PHASE6_NOTES.md` first.
 - For the current LLM-focused cleanup decisions, read `LLM_REDESIGN_NOTES.md` before changing syntax, diagnostics, templates, or public docs.
-- For the active agent-only reassessment, read `PHASE14_NOTES.md`, `PHASE13_NOTES.md`, `docs/functional-core.md`, `PHASE12_NOTES.md` and `docs/research/agent_core_reassessment.md`; distinguish implemented syntax from proposals.
+- For the active agent-only reassessment, read `PHASE15_NOTES.md`, `docs/results-and-schemas.md`, `PHASE14_NOTES.md`, `PHASE13_NOTES.md`, `docs/functional-core.md`, `PHASE12_NOTES.md` and `docs/research/agent_core_reassessment.md`; distinguish implemented syntax from proposals.
 - Prefer straightforward, readable Go over abstractions.
 - Keep parser/formatter behavior deterministic.
 - Every value argument is named; preserve source evaluation order when formatting or migrating calls. Built-in names come from `runtimekit/arguments.go` and the validated compact manifest.
@@ -28,7 +28,7 @@ These instructions apply to the full repository.
 - When changing the release installer or bundle layout, run `scripts/write_release_checksums.sh` plus `scripts/verify_install.sh` against a local artifact.
 
 ## Current milestone context
-- Phase 14 is active: prioritize enforceable semantics and agent/tool interfaces for agent-only implementation/review/audit. Preserve the Phase 10 core concepts, with breaking changes explicitly recorded in `PHASE14_NOTES.md`.
+- Phase 15 is active: prioritize enforceable semantics and agent/tool interfaces for agent-only implementation/review/audit. Preserve the Phase 10 core concepts, with breaking changes explicitly recorded in `PHASE15_NOTES.md`.
 - The active redesign direction favors a smaller stricter language for LLM generation over compatibility with older prototype forms.
 - Keep `PHASE11_NOTES.md` and `PHASE10_NOTES.md` aligned with implementation decisions and tradeoffs.
 - Keep `PHASE8_NOTES.md` plus `PHASE6_NOTES.md`, `PHASE5_NOTES.md`, `PHASE4_NOTES.md`, and `PHASE3_NOTES.md` aligned when touching earlier-phase assumptions.

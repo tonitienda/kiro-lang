@@ -77,3 +77,10 @@ This keeps return flow explicit and simplifies formatting and diagnostics.
 ## Reserved keywords
 
 Current keywords include: `mod`, `import`, `const`, `type`, `fn`, `let`, `mut`, `if`, `else`, `when`, `for`, `in`, `while`, `break`, `continue`, `defer`, `return`, `spawn`, `await`, `group`, `partial`, `default`.
+
+## Results and data boundaries
+
+`?` requires a result-returning enclosing function and returns Err from that function.
+Source record literals require every field explicitly, including optional nils. Typed JSON
+decoding validates closed schemas; escaped strings and function/module boundaries preserve
+values. See [results-and-schemas.md](results-and-schemas.md) for the implemented semantics.

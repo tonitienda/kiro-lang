@@ -4,7 +4,7 @@ import http
 import test
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when (req.path) {
+  when ( req.path ) {
   "/health" => {
   return Ok ( value : http.text ( code : 200 , body : "ok" ) )
   }
@@ -14,8 +14,9 @@ fn app(req:http.Req) -> R[http.Resp,str] {
   }
 }
 
-fn test_health_handler() -> nil {
+fn test_health_handler() -> R[nil,str] {
   let req = http.test_req ( method : "GET" , path : "/health" , body : "" )
   let res = app ( req : req ) ?
   test.eq ( actual : res.code , expected : 200 )
+  return Ok ( value : nil )
 }

@@ -8,6 +8,7 @@ import (
 )
 
 type FunctionType struct {
+	Module     string
 	Params     []ParamSpec
 	ReturnType string
 	Effects    []string
@@ -178,7 +179,7 @@ func compatibleFunctions(actual, expected FunctionType) error {
 	for _, wanted := range expected.Params {
 		found := false
 		for _, provided := range actual.Params {
-			if provided.Name == wanted.Name && (provided.Type == wanted.Type || provided.Type == "Any") {
+			if provided.Name == wanted.Name && contractAcceptsType(provided.Type, wanted.Type) {
 				found = true
 				break
 			}
@@ -187,7 +188,7 @@ func compatibleFunctions(actual, expected FunctionType) error {
 			return fmt.Errorf("function parameter %s:%s is incompatible with %s", wanted.Name, wanted.Type, actual.String())
 		}
 	}
-	if actual.ReturnType != expected.ReturnType {
+	if !contractAcceptsType(expected.ReturnType, actual.ReturnType) {
 		return fmt.Errorf("function return type: expected %s, got %s", expected.ReturnType, actual.ReturnType)
 	}
 	return effectsAllowed(actual.Effects, expected.Effects)
@@ -271,7 +272,7 @@ func signatureOf(fn FuncSpec, method bool) FunctionType {
 	if method && len(params) > 0 {
 		params = params[1:]
 	}
-	return FunctionType{Params: append([]ParamSpec{}, params...), ReturnType: fn.ReturnType, Effects: fn.Effects}
+	return FunctionType{Params: append([]ParamSpec{}, params...), ReturnType: fn.ReturnType, Effects: fn.Effects, Module: fn.Module}
 }
 
 func genericParts(typ string, prefix string) ([]string, bool) {
@@ -331,7 +332,9 @@ func literalValue(raw string) (value, error) {
 	return nil, fmt.Errorf("defaults must be scalar literals without interpolation")
 }
 
-func (rt *runtime) validateValue(v value, typ string) error {
+func (rt *runtime) validateValue(v value, typ string) error { return rt.validateValueIn(v, typ, "") }
+
+func (rt *runtime) validateValueIn(v value, typ, module string) error {
 	if typ == "Any" || typ == "" {
 		return nil
 	}
@@ -339,7 +342,7 @@ func (rt *runtime) validateValue(v value, typ string) error {
 		if v == nil {
 			return nil
 		}
-		return rt.validateValue(v, typ[1:])
+		return rt.validateValueIn(v, typ[1:], module)
 	}
 	if strings.HasPrefix(typ, "Fn[") {
 		wanted, err := ParseFunctionType(typ)
@@ -350,17 +353,20 @@ func (rt *runtime) validateValue(v value, typ string) error {
 		if err != nil {
 			return err
 		}
-		return compatibleFunctions(actual, *wanted)
+		return compatibleFunctions(actual, rt.qualifySignature(*wanted, module))
 	}
 	if parts, ok := genericParts(typ, "R"); ok && len(parts) == 2 {
 		res, ok := v.(resultValue)
 		if !ok {
 			return fmt.Errorf("expected %s, got %T", typ, v)
 		}
-		if res.Err != nil {
-			return rt.validateValue(res.Err, parts[1])
+		if res.Kind == resultErr {
+			return rt.validateValueIn(res.Err, parts[1], module)
 		}
-		return rt.validateValue(res.Value, parts[0])
+		if res.Kind != resultOK {
+			return fmt.Errorf("invalid result tag")
+		}
+		return rt.validateValueIn(res.Value, parts[0], module)
 	}
 	if parts, ok := genericParts(typ, "Transform"); ok && len(parts) == 2 {
 		transform, ok := v.(*transformValue)
@@ -381,7 +387,7 @@ func (rt *runtime) validateValue(v value, typ string) error {
 			return nil
 		}
 		for _, item := range items {
-			if err := rt.validateValue(item, parts[0]); err != nil {
+			if err := rt.validateValueIn(item, parts[0], module); err != nil {
 				return err
 			}
 		}
@@ -405,16 +411,7 @@ func (rt *runtime) validateValue(v value, typ string) error {
 	case "ctx.Ctx":
 		_, ok = v.(string)
 	default:
-		name := typ
-		if i := strings.LastIndex(name, "."); i >= 0 {
-			name = name[i+1:]
-		}
-		switch x := v.(type) {
-		case *structValue:
-			ok = x.Type == name
-		case map[string]any:
-			ok = x["_type"] == name
-		}
+		return rt.validateRecord(v, typ, module)
 	}
 	if !ok {
 		return fmt.Errorf("expected %s, got %T (%v)", typ, v, toPlain(v))

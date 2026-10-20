@@ -8,37 +8,37 @@ import pricing
 import shipping
 import test
 
-fn test_standard_quote() -> nil {
+fn test_standard_quote() -> R[nil,str] {
   let quote = pricing.quote ( sku : "book" , addon : nil , delivery : "standard" , coupon : nil ) ?
   test.eq ( actual : quote.currency , expected : "EUR" )
   test.eq ( actual : quote.subtotal_cents , expected : 1500 )
   test.eq ( actual : quote.shipping_cents , expected : 300 )
   test.eq ( actual : quote.total_cents , expected : 1800 )
   test.eq ( actual : quote.coupon , expected : nil )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_addon_and_express() -> nil {
+fn test_addon_and_express() -> R[nil,str] {
   let quote = pricing.quote ( sku : "book" , addon : "poster" , delivery : "express" , coupon : nil ) ?
   test.eq ( actual : quote.subtotal_cents , expected : 2200 )
   test.eq ( actual : quote.shipping_cents , expected : 800 )
   test.eq ( actual : quote.total_cents , expected : 3000 )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_free_shipping_preserves_items() -> nil {
+fn test_free_shipping_preserves_items() -> R[nil,str] {
   let quote = pricing.quote ( sku : "book" , addon : "poster" , delivery : "express" , coupon : "SHIPFREE" ) ?
   test.eq ( actual : quote.subtotal_cents , expected : 2200 )
   test.eq ( actual : quote.shipping_cents , expected : 0 )
   test.eq ( actual : quote.total_cents , expected : 2200 )
   test.eq ( actual : quote.coupon , expected : "SHIPFREE" )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_poster_can_be_primary() -> nil {
+fn test_poster_can_be_primary() -> R[nil,str] {
   let quote = pricing.quote ( sku : "poster" , addon : nil , delivery : "standard" , coupon : nil ) ?
   test.eq ( actual : quote.total_cents , expected : 1000 )
-  return nil
+  return Ok ( value : nil )
 }
 
 fn test_unknown_product() -> nil {
@@ -61,51 +61,53 @@ fn test_unknown_coupon() -> nil {
   return nil
 }
 
-fn test_health() -> nil {
+fn test_health() -> R[nil,str] {
   let response = app.handler ( req : http.test_req ( method : "GET" , path : "/health" , body : "" ) ) ?
   test.eq ( actual : response.code , expected : 200 )
   test.eq ( actual : response.body , expected : "ok" )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_quote_handler() -> nil {
+fn test_quote_handler() -> R[nil,str] {
   let body = json.encode ( value : InputFixture { sku : "book" addon : "poster" delivery : "express" coupon : nil } ) ?
   let response = app.handler ( req : http.test_req ( method : "POST" , path : "/quotes" , body : body ) ) ?
   let quote = json.decode [ QuoteView ] ( text : response.body ) ?
   test.eq ( actual : response.code , expected : 200 )
   test.eq ( actual : quote.total_cents , expected : 3000 )
   test.eq ( actual : quote.currency , expected : "EUR" )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_quote_handler_coupon() -> nil {
+fn test_quote_handler_coupon() -> R[nil,str] {
   let body = json.encode ( value : InputFixture { sku : "book" addon : nil delivery : "standard" coupon : "SHIPFREE" } ) ?
   let response = app.handler ( req : http.test_req ( method : "POST" , path : "/quotes" , body : body ) ) ?
   let quote = json.decode [ QuoteView ] ( text : response.body ) ?
   test.eq ( actual : quote.total_cents , expected : 1500 )
   test.eq ( actual : quote.coupon , expected : "SHIPFREE" )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_unknown_route() -> nil {
+fn test_unknown_route() -> R[nil,str] {
   let response = app.handler ( req : http.test_req ( method : "GET" , path : "/missing" , body : "" ) ) ?
   test.eq ( actual : response.code , expected : 404 )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_wrong_quote_method() -> nil {
+fn test_wrong_quote_method() -> R[nil,str] {
   let response = app.handler ( req : http.test_req ( method : "GET" , path : "/quotes" , body : "" ) ) ?
   test.eq ( actual : response.code , expected : 405 )
-  return nil
+  return Ok ( value : nil )
 }
 
-fn test_wrong_health_method() -> nil {
+fn test_wrong_health_method() -> R[nil,str] {
   let response = app.handler ( req : http.test_req ( method : "POST" , path : "/health" , body : "" ) ) ?
   test.eq ( actual : response.code , expected : 405 )
-  return nil
+  return Ok ( value : nil )
 }
 
 type QuoteView {
+  subtotal_cents:i32
+  shipping_cents:i32
   currency:str
   total_cents:i32
   coupon:?str
@@ -116,4 +118,15 @@ type InputFixture {
   addon:?str
   delivery:str
   coupon:?str
+}
+
+fn test_quote_failure_reaches_caller() -> nil {
+  test.eq ( actual : pricing.quote ( sku : "missing" , addon : nil , delivery : "standard" , coupon : nil ) , expected : Err ( error : "unknown product" ) )
+  return nil
+}
+
+fn test_bad_request_reaches_caller() -> nil {
+  let request = http.test_req ( method : "POST" , path : "/quotes" , body : "{}" )
+  test.eq ( actual : app.create_quote ( req : request ) , expected : Err ( error : "$: QuoteRequest: missing required field \"sku\"" ) )
+  return nil
 }

@@ -10,7 +10,7 @@ fn text(code:i32, body:str) -> Resp {
 }
 
 fn route(path:str) -> Resp {
-  when (path) {
+  when ( path ) {
   "/health" => {
   return text ( code : 200 , body : "ok" )
   }

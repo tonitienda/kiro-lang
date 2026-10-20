@@ -126,3 +126,6 @@ visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.m
 
 Phase 14 renames `list.fold` to `list.reduce` and adds explicit typed transducers.
 See `PHASE14_NOTES.md` for ordered execution and allocation limits.
+
+Phase 15 implements compositional result propagation and closed record/JSON schemas.
+See `PHASE15_NOTES.md` and `docs/results-and-schemas.md` for current enforcement and limits.

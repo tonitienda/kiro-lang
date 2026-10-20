@@ -13,7 +13,7 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
   }
 }
 
-fn main() -> i32 !net {
+fn main() -> R[i32,str] !net {
   http.serve ( addr : ":8080" , handler : handler ) ?
-  return 0
+  return Ok ( value : 0 )
 }

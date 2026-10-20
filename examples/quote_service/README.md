@@ -25,8 +25,7 @@ curl -X POST http://127.0.0.1:8080/quotes \
 ```
 
 The quote has EUR subtotal 2200 cents, shipping 800 cents, total 3000 cents, and a null coupon.
-Current JSON encoding also emits the runtime's `_type` field. Consumers should ignore it;
-removing runtime metadata from public JSON is a proposed follow-up, not a stable API promise.
+JSON encoding now contains only data fields, without runtime `_type` metadata.
 
 ## Business rules
 
@@ -48,21 +47,21 @@ routes return 405; other paths return 404.
 - `internal/catalog/`: product lookup and optional add-on.
 - `internal/shipping/`: delivery validation and coupon policy.
 - `internal/pricing/`: pure composition and totals.
-- `test/`: 14 domain/handler tests, including invalid leaf operations.
+- `test/`: 16 domain/handler tests, including propagated parent and decoding failures.
 
 The example deliberately avoids `spawn`: these in-memory operations have no useful parallel work.
 Introduce concurrency when adding actual independent I/O and testing its lifecycle semantics.
 
 ## Known limits exposed by this example
 
-- `kiro check` does not establish full type correctness, including optional narrowing.
-- `json.decode[T]` does not yet validate required fields or field types.
-- The runtime turns a failed `?` into an interpreter error rather than returning an `Err`
-  to a caller that can inspect it. Invalid inputs currently reach HTTP 500, not a designed
-  400/422 response. The leaf error tests do **not** establish compositional error handling.
-- The runtime JSON representation exposes `_type` metadata.
-- The existing runtime supports less syntax than the frontend accepts; arbitrary carts
-  need working collection iteration and arithmetic before they make a useful next checkpoint.
+- `kiro check` remains incremental, with broader control-flow and exhaustive matching gaps.
+- Typed decoding checks required fields and types and rejects unknown/duplicate fields.
+  Optional JSON addon/coupon fields may be omitted and become nil.
+- A failed `?` now returns Err from its function. New tests verify a pricing failure and a
+  malformed request reaching their caller. The HTTP adapter still turns an unhandled Err
+  into HTTP 500, not a domain-designed 400/422 response.
+- Eager collection helpers and explicit transducers are available, but this example keeps
+  its deliberately bounded two-product quote. Wider iteration/concurrency limits remain.
 - Executables currently package a Go-hosted interpreter. `inspect go` emits stubs;
   neither path currently gives direct, typed Go lowering of these business functions.
 

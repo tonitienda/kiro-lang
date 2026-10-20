@@ -42,7 +42,7 @@ f(wrong:mark(value:"must not run"), right:"B")`, "", `unknown argument "wrong"`}
 				{Module: "main", Name: "mark", Effects: []string{"io"}, BlockBody: true, ReturnType: "str", Params: []ParamSpec{{Name: "value", Type: "str"}}, Body: "println(value:value)\nreturn value"},
 				{Module: "main", Name: "greet", ReceiverType: "User", BlockBody: true, ReturnType: "str", Params: []ParamSpec{{Name: "u", Type: "User"}, {Name: "prefix", Type: "str"}, {Name: "suffix", Type: "str"}}, Body: `return "${prefix} ${u.name}${suffix}"`},
 			}
-			rt, err := newRuntime(ProgramSpec{EntryModule: "main", Modules: []ModuleSpec{{Name: "main", Types: []TypeSpec{{Name: "User"}}, Funcs: functions}}}, nil, &stdout, &stderr)
+			rt, err := newRuntime(ProgramSpec{EntryModule: "main", Modules: []ModuleSpec{{Name: "main", Types: []TypeSpec{{Name: "User", Fields: []FieldSpec{{Name: "name", Type: "str"}}}}, Funcs: functions}}}, nil, &stdout, &stderr)
 			if err != nil {
 				t.Fatal(err)
 			}

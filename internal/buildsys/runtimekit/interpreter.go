@@ -1,13 +1,12 @@
 package runtimekit
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,10 +39,12 @@ type value interface{}
 
 type structValue struct {
 	Type   string         `json:"type"`
+	Module string         `json:"module,omitempty"`
 	Fields map[string]any `json:"fields"`
 }
 
 type resultValue struct {
+	Kind  resultKind
 	Value value
 	Err   value
 }
@@ -68,12 +69,13 @@ type futureResult struct {
 }
 
 type execContext struct {
-	rt       *runtime
-	module   string
-	locals   map[string]value
-	receiver value
-	effects  []string
-	mutable  map[string]bool
+	rt         *runtime
+	module     string
+	locals     map[string]value
+	receiver   value
+	returnType string
+	effects    []string
+	mutable    map[string]bool
 }
 
 type returnSignal struct {
@@ -91,7 +93,11 @@ func newRuntime(spec ProgramSpec, args []string, stdout, stderr io.Writer) (*run
 		for _, c := range mod.Consts {
 			switch c.ValueKind {
 			case "STRING":
-				mr.consts[c.Name] = c.Value
+				v, err := strconv.Unquote("\"" + c.Value + "\"")
+				if err != nil {
+					return nil, err
+				}
+				mr.consts[c.Name] = v
 			case "INT":
 				n, err := strconv.Atoi(c.Value)
 				if err != nil {
@@ -132,6 +138,10 @@ func (rt *runtime) run() (int, error) {
 		if err != nil {
 			return 1, err
 		}
+		val, err = terminalValue(val)
+		if err != nil {
+			return 1, err
+		}
 		if code, ok := asInt(val); ok {
 			return code, nil
 		}
@@ -148,7 +158,11 @@ func (rt *runtime) runTests() (int, error) {
 			}
 			total++
 			fmt.Fprintf(rt.stdout, "=== RUN   %s.%s\n", mod.Name, fn.Name)
-			if _, err := rt.callUser(fn, mod.Name, nil, nil); err != nil {
+			testValue, err := rt.callUser(fn, mod.Name, nil, nil)
+			if err == nil {
+				_, err = terminalValue(testValue)
+			}
+			if err != nil {
 				fmt.Fprintf(rt.stdout, "--- FAIL: %s.%s (%v)\n", mod.Name, fn.Name, err)
 				return 1, nil
 			}
@@ -171,7 +185,7 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 		return nil, fmt.Errorf("call %s.%s requires %d arguments, got %d", module, fn.Name, len(fn.Params), len(args))
 	}
 	for i, param := range fn.Params {
-		if err := rt.validateValue(args[i], param.Type); err != nil {
+		if err := rt.validateValueIn(args[i], param.Type, module); err != nil {
 			return nil, fmt.Errorf("argument %s: %w", param.Name, err)
 		}
 	}
@@ -179,9 +193,9 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 	if err != nil {
 		return nil, err
 	}
-	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver, effects: fn.Effects, mutable: map[string]bool{}}
+	ctx := &execContext{rt: rt, module: module, locals: map[string]value{}, receiver: receiver, effects: fn.Effects, returnType: fn.ReturnType, mutable: map[string]bool{}}
 	for i, param := range fn.Params {
-		ctx.locals[param.Name] = ascribeValue(args[i], param.Type)
+		ctx.locals[param.Name] = ascribeValue(args[i], rt.qualifyType(param.Type, module), module)
 	}
 	if receiver != nil && fn.ReceiverType != "" && len(fn.Params) > 0 {
 		ctx.locals[fn.Params[0].Name] = receiver
@@ -189,13 +203,21 @@ func (rt *runtime) callUser(fn FuncSpec, module string, receiver value, args []v
 	if fn.BlockBody {
 		val, returned, err := ctx.execStatements(parsed.stmts)
 		if err != nil {
-			return nil, err
+			var propagation *propagationSignal
+			if !errors.As(err, &propagation) {
+				return nil, err
+			}
+			if parts, ok := genericParts(fn.ReturnType, "R"); !ok || len(parts) != 2 {
+				return nil, fmt.Errorf("? requires an R[T,E] return type in %s.%s", module, fn.Name)
+			}
+			val = propagation.Result
+			returned = true
 		}
 		if returned {
-			if err := rt.validateValue(val, fn.ReturnType); err != nil {
+			if err := rt.validateValueIn(val, fn.ReturnType, module); err != nil {
 				return nil, fmt.Errorf("%s.%s return: %w", module, fn.Name, err)
 			}
-			return ascribeValue(val, fn.ReturnType), nil
+			return ascribeValue(val, rt.qualifyType(fn.ReturnType, module), module), nil
 		}
 		if err := rt.validateValue(nil, fn.ReturnType); err != nil {
 			return nil, fmt.Errorf("%s.%s falls through without a valid return: %w", module, fn.Name, err)
@@ -388,32 +410,54 @@ func (ctx *execContext) eval(e expr) (value, error) {
 	}
 }
 
-func (ctx *execContext) interpolate(src string) (string, error) {
-	out := src
+func interpolateText(src string, expand func(string) (string, error)) (string, error) {
+	var out strings.Builder
 	for {
-		start := strings.Index(out, "${")
+		start := strings.Index(src, "${")
 		if start < 0 {
-			return out, nil
+			out.WriteString(src)
+			return out.String(), nil
 		}
-		end := strings.Index(out[start+2:], "}")
+		out.WriteString(src[:start])
+		src = src[start+2:]
+		end := strings.Index(src, "}")
 		if end < 0 {
-			return "", fmt.Errorf("unterminated interpolation in %q", src)
+			return "", fmt.Errorf("unterminated interpolation")
 		}
-		raw := out[start+2 : start+2+end]
-		p, err := newBodyParser(raw)
+		expanded, err := expand(src[:end])
 		if err != nil {
 			return "", err
 		}
-		ex, err := p.parseExpr(0)
-		if err != nil {
-			return "", err
-		}
-		val, err := ctx.eval(ex)
-		if err != nil {
-			return "", err
-		}
-		out = out[:start] + fmt.Sprint(toPlain(val)) + out[start+2+end+1:]
+		out.WriteString(expanded)
+		src = src[end+1:]
 	}
+}
+func interpolationExpr(raw string) (expr, error) {
+	parser, err := newBodyParser(raw)
+	if err != nil {
+		return nil, err
+	}
+	expression, err := parser.parseExpr(0)
+	if err != nil {
+		return nil, err
+	}
+	if parser.peek().Kind != TokenEOF {
+		return nil, fmt.Errorf("unexpected trailing interpolation tokens")
+	}
+	return expression, nil
+}
+func (ctx *execContext) interpolate(src string) (string, error) {
+	return interpolateText(src, func(raw string) (string, error) {
+		expression, err := interpolationExpr(raw)
+		if err != nil {
+			return "", err
+		}
+		v, err := ctx.eval(expression)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprint(toPlain(v)), nil
+	})
 }
 
 func (ctx *execContext) resolveIdent(name string) (value, error) {
@@ -474,7 +518,7 @@ func (ctx *execContext) resolveSelector(sel *selectorExpr) (value, error) {
 			}
 		}
 	case *structValue:
-		if method, ok := ctx.rt.lookupMethod(v.Type, sel.Name); ok {
+		if method, ok := ctx.rt.lookupMethod(ctx.rt.qualifyType(v.Type, v.Module), sel.Name); ok {
 			return methodValue{Receiver: v, Method: method}, nil
 		}
 		if field, ok := v.Fields[sel.Name]; ok {
@@ -576,31 +620,49 @@ func (ctx *execContext) evalBinary(node *binaryExpr) (value, error) {
 }
 
 func (ctx *execContext) evalStruct(node *structExpr) (value, error) {
+	schema, err := ctx.rt.recordSchema(node.TypeName, ctx.module)
+	if err != nil {
+		return nil, err
+	}
+	keys := []string{}
+	for _, field := range node.Fields {
+		keys = append(keys, field.Name)
+	}
+	if err := checkRecordKeys(schema.Type, keys, true); err != nil {
+		return nil, err
+	}
 	fields := map[string]any{}
 	for _, field := range node.Fields {
 		v, err := ctx.eval(field.Value)
 		if err != nil {
 			return nil, err
 		}
-		fields[field.Name] = toPlain(v)
+		typ := schema.fieldType(field.Name)
+		if err := ctx.rt.validateValueIn(v, typ, schema.Module); err != nil {
+			return nil, fmt.Errorf("%s.%s: %w", node.TypeName, field.Name, err)
+		}
+		fields[field.Name] = ascribeValue(v, ctx.rt.qualifyType(typ, schema.Module), schema.Module)
 	}
-	name := node.TypeName
-	if i := strings.LastIndex(name, "."); i >= 0 {
-		name = name[i+1:]
-	}
-	return &structValue{Type: name, Fields: fields}, nil
+	return &structValue{Type: schema.Type.Name, Module: schema.Module, Fields: fields}, nil
 }
 
 func (ctx *execContext) evalUnwrap(node *unwrapExpr) (value, error) {
+	if parts, ok := genericParts(ctx.returnType, "R"); !ok || len(parts) != 2 {
+		return nil, fmt.Errorf("? requires an R[T,E] return type in the enclosing function")
+	}
 	v, err := ctx.eval(node.Value)
 	if err != nil {
 		return nil, err
 	}
-	if res, ok := v.(resultValue); ok {
-		if res.Err != nil {
-			return nil, fmt.Errorf("%v", res.Err)
+	if result, ok := v.(resultValue); ok {
+		switch result.Kind {
+		case resultErr:
+			return nil, &propagationSignal{Result: result}
+		case resultOK:
+			return result.Value, nil
+		default:
+			return nil, fmt.Errorf("invalid result tag")
 		}
-		return res.Value, nil
 	}
 	return nil, fmt.Errorf("invalid ? on non-result value\nhint: use ? only with R[T,E] values")
 }
@@ -608,6 +670,7 @@ func (ctx *execContext) evalUnwrap(node *unwrapExpr) (value, error) {
 func (ctx *execContext) evalSpawn(node *spawnExpr) (value, error) {
 	future := &futureValue{ch: make(chan futureResult, 1)}
 	child := *ctx
+	child.returnType = "" // Propagation belongs in the spawned function, then explicitly after await.
 	child.locals = map[string]value{}
 	for name, v := range ctx.locals {
 		child.locals[name] = v
@@ -636,7 +699,7 @@ func (ctx *execContext) evalAwait(node *awaitExpr) (value, error) {
 func (rt *runtime) lookupMethod(receiverType, name string) (FuncSpec, bool) {
 	for _, mod := range rt.modules {
 		for _, fn := range mod.funcs {
-			if fn.Name == name && fn.ReceiverType == receiverType {
+			if fn.Name == name && fn.ReceiverType != "" && rt.qualifyType(fn.ReceiverType, fn.Module) == rt.qualifyType(receiverType, "") {
 				return fn, true
 			}
 		}
@@ -679,7 +742,7 @@ func builtinGlobal(name string) builtinFn {
 			if len(args) > 0 {
 				v = args[0]
 			}
-			return resultValue{Value: v}, nil
+			return okResult(v), nil
 		}
 	case "Err":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
@@ -687,7 +750,7 @@ func builtinGlobal(name string) builtinFn {
 			if len(args) > 0 {
 				v = args[0]
 			}
-			return resultValue{Err: v}, nil
+			return errResult(v), nil
 		}
 	}
 	return nil
@@ -737,11 +800,11 @@ func builtinModuleFunc(module, name string) builtinFn {
 		}
 	case "parse.i32":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
-			n, err := strconv.Atoi(fmt.Sprint(toPlain(args[0])))
+			n, err := strconv.ParseInt(fmt.Sprint(toPlain(args[0])), 10, 32)
 			if err != nil {
-				return resultValue{Err: err.Error()}, nil
+				return errResult(err.Error()), nil
 			}
-			return resultValue{Value: n}, nil
+			return okResult(int(n)), nil
 		}
 	case "cli.args":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
@@ -755,17 +818,17 @@ func builtinModuleFunc(module, name string) builtinFn {
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
 			body, err := os.ReadFile(fmt.Sprint(toPlain(args[0])))
 			if err != nil {
-				return resultValue{Err: err.Error()}, nil
+				return errResult(err.Error()), nil
 			}
-			return resultValue{Value: string(body)}, nil
+			return okResult(string(body)), nil
 		}
 	case "fs.write_file":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
 			err := os.WriteFile(fmt.Sprint(toPlain(args[0])), []byte(fmt.Sprint(toPlain(args[1]))), 0o644)
 			if err != nil {
-				return resultValue{Err: err.Error()}, nil
+				return errResult(err.Error()), nil
 			}
-			return resultValue{Value: nil}, nil
+			return okResult(nil), nil
 		}
 	case "http.text":
 		return func(ctx *execContext, _ []string, args []value) (value, error) {
@@ -821,67 +884,16 @@ func builtinModuleFunc(module, name string) builtinFn {
 			addr := fmt.Sprint(toPlain(args[0]))
 			handler := args[1]
 			server := http.Server{Addr: addr}
-			server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				req := &structValue{Type: "Req", Fields: map[string]any{"method": r.Method, "path": r.URL.Path, "body": readBody(r), "ctx": "request"}}
-				var resp value
-				var err error
-				switch hv := handler.(type) {
-				case functionValue:
-					fn := ctx.rt.modules[hv.Module].funcs[hv.Name]
-					resp, err = ctx.rt.callUser(fn, hv.Module, nil, []value{req})
-				case methodValue:
-					resp, err = ctx.rt.callUser(hv.Method, hv.Method.Module, hv.Receiver, []value{req})
-				default:
-					err = fmt.Errorf("http handler is not callable: %T", handler)
-				}
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				resp = unwrapResult(resp)
-				sv, ok := resp.(*structValue)
-				if !ok {
-					http.Error(w, "handler did not return Resp", http.StatusInternalServerError)
-					return
-				}
-				if headers, ok := sv.Fields["headers"].(map[string]any); ok {
-					for k, v := range headers {
-						w.Header().Set(k, fmt.Sprint(v))
-					}
-				}
-				code, _ := asInt(sv.Fields["code"])
-				if code == 0 {
-					code = 200
-				}
-				w.WriteHeader(code)
-				_, _ = io.WriteString(w, fmt.Sprint(sv.Fields["body"]))
-			})
+			server.Handler = ctx.rt.httpHandler(handler)
 			if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				return resultValue{Err: err.Error()}, nil
+				return errResult(err.Error()), nil
 			}
-			return resultValue{Value: nil}, nil
+			return okResult(nil), nil
 		}
 	case "json.encode":
-		return func(ctx *execContext, _ []string, args []value) (value, error) {
-			buf := &bytes.Buffer{}
-			if err := json.NewEncoder(buf).Encode(toPlain(args[0])); err != nil {
-				return resultValue{Err: err.Error()}, nil
-			}
-			return resultValue{Value: strings.TrimSpace(buf.String())}, nil
-		}
+		return encodeJSON
 	case "json.decode":
-		return func(ctx *execContext, typeArgs []string, args []value) (value, error) {
-			var raw any
-			if err := json.Unmarshal([]byte(fmt.Sprint(toPlain(args[0]))), &raw); err != nil {
-				return resultValue{Err: err.Error()}, nil
-			}
-			if len(typeArgs) > 0 {
-				if m, ok := raw.(map[string]any); ok {
-					return resultValue{Value: &structValue{Type: typeArgs[0], Fields: m}}, nil
-				}
-			}
-			return resultValue{Value: raw}, nil
-		}
+		return decodeJSON
 	case "ctx.background":
 		return func(ctx *execContext, _ []string, args []value) (value, error) { return "background", nil }
 	case "ctx.with_timeout_ms":
@@ -901,15 +913,8 @@ func readBody(r *http.Request) string {
 	return string(body)
 }
 
-func unwrapResult(v value) value {
-	if res, ok := v.(resultValue); ok {
-		return res.Value
-	}
-	return v
-}
-
 func valuesEqual(a, b value) bool {
-	return fmt.Sprint(toPlain(a)) == fmt.Sprint(toPlain(b))
+	return reflect.DeepEqual(toPlain(a), toPlain(b))
 }
 
 func toPlain(v value) any {
@@ -926,9 +931,18 @@ func toPlain(v value) any {
 			out = append(out, toPlain(item))
 		}
 		return out
+	case map[string]any:
+		out := map[string]any{}
+		for key, item := range x {
+			out[key] = toPlain(item)
+		}
+		return out
 	case resultValue:
-		if x.Err != nil {
+		if x.Kind == resultErr {
 			return map[string]any{"Err": toPlain(x.Err)}
+		}
+		if x.Kind != resultOK {
+			return map[string]any{"InvalidResult": true}
 		}
 		return map[string]any{"Ok": toPlain(x.Value)}
 	default:

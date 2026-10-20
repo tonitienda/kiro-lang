@@ -37,3 +37,6 @@ Only stateless one-to-one mapping and filtering stages are implemented. There is
 sequence, parallel reduction, implicit fusion, stateful take/partition stage, early stopping,
 completion protocol or general stream/channel adapter. JSON, failed-result propagation,
 record identity/schema and wider concurrency/control-flow gaps are unchanged.
+
+Phase 15 supersedes result propagation, record schema and JSON limits described above;
+see `PHASE15_NOTES.md`. Its added checks are not covered by these historical measurements.

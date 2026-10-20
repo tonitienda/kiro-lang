@@ -2,9 +2,9 @@ mod main
 
 import fs
 
-fn main() -> i32 !fs !io {
+fn main() -> R[i32,str] !fs !io {
   fs.write_file ( path : "out.txt" , contents : "hello" ) ?
   let s = fs.read_file ( path : "out.txt" ) ?
   print ( value : s )
-  return 0
+  return Ok ( value : 0 )
 }

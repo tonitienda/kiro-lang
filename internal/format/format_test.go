@@ -186,3 +186,21 @@ fn run(f:Fn[(value:str)->nil!io])->nil !io {return f(value:"A  B")}
 		}
 	}
 }
+
+func TestEscapedJSONLiteralRoundTrip(t *testing.T) {
+	source := `mod main
+const Message = "line\nquote\"slash\\"
+fn run()->R[Any,str] {return json.decode[Any](text:"{\"value\":\"line\\n\"}")}
+`
+	once, err := Source(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	twice, err := Source(once)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if once != twice || !strings.Contains(once, `"{\"value\":\"line\\n\"}"`) {
+		t.Fatalf("escaped literal changed:\n%s", once)
+	}
+}

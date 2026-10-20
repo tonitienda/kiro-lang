@@ -50,3 +50,11 @@ For explicit fusion, use typed `Transform[Input,Output]` values built by `list.m
 `list.filtering` and `list.compose(first:a, then:b)`. `list.transduce` produces an accumulator
 without intermediate data lists; `list.collect` builds only the final list. These terminals
 execute eagerly per item. `list.fold` was renamed to `list.reduce`.
+
+## JSON and result boundaries
+
+`json.encode` returns `R[str,str]`; `json.decode[T]` requires an explicit schema and returns
+`R[T,str]`. Unknown/duplicate/missing required fields and wrong types are rejected. Encoding
+records excludes internal metadata. `parse.i32` returns Err for out-of-range text. Use `?`
+only in a result-returning function with a compatible error channel. See
+[results-and-schemas.md](results-and-schemas.md).

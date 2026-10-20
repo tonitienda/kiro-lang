@@ -12,7 +12,11 @@ type contractedValue struct {
 	Signature FunctionType
 }
 
-func ascribeValue(v value, typ string) value {
+func ascribeValue(v value, typ string, modules ...string) value {
+	module := ""
+	if len(modules) > 0 {
+		module = modules[0]
+	}
 	if parts, ok := genericParts(typ, "Transform"); ok && len(parts) == 2 {
 		if transform, ok := v.(*transformValue); ok {
 			return &transformValue{InputType: parts[0], OutputType: parts[1], Steps: transform.Steps}
@@ -22,7 +26,8 @@ func ascribeValue(v value, typ string) value {
 		return v
 	}
 	if signature, err := ParseFunctionType(typ); err == nil {
-		if existing, ok := v.(*contractedValue); ok && existing.Signature.String() == signature.String() {
+		signature.Module = module
+		if existing, ok := v.(*contractedValue); ok && existing.Signature.String() == signature.String() && existing.Signature.Module == signature.Module {
 			return v
 		}
 		return &contractedValue{Target: v, Signature: *signature}
@@ -54,9 +59,9 @@ func (rt *runtime) callableType(callee value) (FunctionType, error) {
 		if !ok {
 			return FunctionType{}, fmt.Errorf("unknown function %s.%s", fn.Module, fn.Name)
 		}
-		return signatureOf(f, false), nil
+		return rt.functionType(f, false), nil
 	case methodValue:
-		return signatureOf(fn.Method, true), nil
+		return rt.functionType(fn.Method, true), nil
 	case *contractedValue:
 		return fn.Signature, nil
 	case *partialValue:
@@ -76,14 +81,14 @@ func (rt *runtime) invokeCallable(callee value, args []value) (value, error) {
 		return nil, fmt.Errorf("callable argument count mismatch")
 	}
 	for i, param := range sig.Params {
-		if err := rt.validateValue(args[i], param.Type); err != nil {
+		if err := rt.validateValueIn(args[i], param.Type, sig.Module); err != nil {
 			return nil, fmt.Errorf("argument %s: %w", param.Name, err)
 		}
 	}
 	var result value
 	switch fn := callee.(type) {
 	case builtinValue:
-		ctx := &execContext{rt: rt, locals: map[string]value{}, effects: sig.Effects}
+		ctx := &execContext{rt: rt, module: sig.Module, locals: map[string]value{}, effects: sig.Effects}
 		result, err = fn.Invoke(ctx, nil, args)
 	case functionValue:
 		result, err = rt.callUser(rt.modules[fn.Module].funcs[fn.Name], fn.Module, nil, args)
@@ -140,10 +145,10 @@ func (rt *runtime) invokeCallable(callee value, args []value) (value, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = rt.validateValue(result, sig.ReturnType); err != nil {
+	if err = rt.validateValueIn(result, sig.ReturnType, sig.Module); err != nil {
 		return nil, fmt.Errorf("return value: %w", err)
 	}
-	return ascribeValue(result, sig.ReturnType), nil
+	return ascribeValue(result, sig.ReturnType, sig.Module), nil
 }
 
 func (ctx *execContext) evaluateCall(call *callExpr, partial bool) (value, error) {
@@ -163,7 +168,18 @@ func (ctx *execContext) evaluateCall(call *callExpr, partial bool) (value, error
 	if builtin, ok := callee.(builtinValue); ok {
 		name = builtin.Name
 	}
-	sig, err = specializeSignature(sig, name, call.TypeArgs)
+	typeArgs := append([]string{}, call.TypeArgs...)
+	if name == "json.decode" {
+		if len(typeArgs) != 1 {
+			return nil, fmt.Errorf("json.decode requires one explicit schema type: json.decode[T](text:body)")
+		}
+		qualified, err := ctx.rt.jsonSchemaType(typeArgs[0], ctx.module, map[string]bool{})
+		if err != nil {
+			return nil, err
+		}
+		typeArgs[0] = qualified
+	}
+	sig, err = specializeSignature(sig, name, typeArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +235,7 @@ func (ctx *execContext) evaluateCall(call *callExpr, partial bool) (value, error
 		if err != nil {
 			return nil, err
 		}
-		if err = ctx.rt.validateValue(values[i], byName[arg.Name].Type); err != nil {
+		if err = ctx.rt.validateValueIn(values[i], byName[arg.Name].Type, sig.Module); err != nil {
 			return nil, fmt.Errorf("argument %s: %w", arg.Name, err)
 		}
 		if partial {
@@ -234,25 +250,25 @@ func (ctx *execContext) evaluateCall(call *callExpr, partial bool) (value, error
 		if e != nil {
 			return nil, e
 		}
-		remaining := FunctionType{ReturnType: sig.ReturnType, Effects: append([]string{}, sig.Effects...)}
+		remaining := FunctionType{ReturnType: sig.ReturnType, Effects: append([]string{}, sig.Effects...), Module: sig.Module}
 		for _, param := range sig.Params {
 			if _, bound := bound[param.Name]; !bound {
 				remaining.Params = append(remaining.Params, param)
 			}
 		}
-		return &partialValue{Target: target, Bound: bound, Signature: remaining, TypeArgs: append([]string{}, call.TypeArgs...)}, nil
+		return &partialValue{Target: target, Bound: bound, Signature: remaining, TypeArgs: typeArgs}, nil
 	}
 	args := make([]value, len(order))
 	for i, index := range order {
 		args[i] = values[index]
 	}
 	// json.decode carries a source-level type argument, which is not a value argument.
-	if fn, ok := callee.(builtinValue); ok && len(call.TypeArgs) > 0 {
-		result, e := fn.Invoke(ctx, call.TypeArgs, args)
+	if fn, ok := callee.(builtinValue); ok && len(typeArgs) > 0 {
+		result, e := fn.Invoke(ctx, typeArgs, args)
 		if e != nil {
 			return nil, e
 		}
-		if e = ctx.rt.validateValue(result, sig.ReturnType); e != nil {
+		if e = ctx.rt.validateValueIn(result, sig.ReturnType, sig.Module); e != nil {
 			return nil, e
 		}
 		return result, nil
@@ -273,7 +289,7 @@ func freezeValue(v value) (value, error) {
 			}
 			fields[key] = copy
 		}
-		return &structValue{Type: x.Type, Fields: fields}, nil
+		return &structValue{Type: x.Type, Module: x.Module, Fields: fields}, nil
 	case map[string]any:
 		result := map[string]any{}
 		for key, val := range x {
@@ -300,7 +316,7 @@ func freezeValue(v value) (value, error) {
 			return nil, err
 		}
 		b, err := freezeValue(x.Err)
-		return resultValue{Value: a, Err: b}, err
+		return resultValue{Kind: x.Kind, Value: a, Err: b}, err
 	case methodValue:
 		receiver, err := freezeValue(x.Receiver)
 		return methodValue{Receiver: receiver, Method: x.Method}, err

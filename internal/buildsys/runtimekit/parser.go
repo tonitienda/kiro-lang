@@ -344,7 +344,11 @@ func (p *bodyParser) parsePrefix() (expr, error) {
 		}
 		return &intExpr{Value: n}, nil
 	case TokenString:
-		return &stringExpr{Value: tok.Text}, nil
+		decoded, err := strconv.Unquote("\"" + tok.Text + "\"")
+		if err != nil {
+			return nil, err
+		}
+		return &stringExpr{Value: decoded}, nil
 	case TokenIdent:
 		return &identExpr{Name: tok.Text}, nil
 	case TokenKeyword:
@@ -428,11 +432,11 @@ func (p *bodyParser) finishCall(callee expr) (expr, error) {
 	if p.peekText("[") {
 		p.next()
 		for !p.peekText("]") {
-			arg, err := p.expect(TokenIdent, "")
+			arg, err := readValueType(p)
 			if err != nil {
 				return nil, err
 			}
-			typeArgs = append(typeArgs, arg.Text)
+			typeArgs = append(typeArgs, arg)
 			if p.peekText(",") {
 				p.next()
 			}

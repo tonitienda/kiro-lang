@@ -1,0 +1,7 @@
+mod main
+
+import json
+
+fn main() -> R[Any,str] {
+  return json.decode [ Unknown ] ( text : "{}" )
+}

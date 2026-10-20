@@ -1,0 +1,10 @@
+mod main
+
+type Input {
+  quantity:i32
+}
+
+fn main() -> i32 {
+  let input = Input { quantity : 1 quantity : 2 }
+  return 0
+}

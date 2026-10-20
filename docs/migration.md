@@ -2,6 +2,23 @@
 
 Kiro is still pre-1.0 and breaking changes are expected.
 
+## Phase 15: compositional failures and strict schemas
+
+`?` now requires an enclosing `R[T,E]` function with a compatible error channel. Migrate
+main/test functions that unwrap results to `R[i32,E]` / `R[nil,E]` and wrap success returns
+with Ok. A failed unwrap returns Err from that function; unhandled process/test Err values
+fail, including Err(nil). Spawn a result-returning function and propagate after awaiting.
+
+Record constructors require every declared key, including optional keys. JSON decoding
+requires an explicit schema, rejects unknown/duplicate/missing required fields and wrong
+types, and fills omitted optionals with nil. Projection schemas that previously ignored
+extra JSON fields must become complete schemas. JSON no longer emits runtime `_type`
+metadata; result tags remain explicit. i32 text must be an in-range integer without a
+fraction/exponent spelling. Strings support standard Go escapes; escape literal backslashes.
+
+See [the complete contract](results-and-schemas.md). Refresh guides for
+`phase15-results-schemas`.
+
 ## Phase 14: canonical reduce and explicit fusion
 
 Replace `list.fold(items:xs, initial:zero, reduce:r)` with

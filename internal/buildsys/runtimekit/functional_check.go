@@ -24,7 +24,12 @@ func ValidateDeclarations(spec ProgramSpec) error {
 	rt := &runtime{}
 	for _, mod := range spec.Modules {
 		for _, typ := range mod.Types {
+			seen := map[string]bool{}
 			for _, field := range typ.Fields {
+				if seen[field.Name] {
+					return fmt.Errorf("%s.%s: duplicate field %q", mod.Name, typ.Name, field.Name)
+				}
+				seen[field.Name] = true
 				if err := validateTypeContract(field.Type); err != nil {
 					return fmt.Errorf("%s.%s field %s: %w", mod.Name, typ.Name, field.Name, err)
 				}
@@ -76,11 +81,11 @@ func ValidateFunctionalContracts(spec ProgramSpec) error {
 				}
 				continue
 			}
-			c := &functionalChecker{rt: rt, module: mod.Name, env: map[string]inferredValue{}, effects: fn.Effects, returns: fn.ReturnType, mutable: map[string]bool{}}
+			c := &functionalChecker{rt: rt, module: mod.Name, env: map[string]inferredValue{}, effects: fn.Effects, returns: rt.qualifyType(fn.ReturnType, mod.Name), mutable: map[string]bool{}}
 			for _, p := range fn.Params {
-				v := inferredValue{Type: p.Type}
+				v := inferredValue{Type: rt.qualifyType(p.Type, mod.Name)}
 				if strings.HasPrefix(p.Type, "Fn[") {
-					v.Function, _ = ParseFunctionType(p.Type)
+					v.Function, _ = ParseFunctionType(v.Type)
 				}
 				c.env[p.Name] = v
 			}
@@ -183,7 +188,15 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 	case *intExpr:
 		return inferredValue{Type: "i32"}, nil
 	case *stringExpr:
-		return inferredValue{Type: "str"}, nil
+		_, err := interpolateText(n.Value, func(raw string) (string, error) {
+			expression, err := interpolationExpr(raw)
+			if err != nil {
+				return "", err
+			}
+			_, err = c.infer(expression)
+			return "", err
+		})
+		return inferredValue{Type: "str"}, err
 	case *nilExpr:
 		return inferredValue{Type: "nil"}, nil
 	case *defaultExpr:
@@ -196,7 +209,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 			return inferredValue{Type: "bool"}, nil
 		}
 		if fn, ok := c.rt.modules[c.module].funcs[n.Name]; ok {
-			return functionInference(signatureOf(fn, false)), nil
+			return functionInference(c.rt.functionType(fn, false)), nil
 		}
 		if sig, ok := builtinFunctionType(n.Name); ok {
 			v := functionInference(sig)
@@ -217,7 +230,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 				}
 				if mod := c.rt.modules[root.Name]; mod != nil {
 					if fn, ok := mod.funcs[n.Name]; ok {
-						return functionInference(signatureOf(fn, false)), nil
+						return functionInference(c.rt.functionType(fn, false)), nil
 					}
 				}
 			}
@@ -227,7 +240,7 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 			return unknown, err
 		}
 		if method, ok := c.rt.lookupMethod(left.Type, n.Name); ok {
-			return functionInference(signatureOf(method, true)), nil
+			return functionInference(c.rt.functionType(method, true)), nil
 		}
 		module := c.module
 		typeName := left.Type
@@ -240,13 +253,13 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 				for _, field := range record.Fields {
 					if field.Name == n.Name {
 						if strings.HasPrefix(field.Type, "Fn[") {
-							sig, err := ParseFunctionType(field.Type)
+							sig, err := ParseFunctionType(c.rt.qualifyType(field.Type, module))
 							if err != nil {
 								return unknown, err
 							}
 							return functionInference(*sig), nil
 						}
-						return inferredValue{Type: field.Type}, nil
+						return inferredValue{Type: c.rt.qualifyType(field.Type, module)}, nil
 					}
 				}
 			}
@@ -257,18 +270,54 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 	case *callExpr:
 		return c.call(n, false)
 	case *unwrapExpr:
-		v, err := c.infer(n.Value)
-		if parts, ok := genericParts(v.Type, "R"); ok && len(parts) == 2 {
-			v.Type = parts[0]
+		enclosing, ok := genericParts(c.returns, "R")
+		if !ok || len(enclosing) != 2 {
+			return unknown, fmt.Errorf("? requires an R[T,E] return type in the enclosing function")
 		}
-		return v, err
+		v, err := c.infer(n.Value)
+		if err != nil {
+			return unknown, err
+		}
+		if parts, ok := genericParts(v.Type, "R"); ok && len(parts) == 2 {
+			if parts[1] != "Any" && !contractAcceptsType(enclosing[1], parts[1]) {
+				return unknown, fmt.Errorf("? error type %s is incompatible with enclosing error type %s", parts[1], enclosing[1])
+			}
+			if strings.HasPrefix(parts[0], "Fn[") {
+				signature, err := ParseFunctionType(parts[0])
+				if err != nil {
+					return unknown, err
+				}
+				return functionInference(*signature), nil
+			}
+			return inferredValue{Type: parts[0]}, nil
+		}
+		if v.Type != "Any" {
+			return unknown, fmt.Errorf("invalid ? on non-result value of type %s", v.Type)
+		}
+		return unknown, nil
 	case *structExpr:
+		schema, err := c.rt.recordSchema(n.TypeName, c.module)
+		if err != nil {
+			return unknown, err
+		}
+		keys := []string{}
 		for _, field := range n.Fields {
-			if _, err := c.infer(field.Value); err != nil {
+			keys = append(keys, field.Name)
+		}
+		if err := checkRecordKeys(schema.Type, keys, true); err != nil {
+			return unknown, err
+		}
+		for _, field := range n.Fields {
+			v, err := c.infer(field.Value)
+			if err != nil {
 				return unknown, err
 			}
+			expected := c.rt.qualifyType(schema.fieldType(field.Name), schema.Module)
+			if !compatibleValueTypes(v.Type, expected) {
+				return unknown, fmt.Errorf("%s.%s: expected %s, got %s", n.TypeName, field.Name, expected, v.Type)
+			}
 		}
-		return inferredValue{Type: n.TypeName}, nil
+		return inferredValue{Type: schema.Module + "." + schema.Type.Name}, nil
 	case *listExpr:
 		element := "Any"
 		for i, item := range n.Items {
@@ -297,7 +346,9 @@ func (c *functionalChecker) infer(expression expr) (inferredValue, error) {
 		}
 		return left, nil
 	case *spawnExpr:
-		return c.infer(n.Value)
+		child := *c
+		child.returns = ""
+		return child.infer(n.Value)
 	case *awaitExpr:
 		return c.infer(n.Value)
 	case *whenExpr:
@@ -354,7 +405,18 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 	}
 	sig := *target.Function
 	name := target.Builtin
-	sig, err = specializeSignature(sig, name, call.TypeArgs)
+	typeArgs := append([]string{}, call.TypeArgs...)
+	if name == "json.decode" {
+		if len(typeArgs) != 1 {
+			return unknown, fmt.Errorf("json.decode requires one explicit schema type")
+		}
+		qualified, e := c.rt.jsonSchemaType(typeArgs[0], c.module, map[string]bool{})
+		if e != nil {
+			return unknown, e
+		}
+		typeArgs[0] = qualified
+	}
+	sig, err = specializeSignature(sig, name, typeArgs)
 	if err != nil {
 		return unknown, err
 	}
@@ -423,6 +485,12 @@ func (c *functionalChecker) call(call *callExpr, partial bool) (inferredValue, e
 			}
 		}
 		return functionInference(remaining), nil
+	}
+	if name == "Ok" {
+		return inferredValue{Type: "R[" + values["value"].Type + ",Any]"}, nil
+	}
+	if name == "Err" {
+		return inferredValue{Type: "R[Any," + values["error"].Type + "]"}, nil
 	}
 	if result, handled, err := c.transformCall(name, values); handled {
 		return result, err

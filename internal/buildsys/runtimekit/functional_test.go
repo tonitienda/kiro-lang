@@ -19,6 +19,9 @@ func functionalSpec(body string) ProgramSpec {
 		{Module: "main", Name: "bad_reduce", ReturnType: "str", BlockBody: true, Params: params(ParamSpec{Name: "state", Type: "i32"}, ParamSpec{Name: "value", Type: "i32"}), Body: `return "oops"`},
 		{Module: "main", Name: "show", ReturnType: "nil", Effects: []string{"io"}, BlockBody: true, Params: params(ParamSpec{Name: "value", Type: "i32"}), Body: "println(value:value)\nreturn nil"},
 		{Module: "main", Name: "pure", ReturnType: "nil", BlockBody: true, Body: "let output = println\noutput(value:123)\nreturn nil"},
+		{Module: "main", Name: "decode_box", ReturnType: "R[Box,str]", BlockBody: true, Body: `let body = json.encode(value:Box{value:1})?
+let decode = partial json.decode[Box](text:body)
+return decode()`},
 		{Module: "main", Name: "box", ReturnType: "i32", BlockBody: true, Params: params(ParamSpec{Name: "box", Type: "Box"}, ParamSpec{Name: "extra", Type: "i32"}), Body: "return box.value + extra"},
 	}}}}
 }
@@ -46,8 +49,7 @@ println(value:list.reduce(items:ys,initial:0,reduce:sum))`, "7\n", ""},
 		{"empty_reduce", `println(value:list.reduce(items:[],initial:9,reduce:sum))`, "9\n", ""},
 		{"latent_effect", `let output = partial show(value:3)
 output()`, "3\n", ""},
-		{"generic_partial", `let decode = partial json.decode[Box](text:"{}")
-println(value:decode()?)`, "map[_type:Box]\n", ""},
+		{"generic_partial", `println(value:decode_box())`, "map[Ok:map[_type:Box value:1]]\n", ""},
 		{"missing_default_key", `add(value:1)`, "", `missing argument "amount"`},
 		{"no_default", `add(value:default,amount:1)`, "", "no declared default"},
 		{"default_outside_call", `let number = default`, "", "only valid as an explicit call argument"},

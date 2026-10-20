@@ -1,0 +1,32 @@
+mod validated_pipeline
+
+import json
+import list
+import model
+import parse
+
+fn parse_value(value:str) -> R[i32,str] {
+  return parse.i32 ( text : value )
+}
+
+fn accumulate(state:R[i32,str], value:R[i32,str]) -> R[i32,str] {
+  let previous = state ?
+  let number = value ?
+  return Ok ( value : previous + number )
+}
+
+fn aggregate(raw:str) -> R[model.Summary,str] {
+  let request = json.decode [ model.Request ] ( text : raw ) ?
+  let through = list.mapping ( transform : parse_value )
+  let total = list.transduce ( items : request.values , through : through , initial : Ok ( value : 0 ) , reduce : accumulate ) ?
+  return Ok ( value : model.Summary { total : total } )
+}
+
+fn decoder(raw:str) -> Fn[()->R[model.Request,str]] {
+  return partial json.decode [ model.Request ] ( text : raw )
+}
+
+fn apply(raw:str, transform:Fn[(raw:str)->R[model.Summary,str]]) -> R[model.Summary,str] {
+  let summary = transform ( raw : raw ) ?
+  return Ok ( value : summary )
+}

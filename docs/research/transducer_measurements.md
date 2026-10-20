@@ -1,6 +1,7 @@
 # Explicit transducers: semantics and allocation observations
 
-Date: 2026-10-19. This is a runtime microbenchmark, not an agent or language-comparison
+Date: 2026-10-19. Historical Phase 14 measurements at commit `11be8b9`; Phase 15 adds
+record/result/schema checks, so this table does not characterize the current revision. This is a runtime microbenchmark, not an agent or language-comparison
 benchmark. The change introduces explicit typed stateless transducers; it does not silently
 optimize existing eager calls.
 

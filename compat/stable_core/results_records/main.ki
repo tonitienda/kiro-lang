@@ -1,0 +1,25 @@
+mod main
+
+import json
+import test
+
+type Input {
+  quantity:i32
+  note:?str
+}
+
+fn leaf() -> R[i32,nil] {
+  return Err ( error : nil )
+}
+
+fn parent() -> R[str,nil] {
+  let number = leaf ( ) ?
+  return Ok ( value : "${number}" )
+}
+
+fn main() -> R[i32,str] {
+  test.eq ( actual : parent ( ) , expected : Err ( error : nil ) )
+  let input = json.decode [ Input ] ( text : "{\"quantity\":2}" ) ?
+  test.eq ( actual : input.note , expected : nil )
+  return Ok ( value : 0 )
+}

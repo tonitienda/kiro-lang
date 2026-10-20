@@ -4,8 +4,9 @@ import app
 import http
 import test
 
-fn test_health_handler() -> nil {
+fn test_health_handler() -> R[nil,str] {
   let req = http.test_req ( method : "GET" , path : "/health" , body : "" )
   let res = app.handler ( req : req ) ?
   test.eq ( actual : res.code , expected : 200 )
+  return Ok ( value : nil )
 }

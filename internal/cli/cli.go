@@ -371,11 +371,11 @@ import internal/config
 import http
 import log
 
-fn main() -> i32 !env !log !net {
+fn main() -> R[i32,str] !env !log !net {
   let cfg = config.load()?
   log.info(message : "starting ${cfg.port}")
   http.serve(addr : cfg.port, handler : app.handler)?
-  return 0
+  return Ok ( value : 0 )
 }
 `
 	app := `mod app
@@ -414,10 +414,11 @@ import app
 import http
 import test
 
-fn test_health_handler() -> nil {
+fn test_health_handler() -> R[nil,str] {
   let req = http.test_req(method : "GET", path : "/health", body : "")
   let res = app.handler(req : req)?
   test.eq(actual : res.code, expected : 200)
+  return Ok ( value : nil )
 }
 `
 	readme := `# Kiro service template

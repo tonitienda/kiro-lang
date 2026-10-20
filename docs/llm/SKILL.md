@@ -30,8 +30,12 @@ Use this bundle when a repository contains Kiro source files.
 - Use `let` for immutable bindings; the mutable form is `mut name = value`. Partial captures remain stable after rebinding.
 - Delimit case dispatch as `when (value) { pattern => { ... } }`; the old unbraced form is rejected.
 - Declare only real operational effects: `env`, `fs`, `io`, `log`, `net`, `panic`, `proc`, `time`.
-- Use `R[T,E]` for failure, `?` only to propagate `R[T,E]`, `?T` for optionals, and `nil` only for optional or nil-capable returns.
-- Use `group`, `spawn`, and `await` for structured concurrency.
+- Use `R[T,E]` for failure. `?` requires an enclosing result-returning function and a compatible error type: Err returns from that function, not from its caller. Ok(nil) and Err(nil) are distinct. Runtime/assertion failures are not domain results.
+- Migrate main/test functions using `?` to `R[i32,E]` / `R[nil,E]` and return `Ok(value:0)` / `Ok(value:nil)`. Unhandled Err fails process/test boundaries. Use `?T` for optional values, not failure.
+- Source record literals must supply every field exactly once, including explicit nil optionals. Unknown/duplicate/missing fields and invalid field types fail. Qualify ambiguous record names by module.
+- `json.decode[T](text:body)` requires a schema. JSON rejects missing required, unknown and duplicate fields, wrong nested/list types and trailing data. Omitted optional JSON fields become nil. i32 requires in-range integer text (no decimal/exponent spelling). JSON encoding emits data fields without internal `_type` metadata.
+- Preserve escaped string spelling while editing/formatting. Evaluation decodes Go-style escapes once; inserted interpolation data is not executable source.
+- Use `group`, `spawn`, and `await` for structured concurrency. Spawn a result-returning function, await its result, then use `?`; do not place inline propagation inside a spawn expression.
 - Prefer documented stdlib module names directly: `env`, `fs`, `http`, `json`, `log`, `parse`, `test`, `time`, `list`.
 - Keep formatting canonical with `kiro fmt`.
 
@@ -60,4 +64,4 @@ For service-shaped projects, also run the documented tests/build commands such a
 
 ## Enforcement boundary
 
-Known expression contracts are checked before builds and again at callable runtime boundaries. This is not a complete type system: record schemas/module-distinct identity, compositional failed-result propagation, broader control flow and full concurrency/effect enforcement remain incomplete. Do not describe these as guaranteed or invent unsupported variants, lambdas, pipeline operators, stateful transducer stages or lazy sequences.
+Known expression contracts, closed record schemas and function-local result propagation are checked before builds and at runtime boundaries. This remains an incremental checker: broader control flow, exhaustive variant/payload matching and full concurrency/effect enforcement remain incomplete. Do not describe these as guaranteed or invent unsupported variants, lambdas, pipeline operators, stateful transducer stages or lazy sequences.

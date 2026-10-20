@@ -12,8 +12,8 @@ fn load() -> R[Config,str] !env {
   return Ok ( value : Config { addr : addr mode : nil } )
 }
 
-fn main() -> i32 !env !io {
+fn main() -> R[i32,str] !env !io {
   let cfg = load ( ) ?
   println ( value : "${cfg.addr}" )
-  return 0
+  return Ok ( value : 0 )
 }
