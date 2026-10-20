@@ -5,6 +5,6 @@ const Name = "collections"
 fn main() -> i32 !io {
   let nums = [ 1 , 2 , 3 ]
   let cfg = { "host" : "localhost" , "port" : 8080 }
-  println ( "${Name} ${nums} ${cfg}" )
+  println ( value : "${Name} ${nums} ${cfg}" )
   return 0
 }

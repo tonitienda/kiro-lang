@@ -1,0 +1,10 @@
+{
+  "schema": "kiro.benchmark.task.v1",
+  "id": "payment-declined",
+  "version": 1,
+  "title": "Add an explicit declined-payment outcome",
+  "requirement": "Treat payment method declined as a recognized authorization failure rather than an unknown method. Introduce a distinct typed PaymentDeclined outcome through the authorization and checkout error path, and exhaustively map it to HTTP 402 with exact body payment declined. Card/bank authorization and unknown payment methods retain their behavior. Inventory and pricing validation still happen before authorization, so earlier invalid input errors retain priority. Preserve all unrelated behavior.",
+  "scope": "One independent change to the supplied baseline; implement and verify without a human review gate.",
+  "acceptance": "Behavior is checked through HTTP against the task and unchanged baseline contracts. Payment-boundary additionally has an explicit structural check. Add or update meaningful public tests.",
+  "limits": "Do not change compiler, vendored guide, AGENTS.md, task.json or this task specification. Use the allowed tool protocol; analysis tools are optional only in the analysis condition."
+}

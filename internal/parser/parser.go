@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 	"github.com/kiro-lang/kiro/internal/lexer"
 )
 
@@ -100,7 +101,7 @@ func (p *Parser) parseConstDecl() (ast.Decl, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ast.ConstDecl{Doc: p.takePendingDoc(), Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
+	return ast.ConstDecl{Line: name.Line, Column: name.Column, Doc: p.takePendingDoc(), Name: name.Text, Value: val.Text, ValueKind: string(val.Kind)}, nil
 }
 
 func (p *Parser) expectConstValue() (lexer.Token, error) {
@@ -137,12 +138,44 @@ func (p *Parser) parseTypeDecl() (ast.Decl, error) {
 	if _, err := p.expectText("{"); err != nil {
 		return nil, err
 	}
-	decl := ast.TypeDecl{Doc: p.takePendingDoc(), Name: name.Text}
+	decl := ast.TypeDecl{Line: name.Line, Column: name.Column, Doc: p.takePendingDoc(), Name: name.Text}
 	for {
 		p.skipNewlines()
 		if p.peekText("}") {
 			p.next()
 			break
+		}
+		if p.peekText("variant") {
+			p.next()
+			tag, err := p.expect(lexer.TokenIdent)
+			if err != nil {
+				return nil, err
+			}
+			if _, err := p.expectText("{"); err != nil {
+				return nil, err
+			}
+			v := ast.Variant{Line: tag.Line, Column: tag.Column, Name: tag.Text}
+			for {
+				p.skipNewlines()
+				if p.peekText("}") {
+					p.next()
+					break
+				}
+				field, err := p.expect(lexer.TokenIdent)
+				if err != nil {
+					return nil, err
+				}
+				if _, err := p.expectText(":"); err != nil {
+					return nil, err
+				}
+				typ, err := p.parseTypeRef()
+				if err != nil {
+					return nil, err
+				}
+				v.Fields = append(v.Fields, ast.Field{Name: field.Text, Type: typ.Text})
+			}
+			decl.Variants = append(decl.Variants, v)
+			continue
 		}
 		fname, err := p.expect(lexer.TokenIdent)
 		if err != nil {
@@ -179,6 +212,10 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		return nil, err
 	}
 	var params []ast.Param
+	parameterNames := map[string]bool{}
+	if receiver != nil {
+		parameterNames[receiver.Name] = true
+	}
 	for !p.peekText(")") {
 		paramName, err := p.expect(lexer.TokenIdent)
 		if err != nil {
@@ -191,7 +228,28 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		if err != nil {
 			return nil, err
 		}
-		params = append(params, ast.Param{Name: paramName.Text, Type: paramType.Text})
+		if parameterNames[paramName.Text] {
+			return nil, fmt.Errorf("%d:%d: duplicate parameter %q", paramName.Line, paramName.Column, paramName.Text)
+		}
+		parameterNames[paramName.Text] = true
+		parameter := ast.Param{Name: paramName.Text, Type: paramType.Text}
+		if p.peekText("=") {
+			p.next()
+			literal := p.next()
+			sign := ""
+			if literal.Text == "-" {
+				sign = "-"
+				literal = p.next()
+				if literal.Kind != lexer.TokenInt {
+					return nil, fmt.Errorf("negative default requires an integer literal")
+				}
+			}
+			if literal.Kind != lexer.TokenString && literal.Kind != lexer.TokenInt && literal.Text != "nil" && literal.Text != "true" && literal.Text != "false" {
+				return nil, fmt.Errorf("%d:%d: defaults must be scalar literals", literal.Line, literal.Column)
+			}
+			parameter.Default = sign + renderToken(literal)
+		}
+		params = append(params, parameter)
 		if p.peekText(",") {
 			p.next()
 		}
@@ -234,6 +292,14 @@ func (p *Parser) parseFuncDecl() (ast.Decl, error) {
 		}
 		decl.BlockBody = true
 		decl.Body = body
+		if _, err := runtimekit.InspectCalls(body); err != nil {
+			d := runtimekit.DiagnosticOf(err, "KIRO_SYNTAX")
+			d.Message = fmt.Sprintf("%d:%d: function %s: %v", decl.Line, decl.Column, decl.Name, err)
+			d.Symbol = decl.Name
+			d.Range = runtimekit.DeclarationRange(decl.Line, decl.Column, len([]rune(decl.Name)))
+			d.LocationKind = "declaration"
+			return nil, &d
+		}
 		return decl, nil
 	}
 	return nil, fmt.Errorf("expected \"{\" to start function body at %d:%d", p.peek().Line, p.peek().Column)
@@ -279,6 +345,11 @@ func (p *Parser) collectBlockBody() (string, error) {
 	var current []string
 	for !p.isEOF() {
 		t := p.next()
+		if t.Kind == lexer.TokenKeyword && t.Text == "when" {
+			if err := p.requireWhenBlock(t); err != nil {
+				return "", err
+			}
+		}
 		if t.Kind == lexer.TokenSymbol {
 			if t.Text == "{" {
 				depth++
@@ -304,6 +375,41 @@ func (p *Parser) collectBlockBody() (string, error) {
 		current = append(current, renderToken(t))
 	}
 	return "", fmt.Errorf("unterminated block body")
+}
+
+// Function bodies are not fully parsed by this frontend yet. Validate the case
+// delimiter without claiming that this establishes body/type correctness.
+func (p *Parser) requireWhenBlock(start lexer.Token) error {
+	invalid := func() error {
+		return fmt.Errorf("%d:%d: when requires a delimited subject and case block\nhint: write when (value) { pattern => { ... } }", start.Line, start.Column)
+	}
+	if !p.peekText("(") {
+		return invalid()
+	}
+	depth := 0
+	for i := p.pos; i < len(p.tokens); i++ {
+		t := p.tokens[i]
+		if t.Kind != lexer.TokenSymbol {
+			continue
+		}
+		if t.Text == "(" {
+			depth++
+		}
+		if t.Text == ")" {
+			depth--
+			if depth == 0 {
+				i++
+				for i < len(p.tokens) && p.tokens[i].Kind == lexer.TokenNewline {
+					i++
+				}
+				if i < len(p.tokens) && p.tokens[i].Kind == lexer.TokenSymbol && p.tokens[i].Text == "{" {
+					return nil
+				}
+				return invalid()
+			}
+		}
+	}
+	return invalid()
 }
 
 func (p *Parser) parseTypeRef() (lexer.Token, error) {
@@ -383,7 +489,12 @@ func (p *Parser) expectKeyword(k string) error {
 func (p *Parser) expect(kind lexer.TokenKind) (lexer.Token, error) {
 	t := p.next()
 	if t.Kind != kind {
-		return lexer.Token{}, fmt.Errorf("expected %s at %d:%d", kind, t.Line, t.Column)
+		d := runtimekit.NewDiagnostic("KIRO_SYNTAX", fmt.Sprintf("expected %s at %d:%d", kind, t.Line, t.Column))
+		d.Expected = string(kind)
+		d.Actual = string(t.Kind)
+		d.Range = runtimekit.DeclarationRange(t.Line, t.Column, max(1, len([]rune(t.Text))))
+		d.LocationKind = "token"
+		return lexer.Token{}, d
 	}
 	return t, nil
 }
@@ -391,7 +502,12 @@ func (p *Parser) expect(kind lexer.TokenKind) (lexer.Token, error) {
 func (p *Parser) expectText(s string) (lexer.Token, error) {
 	t := p.next()
 	if t.Text != s {
-		return lexer.Token{}, fmt.Errorf("expected %q at %d:%d", s, t.Line, t.Column)
+		d := runtimekit.NewDiagnostic("KIRO_SYNTAX", fmt.Sprintf("expected %q at %d:%d", s, t.Line, t.Column))
+		d.Expected = s
+		d.Actual = t.Text
+		d.Range = runtimekit.DeclarationRange(t.Line, t.Column, max(1, len([]rune(t.Text))))
+		d.LocationKind = "token"
+		return lexer.Token{}, d
 	}
 	return t, nil
 }

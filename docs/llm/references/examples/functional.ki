@@ -1,0 +1,71 @@
+mod functional
+
+import basket_pricing
+import list
+import test
+
+fn add(value:i32, amount:i32 = 1) -> i32 {
+  return value + amount
+}
+
+fn apply(value:i32, transform:Fn[(value:i32)->i32]) -> i32 {
+  return transform ( value : value )
+}
+
+fn offset(amount:i32) -> Fn[(value:i32)->i32] {
+  return partial add ( amount : amount )
+}
+
+fn at_least(value:i32, minimum:i32) -> bool {
+  return value > = minimum
+}
+
+fn sum(state:i32, value:i32) -> i32 {
+  return state + value
+}
+
+fn test_pipeline() -> nil {
+  let increment = partial add ( amount : default )
+  let increased = list.map ( items : [ 1 , 2 , 3 ] , transform : increment )
+  let selected = list.filter ( items : increased , predicate : partial at_least ( minimum : 3 ) )
+  let total = list.reduce ( items : selected , initial : 0 , reduce : sum )
+  test.eq ( actual : total , expected : 7 )
+  test.eq ( actual : apply ( value : 4 , transform : offset ( amount : 3 ) ) , expected : 7 )
+  return nil
+}
+
+fn test_snapshot() -> nil {
+  mut amount = 2
+  let increase = partial add ( amount : amount )
+  amount = 100
+  test.eq ( actual : increase ( value : 3 ) , expected : 5 )
+  let thunk = partial increase ( value : 4 )
+  test.eq ( actual : thunk ( ) , expected : 6 )
+  return nil
+}
+
+fn test_order_pipeline() -> nil {
+  let items = [ basket_pricing.Item { sku : "book" unit_cents : 1500 quantity : 2 } , basket_pricing.Item { sku : "poster" unit_cents : 700 quantity : 1 } , basket_pricing.Item { sku : "empty" unit_cents : 100 quantity : 0 } ]
+  let discounted = basket_pricing.pricer ( discount_cents : 100 )
+  test.eq ( actual : basket_pricing.total ( items : items , transform : discounted ) , expected : 3500 )
+  test.eq ( actual : basket_pricing.total ( items : items , transform : discounted ) , expected : basket_pricing.total_eager ( items : items , transform : discounted ) )
+  test.eq ( actual : basket_pricing.total ( items : [ ] , transform : discounted ) , expected : 0 )
+  return nil
+}
+
+fn test_transform_reuse() -> nil {
+  let through = basket_pricing.pipeline ( transform : basket_pricing.pricer ( discount_cents : 100 ) )
+  let items = [ basket_pricing.Item { sku : "book" unit_cents : 1500 quantity : 2 } ]
+  let expected = [ basket_pricing.Line { sku : "book" total_cents : 2900 } ]
+  test.eq ( actual : list.collect ( items : items , through : through ) , expected : expected )
+  test.eq ( actual : list.collect ( items : items , through : through ) , expected : expected )
+  test.eq ( actual : list.collect ( items : [ ] , through : through ) , expected : [ ] )
+  return nil
+}
+
+fn main() -> nil !io {
+  let items = [ basket_pricing.Item { sku : "book" unit_cents : 1500 quantity : 2 } , basket_pricing.Item { sku : "poster" unit_cents : 700 quantity : 1 } ]
+  let standard = partial basket_pricing.price ( discount_cents : default )
+  println ( value : basket_pricing.total ( items : items , transform : standard ) )
+  return nil
+}

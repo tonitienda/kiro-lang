@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 	"github.com/kiro-lang/kiro/internal/lexer"
 	"github.com/kiro-lang/kiro/internal/parser"
 )
@@ -39,8 +40,26 @@ func buildDocState(uri, text string) (*DocState, []Diagnostic) {
 	pos := declPositions(toks)
 	for _, decl := range f.Decls {
 		s := symbolFromDecl(decl, pos)
+		lines := strings.Split(text, "\n")
+		if s.Range.Start.Line >= 0 && s.Range.Start.Line < len(lines) {
+			line := lines[s.Range.Start.Line]
+			s.Range.Start.Character = utf16Column(line, s.Range.Start.Character)
+			s.Range.End.Character = utf16Column(line, s.Range.End.Character)
+		}
 		if s.Name == "" {
 			continue
+		}
+		if typ, ok := decl.(ast.TypeDecl); ok {
+			for _, v := range typ.Variants {
+				signature := runtimekit.FunctionType{ReturnType: f.Module + "." + typ.Name}
+				for _, field := range v.Fields {
+					signature.Params = append(signature.Params, runtimekit.ParamSpec{Name: field.Name, Type: field.Type})
+				}
+				start := lspPosition(text, runtimekit.SourcePosition{Line: v.Line, Column: v.Column})
+				end := lspPosition(text, runtimekit.SourcePosition{Line: v.Line, Column: v.Column + len([]rune(v.Name))})
+				name := typ.Name + "." + v.Name
+				d.Symbols[name] = Symbol{Name: name, Kind: 9, Sig: signature.String(), Range: Range{Start: start, End: end}}
+			}
 		}
 		d.Symbols[s.Name] = s
 		d.SymbolItems = append(d.SymbolItems, DocumentSymbol{
@@ -51,12 +70,12 @@ func buildDocState(uri, text string) (*DocState, []Diagnostic) {
 		})
 	}
 	moduleLine, moduleCol := modulePosition(toks)
-	if moduleLine > 0 {
+	if moduleLine >= 0 {
 		d.SymbolItems = append([]DocumentSymbol{{
 			Name:           "module " + f.Module,
 			Kind:           2,
-			Range:          toRange(moduleLine, moduleCol, len(f.Module)+4),
-			SelectionRange: toRange(moduleLine, moduleCol, len(f.Module)+4),
+			Range:          toRange(moduleLine, moduleCol, len([]rune(f.Module))+4),
+			SelectionRange: toRange(moduleLine, moduleCol, len([]rune(f.Module))+4),
 		}}, d.SymbolItems...)
 	}
 	return d, nil
@@ -83,7 +102,7 @@ func symbolFromDecl(d ast.Decl, pos map[string]Position) Symbol {
 	}
 	if p, ok := pos[s.Name]; ok {
 		s.Line, s.Col = p.Line, p.Character
-		s.Range = Range{Start: p, End: Position{Line: p.Line, Character: p.Character + len(s.Name)}}
+		s.Range = Range{Start: p, End: Position{Line: p.Line, Character: p.Character + len([]rune(s.Name))}}
 	}
 	return s
 }
@@ -94,7 +113,7 @@ func modulePosition(toks []lexer.Token) (int, int) {
 			return toks[i].Line - 1, toks[i].Column - 1
 		}
 	}
-	return 0, 0
+	return -1, -1
 }
 
 func declPositions(toks []lexer.Token) map[string]Position {
@@ -131,18 +150,7 @@ func toRange(line, col, width int) Range {
 	return Range{Start: Position{Line: line, Character: col}, End: Position{Line: line, Character: col + width}}
 }
 
-func diagnosticFromError(err error) Diagnostic {
-	msg := err.Error()
-	line, col := 0, 0
-	_, _ = fmt.Sscanf(msg, "%*[^0-9]%d:%d", &line, &col)
-	if line > 0 {
-		line--
-		col--
-	}
-	return Diagnostic{
-		Range:    Range{Start: Position{Line: line, Character: max(col, 0)}, End: Position{Line: line, Character: max(col+1, 1)}},
-		Severity: 1,
-		Source:   "kiro",
-		Message:  msg,
-	}
-}
+func diagnosticFromError(err error) Diagnostic { return diagnosticFromSource(err, "") }
+
+// Keep syntax-only indexing separate from project semantic checking; publishing
+// uses projectDiagnostics and the same structured compiler contracts as the CLI.

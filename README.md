@@ -29,6 +29,19 @@ These are design goals, not a measured advantage over existing languages. Read t
 
 The [agent-language research plan](docs/research/agent_language_iteration.md) records the current implementation audit, comparison methodology, and proposed iterations. The [multi-module quote service](examples/quote_service/README.md) is the first runnable integration example for that work.
 
+The [agent-only core reassessment](docs/research/agent_core_reassessment.md) records the next design decisions. Phase 12 introduces breaking case syntax, `when (value) { ... }`, required named value arguments (`f(name: expression)`), and preserves literal contents during formatting. Phase 13 adds [typed function values, explicit partial application, visible defaults and eager pure collection transforms](docs/functional-core.md), demonstrated by the [functional basket example](examples/functional/README.md). Phase 14 adds explicit ordered transducers without intermediate data lists and renames `fold` to `reduce`. Phase 15 adds [compositional results and validated records/JSON](docs/results-and-schemas.md), demonstrated by [validated aggregation](examples/validated_results/README.md). Phase 16 adds [typed variants, exhaustive payload matching, explicit error conversion and executable list loops](docs/variants-and-matching.md), demonstrated by [typed errors](examples/typed_errors/README.md) and the quote service’s 400/422 responses. Phase 17 adds [structured feedback, language/symbol discovery, formatter checks, return-path checking and maintenance-task infrastructure](docs/agent-tools.md). Phase 18 adds [explicit analysis commands](docs/analysis-tools.md) for dependencies, impact, metrics, cycles, candidate boundaries, architecture rules, slicing, Kiro coverage and targeted mutation. These do not run in normal compiler commands. Tagged optional/unit values and structural edit protocols remain proposals.
+
+The [current language reference](docs/language-reference.md) is bundled and available via
+`kiro describe --reference`. It includes tested complete programs, explicit rejection cases
+and the executable builtin API. Agents receive it through new-project guidance; the
+[benchmark onboarding protocol](docs/research/benchmark_onboarding.md) pins versions and
+accounts for learning/context costs before comparison with Go.
+
+The [maintenance benchmark](benchmarks/maintenance/README.md) now provides five independent
+tasks, a larger HTTP workload, deterministic reference/negative controls and a paired
+external-model trial harness. It has no model results yet: the development environment lacks
+a Docker runtime and configured model driver. See [Phase 20](PHASE20_NOTES.md).
+
 ### Current backend boundary
 
 Runnable programs currently package a Go-hosted interpreter into a Go executable. `kiro inspect go` currently emits structural stubs, not direct typed lowering of the executable business logic. Checking, runtime semantics, and generated-Go inspection are still incomplete; see the research plan for reproducible probes and limitations.
@@ -38,9 +51,16 @@ Runnable programs currently package a Go-hosted interpreter into a Go executable
 Kiro now teaches one canonical style:
 
 - **block-only functions** with explicit `return`
+- **keyed function types** and explicit `partial` specialization
+- **visible literal defaults** selected with `key:default`
+- **eager pure collection transforms** via `list.map`, `list.filter`, `list.reduce`
+- **explicit fused transducers** with typed `Transform[Input,Output]` plans
 - **explicit effects** for operational impurity only
 - **`R[T,E]`** for fallibility
-- **`?`** only for propagating `R[T,E]`
+- **`?`** propagates an error from the current result-returning function
+- **closed record schemas and strict typed JSON**, including nested fields and integer bounds
+- **closed typed variants** with explicit payload bindings and exhaustive matching
+- **finite list loops** with scoped immutable iteration bindings
 - **`?T`** for optional values
 - **`nil`** only where an optional or `nil` return type is allowed
 - **`group` + `spawn` + `await`** for visible structured concurrency
@@ -50,7 +70,7 @@ Kiro now teaches one canonical style:
 
 ```ki
 fn handler(req:http.Req) -> R[http.Resp,str] !net {
-  return Ok(http.not_found())
+  return Ok(value : http.not_found())
 }
 ```
 
@@ -183,8 +203,12 @@ Use the compact package in `docs/llm/`:
 ## CLI commands
 
 ```bash
-./kiro fmt <paths...>
-./kiro check <entry-or-path>
+./kiro fmt <paths...> [--check [--json]]
+./kiro check <entry-or-path> [--json]
+./kiro lint <entry-or-path> [--json]
+./kiro describe [builtin | --reference] [--json]
+./kiro symbols <entry-or-path> [--symbol module.name] [--json]
+./kiro analyze <graph|impact|metrics|cycles|boundaries|rules|slice|coverage|mutate> <path> [options] [--json]
 ./kiro inspect go <entry-or-path> [--out-dir <dir>]
 ./kiro build <entry-or-path> [--out <file>] [--keep-gen]
 ./kiro run <entry-or-path> [--keep-gen] [-- <program args...>]

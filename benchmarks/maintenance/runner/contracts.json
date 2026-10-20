@@ -1,0 +1,195 @@
+[
+  {
+    "id": "app.handler",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "req",
+        "type": "http.Req"
+      }
+    ],
+    "return_type": "R[http.Resp,str]"
+  },
+  {
+    "id": "checkout.Authorization",
+    "kind": "record",
+    "fields": [
+      {
+        "name": "method",
+        "type": "str"
+      },
+      {
+        "name": "fee_cents",
+        "type": "i32"
+      },
+      {
+        "name": "reference",
+        "type": "str"
+      }
+    ]
+  },
+  {
+    "id": "checkout.Receipt",
+    "kind": "record",
+    "fields": [
+      {
+        "name": "sku",
+        "type": "str"
+      },
+      {
+        "name": "units",
+        "type": "i32"
+      },
+      {
+        "name": "remaining_stock",
+        "type": "i32"
+      },
+      {
+        "name": "subtotal_cents",
+        "type": "i32"
+      },
+      {
+        "name": "discount_cents",
+        "type": "i32"
+      },
+      {
+        "name": "shipping_cents",
+        "type": "i32"
+      },
+      {
+        "name": "fee_cents",
+        "type": "i32"
+      },
+      {
+        "name": "total_cents",
+        "type": "i32"
+      },
+      {
+        "name": "payment_reference",
+        "type": "str"
+      }
+    ]
+  },
+  {
+    "id": "checkout.authorize",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "method",
+        "type": "str"
+      },
+      {
+        "name": "amount",
+        "type": "i32"
+      }
+    ],
+    "return_type": "R[Authorization,Error]"
+  },
+  {
+    "id": "checkout.place",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "sku",
+        "type": "str"
+      },
+      {
+        "name": "units",
+        "type": "i32"
+      },
+      {
+        "name": "available",
+        "type": "i32"
+      },
+      {
+        "name": "delivery",
+        "type": "str"
+      },
+      {
+        "name": "coupon",
+        "type": "?str"
+      },
+      {
+        "name": "payment",
+        "type": "str"
+      }
+    ],
+    "return_type": "R[Receipt,Error]"
+  },
+  {
+    "id": "inventory.remaining",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "units",
+        "type": "i32"
+      },
+      {
+        "name": "available",
+        "type": "i32"
+      }
+    ],
+    "return_type": "R[i32,Error]"
+  },
+  {
+    "id": "pricing.quote",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "sku",
+        "type": "str"
+      },
+      {
+        "name": "units",
+        "type": "i32"
+      },
+      {
+        "name": "delivery",
+        "type": "str"
+      },
+      {
+        "name": "coupon",
+        "type": "?str"
+      }
+    ],
+    "return_type": "R[Quote,Error]"
+  },
+  {
+    "id": "refunds.calculate",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "unit_cents",
+        "type": "i32"
+      },
+      {
+        "name": "units",
+        "type": "i32"
+      },
+      {
+        "name": "returned_units",
+        "type": "i32"
+      },
+      {
+        "name": "shipping_cents",
+        "type": "i32"
+      }
+    ],
+    "return_type": "R[Refund,Error]"
+  },
+  {
+    "id": "reservations.status",
+    "kind": "function",
+    "parameters": [
+      {
+        "name": "now",
+        "type": "i32"
+      },
+      {
+        "name": "expires_at",
+        "type": "i32"
+      }
+    ],
+    "return_type": "Status"
+  }
+]

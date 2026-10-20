@@ -87,16 +87,17 @@ The language already has useful design ingredients: one function form, canonical
 explicit operational effects, results distinct from optionals, visible concurrency constructs,
 project conventions and a compact agent skill. Their benefits remain hypotheses to measure.
 
-The implementation does not yet enforce the full apparent contract:
+After Phase 16, the implementation enforces result and schema boundaries while retaining
+several broader gaps:
 
 | Area | Evidence in the current source | Consequence |
 | --- | --- | --- |
 | Executable backend | `internal/buildsys/buildsys.go` serializes function bodies and embeds `runtimekit` into a generated Go project | Executables run a Go-hosted interpreter, not directly lowered typed business functions |
 | Go inspection | `internal/codegen/gogen.go` emits stub functions and string fields | Inspection is not yet a faithful view of executable business logic |
 | Body checking | `project.Load` parses files, resolves imports and checks effects; bodies remain largely text in the frontend AST | A successful `check` is not a full type/semantic guarantee |
-| Runtime syntax | The body parser has a narrower grammar than the frontend/guide | Even documented code can pass `check` and then fail on execution |
-| Results | `evalUnwrap` converts failed results to Go errors | Failed `?` does not currently compose as an ordinary returned `Err` |
-| JSON | `json.decode[T]` labels maps without checking declared fields; encoding adds `_type` | Invalid payloads can cross a nominally typed boundary; runtime metadata leaks into JSON |
+| Runtime syntax | Checking requires every function body to parse in the executable grammar | Unparseable bodies now fail checking; accepted syntax still has incremental semantic analysis |
+| Results | `?` propagates a tagged Err from the current result-returning function; adapters handle unhandled failures | Callers can inspect errors, including nil payloads; Phase 16 adds explicit payload binding and finite constructor coverage |
+| JSON | `json.decode[T]` validates closed nested schemas, required fields and integer bounds; encoding emits data fields | Malformed typed data returns Err; `Any` deliberately bypasses schema constraints |
 | Concurrency | `group` executes a block; spawned futures are not registered with the group; context helpers return strings | Syntax alone does not establish join/cancellation/timeout guarantees |
 
 The last row is source inspection, not a concurrent stress-test result. Do not describe the
@@ -119,13 +120,33 @@ All four probes passed `check` on the starting implementation:
 | Sum a list with documented `for` syntax | Fails: `expected IDENT, got NEWLINE` | Do checked examples actually execute? |
 | Compare a propagated failure with `Err(...)` in the caller | Aborts with the domain error before the assertion | Can callers inspect a failure after propagation? |
 
+Historical Phase 13 rerun: the return-type probe now fails `check` and `run` with `expected i32,
+got str`. JSON required fields still pass without schema validation; the documented loop
+still passes checking but fails execution; a propagated failure still aborts before the
+caller assertion. The observation script intentionally preserves all four inputs.
+
+Phase 15 rerun: the wrong-return probe remains rejected. The original JSON probe is
+now rejected for using `?` in a non-result entry function; that alone does not test schema
+validation. The added `json_required_field_result_boundary` probe passes checking and
+returns an unhandled Err for the missing required field at execution. The original result
+propagation assertion now succeeds. Added nil-tag and missing-record probes check the new
+representation and construction boundary. The documented loop still passes checking but
+fails execution. Original inputs are retained alongside the new probes.
+
+Phase 16 rerun: the original documented loop now checks and runs successfully. All bodies
+must parse in the executable grammar, so older unsupported map/control-flow fixtures now
+assert rejection instead of silent acceptance. The three-boundary mutation probe in
+`scripts/probe_variant_evolution.py` adds catalog, shipping and pricing variants in isolated
+copies, then verifies the affected explicit handler receives a missing-arm diagnostic.
+This establishes compiler behavior, not autonomous repair performance.
+
 These are implementation findings, not measurements of agent performance. Fixes should
 be accompanied by negative compiler/runtime tests, not just more optimistic documentation.
 
 ## Larger example and incremental requirements
 
 The first slice is [the quote service](../../examples/quote_service/README.md): seven source
-modules and 14 domain/handler tests. It exercises modules, HTTP methods, typed-looking JSON,
+modules and originally 14 domain/handler tests (16 after Phase 15, 20 after Phase 16). It exercises modules, HTTP methods, typed-looking JSON,
 pure rules, integer cents, optional fields and error-producing leaf operations.
 It deliberately stays within the executable subset. Its two product positions are a real
 scope limit, not a substitute for arbitrary collection handling.
@@ -136,7 +157,7 @@ benchmark sample: this implementation and its tests were developed together.
 | Checkpoint | User-visible requirement | What it stresses |
 | --- | --- | --- |
 | A: implemented | Quote one item and optional add-on; standard/express delivery; optional free-shipping coupon | Composition, module boundaries, optionals, basic failure paths |
-| B: conformance gate | Required/wrong-type JSON errors and domain errors become explicit 400/422 responses; no `_type` in public JSON | Typed decoding, result propagation and recovery |
+| B: implemented in Phase 16 | Required/wrong-type JSON errors and domain errors become explicit 400/422 responses; no `_type` in public JSON | Typed decoding, result propagation and recovery |
 | C | Arbitrary cart items and quantities, bounded totals, invalid quantity rejection | Working iteration, arithmetic, validation, overflow policy |
 | D | Country delivery rules, coupon restrictions and a versioned quote response | Local policy changes without unrelated regressions |
 | E | Persist orders with idempotency keys and explicit order-state transitions | Stateful invariants, filesystem effects, retries, restart behavior |
@@ -257,7 +278,8 @@ zero-success arm has an ordinary numeric cost-per-success estimate.
 
 1. **Make the contract true.** Align frontend and executable grammars; implement compositional
    results, schema checking and useful source locations; verify lifecycle claims. Stable error
-   codes and structured diagnostics are candidates, not existing features.
+   codes and structured diagnostics are implemented in Phase 17; coverage still includes
+   broad fallback categories for legacy errors.
 2. **Make changes local.** Test whether explicit signatures, effects and module/API summaries
    reduce retrieval and repair work. Consider an agent-facing dependency/contract query before
    inventing another surface notation. Optimize these interfaces for agent consumers; human
@@ -294,3 +316,30 @@ reproducible failures. Check naming/search confusion with other projects using â
 promotional spend. Verify release support on the advertised platforms rather than assuming it.
 Start with an open invitation and concrete tasks; collect completion, failures and feedback
 from volunteers before deciding whether paid promotion is useful.
+
+## Phase 17 experiment infrastructure
+
+[Agent tools](../agent-tools.md) now provide structured check/lint/format feedback, builtin
+and declared-symbol discovery, source revisions and shared semantic LSP diagnostics.
+`scripts/agent_maintenance.py` prepares stock-error, delivery-schema and coupon-minimum
+tasks and evaluates fixed domain/HTTP acceptance behavior in isolated copies. Agent tokens,
+repair attempts and model comparisons remain unmeasured; verification time is labeled
+separately. The variant mutation probe consumes codes, symbols and missing tags directly.
+
+## Phase 18: analysis as an optional experimental treatment
+
+[Explicit analysis tools](../analysis-tools.md) add dependencies/impact, metrics, SCCs,
+explainable candidate boundaries, architecture rules, local/interprocedural context slicing,
+Kiro execution coverage and targeted mutation. Keep ordinary commands as the control
+treatment and selectively expose analysis to agents in another treatment. Record the
+analysis cost, retrieved context, affected-caller omissions, refactoring churn and subsequent
+task outcomes. Clustering scores and coverage alone do not establish agent benefit.
+Tools are never automatically installed as hooks or run in compiler/linter/LSP paths.
+
+## Phase 19 experiment prerequisite
+
+Use the [onboarding and reporting protocol](benchmark_onboarding.md) before fresh-session
+maintenance trials or a Go comparison. Pin the bundled language reference/guide/compiler;
+account for documentation reads and tool costs, preserve unsuccessful trials, and separate
+public fixed acceptance checks from checks truly withheld from the implementing agent.
+The reference conformance tests are infrastructure, not a model benchmark result.

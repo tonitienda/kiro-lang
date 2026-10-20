@@ -1,0 +1,31 @@
+mod inventory
+
+type Error {
+  variant InvalidQuantity {
+    units:i32
+  }
+  variant InsufficientStock {
+    requested:i32
+    available:i32
+  }
+}
+
+fn validate(units:i32, available:i32) -> R[nil,Error] {
+  when ( units > 0 ) {
+  false => { return Err ( error : Error.InvalidQuantity ( units : units ) ) }
+  _ => { }
+  }
+  when ( units < = 100 ) {
+  false => { return Err ( error : Error.InvalidQuantity ( units : units ) ) }
+  _ => { }
+  }
+  when ( available > = units ) {
+  false => { return Err ( error : Error.InsufficientStock ( requested : units , available : available ) ) }
+  _ => { return Ok ( value : nil ) }
+  }
+}
+
+fn remaining(units:i32, available:i32) -> R[i32,Error] {
+  validate ( units : units , available : available ) ?
+  return Ok ( value : available - units )
+}

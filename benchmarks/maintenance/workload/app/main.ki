@@ -1,0 +1,101 @@
+mod app
+
+import checkout
+import http
+import json
+import reservations
+import refunds
+
+type CheckoutRequest {
+  sku:str
+  units:i32
+  available:i32
+  delivery:str
+  coupon:?str
+  payment:str
+}
+
+type ReservationRequest {
+  now:i32
+  expires_at:i32
+}
+
+type RefundRequest {
+  unit_cents:i32
+  units:i32
+  returned_units:i32
+  shipping_cents:i32
+}
+
+fn checkout_error(error:checkout.Error) -> http.Resp {
+  when ( error ) {
+  checkout.Error.InvalidQuantity ( units : let units ) => { return http.text ( code : 422 , body : "invalid quantity: ${units}" ) }
+  checkout.Error.InsufficientStock ( requested : let requested , available : let available ) => { return http.text ( code : 422 , body : "insufficient stock: ${requested}/${available}" ) }
+  checkout.Error.UnknownProduct ( sku : let sku ) => { return http.text ( code : 422 , body : "unknown product: ${sku}" ) }
+  checkout.Error.UnknownDelivery ( delivery : let delivery ) => { return http.text ( code : 422 , body : "unknown delivery: ${delivery}" ) }
+  checkout.Error.UnknownCoupon ( coupon : let coupon ) => { return http.text ( code : 422 , body : "unknown coupon: ${coupon}" ) }
+  checkout.Error.UnknownPayment ( method : let method ) => { return http.text ( code : 422 , body : "unknown payment: ${method}" ) }
+  }
+}
+
+fn checkout_input(input:CheckoutRequest) -> R[http.Resp,str] {
+  when ( checkout.place ( sku : input.sku , units : input.units , available : input.available , delivery : input.delivery , coupon : input.coupon , payment : input.payment ) ) {
+  Ok ( value : let receipt ) => { return Ok ( value : http.json ( code : 200 , body : json.encode ( value : receipt ) ? ) ) }
+  Err ( error : let error ) => { return Ok ( value : checkout_error ( error : error ) ) }
+  }
+}
+
+fn checkout_request(body:str) -> R[http.Resp,str] {
+  when ( json.decode [ CheckoutRequest ] ( text : body ) ) {
+  Ok ( value : let input ) => { return checkout_input ( input : input ) }
+  Err ( error : let detail ) => { return Ok ( value : http.text ( code : 400 , body : detail ) ) }
+  }
+}
+
+fn reservation_request(body:str) -> R[http.Resp,str] {
+  when ( json.decode [ ReservationRequest ] ( text : body ) ) {
+  Ok ( value : let input ) => { return Ok ( value : http.json ( code : 200 , body : json.encode ( value : reservations.status ( now : input.now , expires_at : input.expires_at ) ) ? ) ) }
+  Err ( error : let detail ) => { return Ok ( value : http.text ( code : 400 , body : detail ) ) }
+  }
+}
+
+fn refund_input(input:RefundRequest) -> R[http.Resp,str] {
+  when ( refunds.calculate ( unit_cents : input.unit_cents , units : input.units , returned_units : input.returned_units , shipping_cents : input.shipping_cents ) ) {
+  Ok ( value : let refund ) => { return Ok ( value : http.json ( code : 200 , body : json.encode ( value : refund ) ? ) ) }
+  Err ( error : refunds.Error.InvalidRefund ( ) ) => { return Ok ( value : http.text ( code : 422 , body : "invalid refund" ) ) }
+  }
+}
+
+fn refund_request(body:str) -> R[http.Resp,str] {
+  when ( json.decode [ RefundRequest ] ( text : body ) ) {
+  Ok ( value : let input ) => { return refund_input ( input : input ) }
+  Err ( error : let detail ) => { return Ok ( value : http.text ( code : 400 , body : detail ) ) }
+  }
+}
+
+fn handler(req:http.Req) -> R[http.Resp,str] {
+  when ( req.path ) {
+  "/health" => {
+  when ( req.method ) {
+  "GET" => { return Ok ( value : http.text ( code : 200 , body : "ok" ) ) }
+  _ => { return Ok ( value : http.text ( code : 405 , body : "method not allowed" ) ) }
+  }
+  }
+  _ => { }
+  }
+  when ( req.path ) {
+  "/checkout" => { }
+  "/reservation" => { }
+  "/refund" => { }
+  _ => { return Ok ( value : http.not_found ( ) ) }
+  }
+  when ( req.method ) {
+  "POST" => { }
+  _ => { return Ok ( value : http.text ( code : 405 , body : "method not allowed" ) ) }
+  }
+  when ( req.path ) {
+  "/checkout" => { return checkout_request ( body : req.body ) }
+  "/reservation" => { return reservation_request ( body : req.body ) }
+  _ => { return refund_request ( body : req.body ) }
+  }
+}

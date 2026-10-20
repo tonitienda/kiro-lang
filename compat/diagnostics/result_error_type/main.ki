@@ -1,0 +1,8 @@
+mod main
+
+import parse
+
+fn main() -> R[i32,nil] {
+  let n = parse.i32 ( text : "1" ) ?
+  return Ok ( value : n )
+}

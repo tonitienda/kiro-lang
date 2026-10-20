@@ -1,5 +1,8 @@
 # Stable core
 
+Current syntax and semantics: [language reference](language-reference.md). This page is
+a secondary overview; historical milestones do not define additional executable syntax.
+
 The stable core is the intentionally small language slice that Kiro currently treats as canonical.
 
 ## Included in the stable core
@@ -7,9 +10,11 @@ The stable core is the intentionally small language slice that Kiro currently tr
 - deterministic lexer, parser, and formatter behavior
 - module/import loading for the documented project layout
 - block-only function declarations
+- required named value arguments, including unary calls: `f(name: expression)`
+- explicitly delimited case dispatch: `when (subject) { pattern => { ... } }`
 - explicit operational effects in function signatures
 - `R[T,E]`, `?`, `?T`, and `nil` as separate concepts
-- structured concurrency with `group`, `spawn`, and `await`
+- explicit concurrency with `group`, `spawn`, and `await`; automatic joining/cancellation is not enforced
 - generated-Go inspection with `kiro inspect go`
 - compatibility fixtures for formatter, checking, diagnostics, and inspectability
 

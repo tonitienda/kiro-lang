@@ -1,0 +1,22 @@
+mod main
+
+type Failure {
+  variant Missing {
+    key:str
+  }
+  variant Offline {
+  }
+}
+
+fn label(error:Failure) -> str {
+  return when ( error ) {
+  Failure.Missing ( key : let key ) => key
+  Failure.Offline ( ) => "offline"
+  }
+}
+
+fn main() -> i32 {
+  mut total = 0
+  for value in [ 1 , 2 , 3 ] { total = total + value }
+  return 0
+}

@@ -11,6 +11,6 @@ fn (u:User) display() -> str {
 
 fn main() -> i32 !io {
   let u = User { id : 1 name : "toni" }
-  println ( u.display ( ) )
+  println ( value : u.display ( ) )
   return 0
 }

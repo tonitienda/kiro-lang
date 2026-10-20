@@ -9,8 +9,9 @@ type stmt interface{}
 type expr interface{}
 
 type letStmt struct {
-	Name  string
-	Value expr
+	Name    string
+	Value   expr
+	Mutable bool
 }
 
 type assignStmt struct {
@@ -36,6 +37,9 @@ type whenCase struct {
 type intExpr struct{ Value int }
 type stringExpr struct{ Value string }
 type nilExpr struct{}
+type bindingExpr struct{ Name string }
+type defaultExpr struct{}
+type partialExpr struct{ Call *callExpr }
 type identExpr struct{ Name string }
 type selectorExpr struct {
 	Left expr
@@ -44,7 +48,12 @@ type selectorExpr struct {
 type callExpr struct {
 	Callee   expr
 	TypeArgs []string
-	Args     []expr
+	Args     []namedArgument
+}
+
+type namedArgument struct {
+	Name  string
+	Value expr
 }
 type binaryExpr struct {
 	Left  expr
@@ -70,8 +79,9 @@ type awaitExpr struct{ Value expr }
 type listExpr struct{ Items []expr }
 
 type bodyParser struct {
-	tokens []Token
-	pos    int
+	tokens     []Token
+	pos        int
+	stopStruct bool
 }
 
 func newBodyParser(src string) (*bodyParser, error) {
@@ -101,7 +111,7 @@ func (p *bodyParser) parseStatementsUntil(stopText string) ([]stmt, error) {
 
 func (p *bodyParser) parseStatement() (stmt, error) {
 	if p.peekIsKeyword("let") || p.peekIsKeyword("mut") {
-		p.next()
+		mutable := p.next().Text == "mut"
 		name, err := p.expect(TokenIdent, "")
 		if err != nil {
 			return nil, err
@@ -113,7 +123,33 @@ func (p *bodyParser) parseStatement() (stmt, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &letStmt{Name: name.Text, Value: value}, nil
+		return &letStmt{Name: name.Text, Value: value, Mutable: mutable}, nil
+	}
+	if p.peekIsKeyword("for") {
+		p.next()
+		name, err := p.expect(TokenIdent, "")
+		if err != nil {
+			return nil, err
+		}
+		if p.next().Text != "in" {
+			return nil, fmt.Errorf("for requires 'in'")
+		}
+		p.stopStruct = true
+		items, err := p.parseExpr(0)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := p.expect(TokenSymbol, "{"); err != nil {
+			return nil, err
+		}
+		body, err := p.parseStatementsUntil("}")
+		if err != nil {
+			return nil, err
+		}
+		if _, err := p.expect(TokenSymbol, "}"); err != nil {
+			return nil, err
+		}
+		return &forStmt{Name: name.Text, Items: items, Body: body}, nil
 	}
 	if p.peekIsKeyword("return") {
 		p.next()
@@ -164,10 +200,21 @@ func (p *bodyParser) parseWhen() (*whenExpr, error) {
 	if _, err := p.expect(TokenKeyword, "when"); err != nil {
 		return nil, err
 	}
+	if _, err := p.expect(TokenSymbol, "("); err != nil {
+		return nil, fmt.Errorf("when requires a delimited subject and case block\nhint: write when (value) { pattern => { ... } }")
+	}
 	value, err := p.parseExpr(0)
 	if err != nil {
 		return nil, err
 	}
+	if _, err := p.expect(TokenSymbol, ")"); err != nil {
+		return nil, err
+	}
+	p.skipNewlines()
+	if !p.peekText("{") {
+		return nil, fmt.Errorf("when requires a delimited subject and case block\nhint: write when (value) { pattern => { ... } }")
+	}
+	p.next()
 	p.skipNewlines()
 	var cases []whenCase
 	for !p.peekText("}") && p.peek().Kind != TokenEOF {
@@ -181,6 +228,9 @@ func (p *bodyParser) parseWhen() (*whenExpr, error) {
 		}
 		cases = append(cases, c)
 		p.skipNewlines()
+	}
+	if _, err := p.expect(TokenSymbol, "}"); err != nil {
+		return nil, err
 	}
 	return &whenExpr{Value: value, Cases: cases}, nil
 }
@@ -245,6 +295,8 @@ func (p *bodyParser) parseSequenceExprUntil(stops ...TokenKind) (expr, error) {
 }
 
 func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
+	stopStruct := p.stopStruct
+	p.stopStruct = false
 	left, err := p.parsePrefix()
 	if err != nil {
 		return nil, err
@@ -254,7 +306,15 @@ func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
 		if tok.Kind == TokenNewline || tok.Kind == TokenEOF || tok.Text == ")" || tok.Text == "}" || tok.Text == "]" || tok.Text == "," || tok.Text == ":" {
 			break
 		}
-		prec := precedence(tok)
+		operator := tok.Text
+		combined := false
+		if (operator == "=" || operator == "!" || operator == "<" || operator == ">") && p.peekNext().Text == "=" {
+			operator += "="
+			combined = true
+		}
+		operatorToken := tok
+		operatorToken.Text = operator
+		prec := precedence(operatorToken)
 		if prec < minPrec {
 			break
 		}
@@ -280,17 +340,24 @@ func (p *bodyParser) parseExpr(minPrec int) (expr, error) {
 			continue
 		}
 		if tok.Text == "{" {
-			ident, ok := left.(*identExpr)
+			if stopStruct {
+				break
+			}
+			name, ok := recordTypeName(left)
 			if !ok {
 				break
 			}
-			left, err = p.finishStructLiteral(ident.Name)
+			left, err = p.finishStructLiteral(name)
 			if err != nil {
 				return nil, err
 			}
 			continue
 		}
-		op := p.next().Text
+		op := operator
+		p.next()
+		if combined {
+			p.next()
+		}
 		right, err := p.parseExpr(prec + 1)
 		if err != nil {
 			return nil, err
@@ -310,18 +377,40 @@ func (p *bodyParser) parsePrefix() (expr, error) {
 		}
 		return &intExpr{Value: n}, nil
 	case TokenString:
-		return &stringExpr{Value: tok.Text}, nil
+		decoded, err := strconv.Unquote("\"" + tok.Text + "\"")
+		if err != nil {
+			return nil, err
+		}
+		return &stringExpr{Value: decoded}, nil
 	case TokenIdent:
 		return &identExpr{Name: tok.Text}, nil
 	case TokenKeyword:
 		switch tok.Text {
+		case "let":
+			name, err := p.expect(TokenIdent, "")
+			if err != nil {
+				return nil, err
+			}
+			return &bindingExpr{Name: name.Text}, nil
+		case "default":
+			return &defaultExpr{}, nil
+		case "partial":
+			ex, err := p.parseExpr(90)
+			if err != nil {
+				return nil, err
+			}
+			call, ok := ex.(*callExpr)
+			if !ok {
+				return nil, fmt.Errorf("partial requires an explicit keyed call")
+			}
+			return &partialExpr{Call: call}, nil
 		case "nil":
 			return &nilExpr{}, nil
 		case "when":
 			p.pos--
 			return p.parseWhen()
 		case "spawn":
-			ex, err := p.parseExpr(100)
+			ex, err := p.parseExpr(90)
 			if err != nil {
 				return nil, err
 			}
@@ -337,6 +426,16 @@ func (p *bodyParser) parsePrefix() (expr, error) {
 		}
 	case TokenSymbol:
 		switch tok.Text {
+		case "-":
+			integer, err := p.expect(TokenInt, "")
+			if err != nil {
+				return nil, fmt.Errorf("negative literals require an integer: %w", err)
+			}
+			n, err := strconv.Atoi("-" + integer.Text)
+			if err != nil {
+				return nil, err
+			}
+			return &intExpr{Value: n}, nil
 		case "(":
 			ex, err := p.parseExpr(0)
 			if err != nil {
@@ -372,11 +471,11 @@ func (p *bodyParser) finishCall(callee expr) (expr, error) {
 	if p.peekText("[") {
 		p.next()
 		for !p.peekText("]") {
-			arg, err := p.expect(TokenIdent, "")
+			arg, err := readValueType(p)
 			if err != nil {
 				return nil, err
 			}
-			typeArgs = append(typeArgs, arg.Text)
+			typeArgs = append(typeArgs, arg)
 			if p.peekText(",") {
 				p.next()
 			}
@@ -388,16 +487,33 @@ func (p *bodyParser) finishCall(callee expr) (expr, error) {
 	if _, err := p.expect(TokenSymbol, "("); err != nil {
 		return nil, err
 	}
-	var args []expr
+	var args []namedArgument
+	seen := map[string]bool{}
+	p.skipNewlines()
 	for !p.peekText(")") {
+		if p.peek().Kind != TokenIdent || p.peekNext().Text != ":" {
+			return nil, fmt.Errorf("named arguments are required\nhint: write name: expression for every value argument")
+		}
+		name := p.next().Text
+		p.next()
+		if seen[name] {
+			return nil, fmt.Errorf("duplicate argument %q", name)
+		}
+		seen[name] = true
+		p.skipNewlines()
 		arg, err := p.parseExpr(0)
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, arg)
-		if p.peekText(",") {
-			p.next()
+		args = append(args, namedArgument{Name: name, Value: arg})
+		p.skipNewlines()
+		if p.peekText(")") {
+			break
 		}
+		if _, err := p.expect(TokenSymbol, ","); err != nil {
+			return nil, fmt.Errorf("expected comma between named arguments")
+		}
+		p.skipNewlines()
 	}
 	if _, err := p.expect(TokenSymbol, ")"); err != nil {
 		return nil, err
@@ -437,8 +553,14 @@ func precedence(tok Token) int {
 	switch tok.Text {
 	case "?", ".", "(", "[", "{":
 		return 90
-	case "+":
+	case "==", "!=":
+		return 5
+	case "<", ">", "<=", ">=":
+		return 7
+	case "+", "-":
 		return 10
+	case "*", "/":
+		return 20
 	default:
 		return -1
 	}
@@ -489,4 +611,16 @@ func (p *bodyParser) peekKindIn(kinds ...TokenKind) bool {
 		}
 	}
 	return false
+}
+
+func recordTypeName(expression expr) (string, bool) {
+	switch n := expression.(type) {
+	case *identExpr:
+		return n.Name, true
+	case *selectorExpr:
+		if prefix, ok := recordTypeName(n.Left); ok {
+			return prefix + "." + n.Name, true
+		}
+	}
+	return "", false
 }

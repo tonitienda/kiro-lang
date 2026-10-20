@@ -1,0 +1,6 @@
+mod main
+
+fn main() -> i32 !io {
+  println(value:"A", value:"B")
+  return 0
+}

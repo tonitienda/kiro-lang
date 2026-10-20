@@ -14,7 +14,7 @@ fn add(a:i32, b:i32) -> i32 {
 }
 
 fn test_add() -> nil {
-  test.eq(add(2, 3), 5)
+  test.eq(actual : add(a : 2, b : 3), expected : 5)
 }
 ```
 

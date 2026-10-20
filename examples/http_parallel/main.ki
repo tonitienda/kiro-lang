@@ -17,21 +17,22 @@ fn slow_b() -> str {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when ( req.path ) {
   "/health" => {
   let ta = spawn slow_a ( )
   let tb = spawn slow_b ( )
   let a = await ta
   let b = await tb
-  let body = json.encode ( Msg { a : a b : b } ) ?
-  return Ok ( http.json ( 200 , body ) )
+  let body = json.encode ( value : Msg { a : a b : b } ) ?
+  return Ok ( value : http.json ( code : 200 , body : body ) )
   }
   _ => {
-  return Ok ( http.text ( 404 , "not found" ) )
+  return Ok ( value : http.text ( code : 404 , body : "not found" ) )
+  }
   }
 }
 
-fn main() -> i32 !net {
-  http.serve ( ":8080" , app ) ?
-  return 0
+fn main() -> R[i32,str] !net {
+  http.serve ( addr : ":8080" , handler : app ) ?
+  return Ok ( value : 0 )
 }

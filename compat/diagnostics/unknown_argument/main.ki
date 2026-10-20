@@ -1,0 +1,6 @@
+mod main
+
+fn main() -> i32 !io {
+  println(message:"wrong key")
+  return 0
+}

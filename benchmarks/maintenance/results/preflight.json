@@ -1,0 +1,1 @@
+{"schema": "kiro.benchmark.preflight.v1", "ready": false, "checks": [{"name": "docker-cli", "passed": false, "detail": "not installed"}, {"name": "model-driver", "passed": false, "detail": "no usable external model driver configured"}], "image_id": null, "model_trials_run": 0}

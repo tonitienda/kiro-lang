@@ -7,19 +7,20 @@ type App {
   port:str
 }
 
-fn handler(req:http.Req) -> R[http.Resp, str] {
-  when req.path
-    "/health" => {
-      return Ok(http.text(200, "ok"))
-    }
-    _ => {
-      return Ok(http.not_found())
-    }
+fn handler(req:http.Req) -> R[http.Resp,str] {
+  when ( req.path ) {
+  "/health" => {
+  return Ok ( value : http.text ( code : 200 , body : "ok" ) )
+  }
+  _ => {
+  return Ok ( value : http.not_found ( ) )
+  }
+  }
 }
 
-fn main() -> i32 !log !net {
-  let app = App{port:":8080"}
-  log.info("starting ${app.port}")
-  http.serve(app.port, handler)?
-  return 0
+fn main() -> R[i32,str] !log !net {
+  let app = App { port : ":8080" }
+  log.info ( message : "starting ${app.port}" )
+  http.serve ( addr : app.port , handler : handler ) ?
+  return Ok ( value : 0 )
 }

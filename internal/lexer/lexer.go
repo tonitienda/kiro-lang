@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"strconv"
 	"unicode"
 )
 
@@ -98,12 +99,21 @@ func (l *Lexer) lexString() error {
 		if l.peek() == '\n' {
 			return fmt.Errorf("unterminated string at %d:%d", line, col)
 		}
+		if l.peek() == '\\' {
+			l.advance()
+			if l.eof() || l.peek() == '\n' {
+				return fmt.Errorf("unterminated escape at %d:%d", line, col)
+			}
+		}
 		l.advance()
 	}
 	if l.eof() {
 		return fmt.Errorf("unterminated string at %d:%d", line, col)
 	}
 	text := string(l.src[start:l.pos])
+	if _, err := strconv.Unquote("\"" + text + "\""); err != nil {
+		return fmt.Errorf("invalid string escape at %d:%d: %w", line, col, err)
+	}
 	l.advance()
 	l.emitAt(TokenString, text, line, col)
 	return nil
@@ -167,7 +177,7 @@ func (l *Lexer) peekNext(ch rune) bool {
 
 func isKeyword(s string) bool {
 	switch s {
-	case "mod", "import", "const", "type", "fn", "let", "mut", "if", "else", "when", "for", "in", "while", "break", "continue", "defer", "return", "spawn", "await", "group":
+	case "partial", "default", "mod", "import", "const", "type", "fn", "let", "mut", "if", "else", "when", "for", "in", "while", "break", "continue", "defer", "return", "spawn", "await", "group":
 		return true
 	default:
 		return false

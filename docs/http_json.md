@@ -6,14 +6,15 @@ Kiro keeps HTTP and JSON semantics intentionally separate.
 
 ```ki
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when (req.path) {
     "/status" => {
-      let body = json.encode(Status{status:"ok"})?
-      return Ok(http.json(200, body))
+      let body = json.encode(value : Status{status:"ok"})?
+      return Ok(value : http.json(code : 200, body : body))
     }
     _ => {
-      return Ok(http.not_found())
+      return Ok(value : http.not_found())
     }
+  }
 }
 ```
 

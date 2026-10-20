@@ -49,13 +49,13 @@ fn add(a:i32, b:i32) -> i32 {
 ### Old
 
 ```ki
-fs.read(path)
+fs.read(path : path)
 ```
 
 ### New
 
 ```ki
-fs.read_file(path)
+fs.read_file(path : path)
 ```
 
 ### Old mixed handler style

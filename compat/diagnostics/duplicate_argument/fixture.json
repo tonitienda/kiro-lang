@@ -1,0 +1,1 @@
+{"modes":["check"],"expect_success":false,"skip_fmt":true,"error_contains":"duplicate argument"}

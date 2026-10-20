@@ -1,0 +1,1 @@
+{"expect_success":false,"error_contains":"cannot pass str output to i32 input"}

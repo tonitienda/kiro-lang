@@ -17,8 +17,8 @@ Kiro uses **explicit function effects** for operational impurity.
 
 ```ki
 fn load() -> R[Config,str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(Config{port:port})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  return Ok(value : Config{port:port})
 }
 ```
 

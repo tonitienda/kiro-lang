@@ -1,5 +1,8 @@
 # Language tour
 
+Current syntax and semantics: [language reference](language-reference.md). This page is
+a secondary overview; historical milestones do not define additional executable syntax.
+
 This tour teaches the canonical Kiro surface.
 
 ## Module, type, and function declarations
@@ -22,11 +25,11 @@ fn label(u:User) -> str {
 
 ```ki
 fn parse_port(raw:str) -> R[i32,str] {
-  return parse.i32(raw)
+  return parse.i32(text : raw)
 }
 
 fn maybe_name(req:http.Req) -> ?str {
-  return http.query(req, "name")
+  return http.query(req : req, key : "name")
 }
 ```
 
@@ -41,8 +44,8 @@ Rules:
 
 ```ki
 fn load() -> R[Config,str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(Config{port:port})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  return Ok(value : Config{port:port})
 }
 ```
 
@@ -56,7 +59,7 @@ group {
   let tb = spawn fetch_b()
   let a = await ta
   let b = await tb
-  return Ok(join(a, b))
+  return Ok(value : join(a : a, b : b))
 }
 ```
 

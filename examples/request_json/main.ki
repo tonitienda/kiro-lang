@@ -8,12 +8,13 @@ type CreateReq {
 }
 
 fn app(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when ( req.path ) {
   "/items" => {
-  let input = json.decode [ CreateReq ] ( req.body ) ?
-  return Ok ( http.json ( 200 , json.encode ( input ) ? ) )
+  let input = json.decode [ CreateReq ] ( text : req.body ) ?
+  return Ok ( value : http.json ( code : 200 , body : json.encode ( value : input ) ? ) )
   }
   _ => {
-  return Ok ( http.not_found ( ) )
+  return Ok ( value : http.not_found ( ) )
+  }
   }
 }

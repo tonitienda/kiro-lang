@@ -1,0 +1,5 @@
+mod main
+
+fn first(items:List[i32]) -> i32 {
+  for item in items { return item }
+}

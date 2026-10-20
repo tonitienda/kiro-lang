@@ -99,6 +99,9 @@ func TestRunNewHello(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "hello", "main.ki")); err != nil {
 		t.Fatalf("hello template missing: %v", err)
 	}
+	if err := Run([]string{"lint", "hello"}); err != nil {
+		t.Fatal(err)
+	}
 	assertScaffoldSkillBundle(t, filepath.Join(dir, "hello"))
 }
 
@@ -145,6 +148,9 @@ func TestRunNewService(t *testing.T) {
 			t.Fatalf("service template file missing %s: %v", p, err)
 		}
 	}
+	if err := Run([]string{"lint", "service"}); err != nil {
+		t.Fatal(err)
+	}
 	assertScaffoldSkillBundle(t, filepath.Join(dir, "service"))
 }
 
@@ -177,7 +183,7 @@ func TestRuntimeBuildAndRun(t *testing.T) {
 	write(t, filepath.Join(dir, "main.ki"), `mod main
 
 fn main() -> i32 !io {
-  println("hello from build")
+  println(value : "hello from build")
   return 0
 }
 `)
@@ -252,7 +258,7 @@ import cli
 
 fn main() -> i32 !io !proc {
   let args = cli.args()
-  println("${args}")
+  println(value : "${args}")
   return 0
 }
 `)
@@ -279,7 +285,7 @@ fn add(a:i32, b:i32) -> i32 {
 }
 
 fn test_add() -> nil {
-  test.eq(add(2, 3), 5)
+  test.eq(actual : add(a : 2, b : 3), expected : 5)
 }
 `)
 	cmd := exec.Command(kiro, "test", dir)

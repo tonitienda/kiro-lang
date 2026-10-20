@@ -1,0 +1,16 @@
+mod reservations
+
+type Status {
+  active:bool
+}
+
+fn expired(now:i32, expires_at:i32) -> bool {
+  return now > expires_at
+}
+
+fn status(now:i32, expires_at:i32) -> Status {
+  return Status { active : when ( expired ( now : now , expires_at : expires_at ) ) {
+  true => false
+  _ => true
+  } }
+}

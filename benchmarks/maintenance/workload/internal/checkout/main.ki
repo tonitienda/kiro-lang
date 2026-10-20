@@ -1,0 +1,102 @@
+mod checkout
+
+import inventory
+import pricing
+
+type Error {
+  variant InvalidQuantity {
+    units:i32
+  }
+  variant InsufficientStock {
+    requested:i32
+    available:i32
+  }
+  variant UnknownProduct {
+    sku:str
+  }
+  variant UnknownDelivery {
+    delivery:str
+  }
+  variant UnknownCoupon {
+    coupon:str
+  }
+  variant UnknownPayment {
+    method:str
+  }
+}
+
+type Authorization {
+  method:str
+  fee_cents:i32
+  reference:str
+}
+
+type Receipt {
+  sku:str
+  units:i32
+  remaining_stock:i32
+  subtotal_cents:i32
+  discount_cents:i32
+  shipping_cents:i32
+  fee_cents:i32
+  total_cents:i32
+  payment_reference:str
+}
+
+fn payment_known(method:str) -> bool {
+  return when ( method ) {
+  "card" => true
+  "bank" => true
+  _ => false
+  }
+}
+
+fn payment_fee(method:str) -> i32 {
+  return when ( method ) {
+  "card" => 30
+  _ => 0
+  }
+}
+
+fn payment_reference(method:str, amount:i32) -> str {
+  return "${method}:${amount}"
+}
+
+fn authorize(method:str, amount:i32) -> R[Authorization,Error] {
+  when ( payment_known ( method : method ) ) {
+  true => { return Ok ( value : Authorization { method : method , fee_cents : payment_fee ( method : method ) , reference : payment_reference ( method : method , amount : amount ) } ) }
+  _ => { return Err ( error : Error.UnknownPayment ( method : method ) ) }
+  }
+}
+
+fn stock(units:i32, available:i32) -> R[i32,Error] {
+  when ( inventory.remaining ( units : units , available : available ) ) {
+  Ok ( value : let remaining ) => { return Ok ( value : remaining ) }
+  Err ( error : let error ) => {
+  when ( error ) {
+  inventory.Error.InvalidQuantity ( units : let value ) => { return Err ( error : Error.InvalidQuantity ( units : value ) ) }
+  inventory.Error.InsufficientStock ( requested : let requested , available : let available ) => { return Err ( error : Error.InsufficientStock ( requested : requested , available : available ) ) }
+  }
+  }
+  }
+}
+
+fn priced(sku:str, units:i32, delivery:str, coupon:?str) -> R[pricing.Quote,Error] {
+  when ( pricing.quote ( sku : sku , units : units , delivery : delivery , coupon : coupon ) ) {
+  Ok ( value : let quote ) => { return Ok ( value : quote ) }
+  Err ( error : let error ) => {
+  when ( error ) {
+  pricing.Error.UnknownProduct ( sku : let sku ) => { return Err ( error : Error.UnknownProduct ( sku : sku ) ) }
+  pricing.Error.UnknownDelivery ( delivery : let delivery ) => { return Err ( error : Error.UnknownDelivery ( delivery : delivery ) ) }
+  pricing.Error.UnknownCoupon ( coupon : let coupon ) => { return Err ( error : Error.UnknownCoupon ( coupon : coupon ) ) }
+  }
+  }
+  }
+}
+
+fn place(sku:str, units:i32, available:i32, delivery:str, coupon:?str, payment:str) -> R[Receipt,Error] {
+  let remaining = stock ( units : units , available : available ) ?
+  let quote = priced ( sku : sku , units : units , delivery : delivery , coupon : coupon ) ?
+  let authorization = authorize ( method : payment , amount : quote.amount_cents ) ?
+  return Ok ( value : Receipt { sku : sku , units : units , remaining_stock : remaining , subtotal_cents : quote.subtotal_cents , discount_cents : quote.discount_cents , shipping_cents : quote.shipping_cents , fee_cents : authorization.fee_cents , total_cents : quote.amount_cents + authorization.fee_cents , payment_reference : authorization.reference } )
+}

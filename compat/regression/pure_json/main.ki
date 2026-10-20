@@ -7,5 +7,5 @@ type Msg {
 }
 
 fn body() -> R[str,str] {
-  return json.encode(Msg{text:"ok"})
+  return json.encode(value : Msg{text:"ok"})
 }

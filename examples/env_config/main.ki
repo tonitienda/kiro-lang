@@ -3,9 +3,9 @@ mod main
 import env
 import parse
 
-fn main() -> i32 !env !io {
-  let raw = env.get_or ( "PORT_NUM" , "8080" )
-  let port = parse.i32 ( raw ) ?
-  println ( "${port}" )
-  return 0
+fn main() -> R[i32,str] !env !io {
+  let raw = env.get_or ( key : "PORT_NUM" , fallback : "8080" )
+  let port = parse.i32 ( text : raw ) ?
+  println ( value : "${port}" )
+  return Ok ( value : 0 )
 }

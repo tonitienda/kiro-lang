@@ -12,9 +12,9 @@ import http
 import test
 
 fn test_health_handler() -> nil {
-  let req = http.test_req("GET", "/health", "")
-  let res = app.handler(req)?
-  test.eq(res.code, 200)
+  let req = http.test_req(method : "GET", path : "/health", body : "")
+  let res = app.handler(req : req)?
+  test.eq(actual : res.code, expected : 200)
 }
 ```
 

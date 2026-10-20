@@ -1,14 +1,37 @@
 {
   "language": "Kiro",
-  "version": "phase11-stable-core",
+  "version": "phase19-language-reference",
   "skill_format": "codex-skill-v1",
-  "extensions": [".ki"],
+  "extensions": [
+    ".ki"
+  ],
   "stable_core": {
     "function_form": "block_only",
-    "results": "R[T,E] with ? propagation",
+    "case_dispatch": "when (subject) { pattern => { ... } }",
+    "results": "R[T,E] with explicit Ok/Err tags; ? only in result-returning functions, propagating from the current function",
     "optional": "?T with nil",
-    "concurrency": ["group", "spawn", "await"],
-    "formatting": "kiro fmt"
+    "concurrency": [
+      "group",
+      "spawn",
+      "await"
+    ],
+    "formatting": "kiro fmt",
+    "calls": "required name: expression value arguments; source-order evaluation",
+    "function_values": "Fn[(key:Type)->Return!effect]",
+    "partial_application": "partial f(key:expression); pure eager snapshot captures; latent effects retained",
+    "defaults": "scalar literal declarations; explicit key:default selection; no omitted keys",
+    "bindings": "let is immutable; mut name = value permits local rebinding",
+    "collections": "eager map/filter/reduce; explicit mapping/filtering/compose plans and transduce/collect terminals",
+    "transducers": "Transform[Input,Output]; immutable pure stateless stages; per-item first-then order; no intermediate data lists",
+    "records": "closed schemas; all source fields explicitly keyed; nested validation; declaration module identity",
+    "json": "json.decode[T] requires schema; reject missing required/unknown/duplicate fields, wrong types and out-of-range/non-integer i32 text; omitted optionals become nil; no internal metadata on wire",
+    "strings": "Go quoted-string escapes; source spelling preserved by fmt; interpolation inserts data once without re-evaluation",
+    "variants": "type Error { variant Missing { key:str } variant Offline {} }; pure keyed constructors Error.Missing(key:value), Error.Offline(); module identity retained",
+    "patterns": "explicit let payload binders or _; no executed calls/interpolation; exhaustive total declared-variant arms, no catch-all; known R covers Ok/Err or wildcard; nested when for payload decisions",
+    "error_conversion": "explicit typed functions and exhaustive when; no implicit wrapping or union inference",
+    "loops": "for item in finiteList { ... }; immutable iteration binding, scoped locals, outer mut updates, return and ?",
+    "body_checking": "all bodies must parse executable grammar; unknown identifiers rejected; some unknown expression types deferred to runtime",
+    "return_paths": "non-nil return contracts need an explicit return on every successful path; loops may be empty and ? may succeed; nil/optional/Any fallthrough admitted"
   },
   "keywords": [
     "mod",
@@ -17,23 +40,74 @@
     "fn",
     "let",
     "return",
-    "if",
     "when",
     "group",
     "spawn",
     "await",
-    "nil"
+    "nil",
+    "mut",
+    "partial",
+    "default",
+    "for",
+    "in"
   ],
-  "effects": ["env", "fs", "io", "log", "net", "panic", "proc", "time"],
+  "effects": [
+    "env",
+    "fs",
+    "io",
+    "log",
+    "net",
+    "panic",
+    "proc",
+    "time"
+  ],
   "stdlib_modules": {
-    "env": ["get", "get_or"],
-    "fs": ["read", "write"],
-    "http": ["serve", "text", "json", "not_found", "test_req"],
-    "json": ["encode", "decode"],
-    "log": ["info", "error"],
-    "parse": ["i32"],
-    "test": ["eq", "ok", "fail"],
-    "time": ["now"]
+    "env": [
+      "get_or"
+    ],
+    "log": [
+      "info"
+    ],
+    "test": [
+      "eq"
+    ],
+    "parse": [
+      "i32"
+    ],
+    "cli": [
+      "args"
+    ],
+    "fs": [
+      "read_file",
+      "write_file"
+    ],
+    "http": [
+      "text",
+      "json",
+      "not_found",
+      "with_header",
+      "test_req",
+      "query",
+      "serve"
+    ],
+    "json": [
+      "encode",
+      "decode"
+    ],
+    "ctx": [
+      "background",
+      "with_timeout_ms"
+    ],
+    "list": [
+      "map",
+      "filter",
+      "reduce",
+      "mapping",
+      "filtering",
+      "compose",
+      "transduce",
+      "collect"
+    ]
   },
   "canonical_commands": [
     "kiro fmt <paths...>",
@@ -45,18 +119,215 @@
     "kiro test <entry-or-path> [--keep-gen]"
   ],
   "project_conventions": {
-    "tiny_cli": ["main.ki", "mod main", "explicit main effects", "AGENTS.md", ".kiro/skill/", ".kiro/version.json"],
-    "tiny_service": ["main.ki", "app/", "internal/config/", "test/", "AGENTS.md", ".kiro/skill/", ".kiro/version.json"],
-    "tests": ["test_* functions", "http.test_req", "test.eq", "return nil"]
+    "tiny_cli": [
+      "main.ki",
+      "mod main",
+      "explicit main effects",
+      "AGENTS.md",
+      ".kiro/skill/",
+      ".kiro/version.json"
+    ],
+    "tiny_service": [
+      "main.ki",
+      "app/",
+      "internal/config/",
+      "test/",
+      "AGENTS.md",
+      ".kiro/skill/",
+      ".kiro/version.json"
+    ],
+    "tests": [
+      "test_* functions",
+      "http.test_req",
+      "test.eq",
+      "return nil or R[nil,E]; ? requires a result-returning function"
+    ]
   },
   "agent_handoff": {
-    "read_first": [".kiro/skill/SKILL.md", ".kiro/skill/references/kiro.json", "AGENTS.md"],
+    "read_first": [
+      ".kiro/skill/SKILL.md",
+      ".kiro/skill/references/kiro.json",
+      ".kiro/skill/references/language.md",
+      "AGENTS.md"
+    ],
     "edit_scope": "Read the vendored skill before editing .ki files.",
-    "version_pin": ".kiro/version.json records the Kiro version that produced the scaffold."
+    "version_pin": ".kiro/version.json records compiler release fields, guide revision and language reference schema/path/SHA-256."
   },
   "experimental_areas": [
     "generated-Go API stability",
     "runtime coverage beyond documented examples",
     "editor tooling breadth beyond the current LSP baseline"
-  ]
+  ],
+  "call_signatures": {
+    "print": [
+      "value"
+    ],
+    "println": [
+      "value"
+    ],
+    "Ok": [
+      "value"
+    ],
+    "Err": [
+      "error"
+    ],
+    "env.get_or": [
+      "key",
+      "fallback"
+    ],
+    "log.info": [
+      "message"
+    ],
+    "test.eq": [
+      "actual",
+      "expected"
+    ],
+    "assert.equal_i32": [
+      "actual",
+      "expected"
+    ],
+    "parse.i32": [
+      "text"
+    ],
+    "cli.args": [],
+    "fs.read_file": [
+      "path"
+    ],
+    "fs.write_file": [
+      "path",
+      "contents"
+    ],
+    "http.text": [
+      "code",
+      "body"
+    ],
+    "http.json": [
+      "code",
+      "body"
+    ],
+    "http.not_found": [],
+    "http.with_header": [
+      "resp",
+      "key",
+      "value"
+    ],
+    "http.test_req": [
+      "method",
+      "path",
+      "body"
+    ],
+    "http.query": [
+      "req",
+      "key"
+    ],
+    "http.serve": [
+      "addr",
+      "handler"
+    ],
+    "json.encode": [
+      "value"
+    ],
+    "json.decode": [
+      "text"
+    ],
+    "ctx.background": [],
+    "ctx.with_timeout_ms": [
+      "parent",
+      "ms"
+    ],
+    "list.map": [
+      "items",
+      "transform"
+    ],
+    "list.filter": [
+      "items",
+      "predicate"
+    ],
+    "list.reduce": [
+      "items",
+      "initial",
+      "reduce"
+    ],
+    "list.mapping": [
+      "transform"
+    ],
+    "list.filtering": [
+      "predicate"
+    ],
+    "list.compose": [
+      "first",
+      "then"
+    ],
+    "list.transduce": [
+      "items",
+      "through",
+      "initial",
+      "reduce"
+    ],
+    "list.collect": [
+      "items",
+      "through"
+    ]
+  },
+  "unsupported_syntax": [
+    "if",
+    "while",
+    "break",
+    "continue",
+    "defer",
+    "map literals"
+  ],
+  "contextual_keywords": [
+    "variant"
+  ],
+  "agent_tools": {
+    "schema": "kiro.tools.v1",
+    "discovery": [
+      "kiro describe --json",
+      "kiro describe --reference --json",
+      "kiro describe json.decode --json",
+      "kiro symbols . --json",
+      "kiro symbols . --symbol module.name --json"
+    ],
+    "verification": [
+      "kiro check . --json",
+      "kiro lint . --json",
+      "kiro fmt . --check --json",
+      "kiro test ."
+    ],
+    "diagnostics": "stable native codes and structured fields; first compiler error; legacy fallback categories; declaration spans are not expression edit targets",
+    "symbols": "declared contracts only; syntax validation; source snapshot SHA-256; no resolved caller graph",
+    "lsp": "shared semantic diagnostics with unsaved overlays; zero-based UTF-16 ranges; project root recommended",
+    "optional_analysis": {
+      "command": "kiro analyze <operation> <path> [options] --json",
+      "data_schema": "kiro.analysis.v1",
+      "operations": [
+        "graph",
+        "impact",
+        "metrics",
+        "cycles",
+        "boundaries",
+        "rules",
+        "slice",
+        "coverage",
+        "mutate"
+      ],
+      "automatic_in_compiler": false,
+      "policy": "agents choose cost/benefit; users opt into hooks; no background or mandatory analysis",
+      "static": "graph/impact/metrics/cycles/boundaries/rules/slice; possible and unresolved dependencies explicit; boundary proposals do not refactor code",
+      "dynamic": "coverage traces Kiro functions/statements/branches per test; mutate explicitly selects a covered function; subprocess timeouts and budgets",
+      "defaults": {
+        "boundary_nodes": 200,
+        "mutants": 10,
+        "test_steps": 100000,
+        "worker_timeout": "10s",
+        "mutation_total_timeout": "60s"
+      },
+      "limits": "no complete interprocedural points-to/heap analysis, field-sensitive slicing, architectural optimum or automatic behavior-preserving refactor proof"
+    }
+  },
+  "language_reference": {
+    "schema": "kiro.language-reference.v1",
+    "path": "references/language.md"
+  }
 }

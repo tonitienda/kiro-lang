@@ -14,8 +14,8 @@ import log
 
 fn main() -> i32 !env !log !net {
   let cfg = config.load()?
-  log.info("starting ${cfg.port}")
-  http.serve(cfg.port, app.handler)?
+  log.info(message : "starting ${cfg.port}")
+  http.serve(addr : cfg.port, handler : app.handler)?
   return 0
 }
 ```
@@ -28,13 +28,14 @@ mod app
 import http
 
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  when req.path
+  when (req.path) {
     "/health" => {
-      return Ok(http.text(200, "ok"))
+      return Ok(value : http.text(code : 200, body : "ok"))
     }
     _ => {
-      return Ok(http.not_found())
+      return Ok(value : http.not_found())
     }
+  }
 }
 ```
 
@@ -42,8 +43,8 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
 
 ```ki
 fn load() -> R[AppConfig,str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(AppConfig{port:port})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  return Ok(value : AppConfig{port:port})
 }
 ```
 

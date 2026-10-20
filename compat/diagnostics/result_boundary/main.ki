@@ -1,0 +1,7 @@
+mod main
+
+import parse
+
+fn main() -> i32 {
+  return parse.i32 ( text : "1" ) ?
+}

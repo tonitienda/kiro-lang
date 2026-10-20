@@ -14,7 +14,7 @@ fn main() -> i32 !io {
   let b = spawn slow_b ( )
   let ra = await a
   let rb = await b
-  println ( "${ra}-${rb}" )
+  println ( value : "${ra}-${rb}" )
   }
   return 0
 }

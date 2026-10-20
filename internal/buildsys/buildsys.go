@@ -67,6 +67,12 @@ type ConstSpec struct {
 }
 
 type TypeSpec struct {
+	Name     string        `json:"name"`
+	Fields   []FieldSpec   `json:"fields"`
+	Variants []VariantSpec `json:"variants,omitempty"`
+}
+
+type VariantSpec struct {
 	Name   string      `json:"name"`
 	Fields []FieldSpec `json:"fields"`
 }
@@ -84,11 +90,13 @@ type FuncSpec struct {
 	ReturnType   string      `json:"return_type"`
 	BlockBody    bool        `json:"block_body"`
 	Body         string      `json:"body"`
+	Effects      []string    `json:"effects,omitempty"`
 }
 
 type ParamSpec struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Default string `json:"default,omitempty"`
 }
 
 func Build(opts Options) (*Result, error) {
@@ -163,18 +171,26 @@ func projectToSpec(proj *project.Project, mode string) ProgramSpec {
 				for _, f := range d.Fields {
 					fields = append(fields, FieldSpec{Name: f.Name, Type: f.Type})
 				}
-				mod.Types = append(mod.Types, TypeSpec{Name: d.Name, Fields: fields})
+				typ := TypeSpec{Name: d.Name, Fields: fields}
+				for _, v := range d.Variants {
+					variant := VariantSpec{Name: v.Name}
+					for _, f := range v.Fields {
+						variant.Fields = append(variant.Fields, FieldSpec{Name: f.Name, Type: f.Type})
+					}
+					typ.Variants = append(typ.Variants, variant)
+				}
+				mod.Types = append(mod.Types, typ)
 			case ast.FuncDecl:
 				params := make([]ParamSpec, 0, len(d.Params))
 				for _, p := range d.Params {
-					params = append(params, ParamSpec{Name: p.Name, Type: p.Type})
+					params = append(params, ParamSpec{Name: p.Name, Type: p.Type, Default: p.Default})
 				}
 				receiverType := ""
 				if d.Receiver != nil {
 					receiverType = d.Receiver.Type
 					params = append([]ParamSpec{{Name: d.Receiver.Name, Type: d.Receiver.Type}}, params...)
 				}
-				mod.Funcs = append(mod.Funcs, FuncSpec{Module: file.AST.Module, Name: d.Name, ReceiverType: receiverType, Params: params, ReturnType: d.ReturnType, BlockBody: d.BlockBody, Body: d.Body})
+				mod.Funcs = append(mod.Funcs, FuncSpec{Module: file.AST.Module, Name: d.Name, ReceiverType: receiverType, Params: params, ReturnType: d.ReturnType, BlockBody: d.BlockBody, Body: d.Body, Effects: d.CanonicalEffectNames()})
 			}
 		}
 	}
@@ -211,6 +227,9 @@ func emitWorkDir(workDir string, spec ProgramSpec) error {
 		return err
 	}
 	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), "_test.go") || entry.Name() == "analysis.go" || entry.Name() == "coverage.go" || entry.Name() == "mutations.go" {
+			continue
+		}
 		data, err := runtimeKit.ReadFile(filepath.Join("runtimekit", entry.Name()))
 		if err != nil {
 			return err
@@ -219,6 +238,22 @@ func emitWorkDir(workDir string, spec ProgramSpec) error {
 		if err := os.WriteFile(filepath.Join(workDir, "kiro_runtime", entry.Name()), []byte(content), 0o644); err != nil {
 			return err
 		}
+	}
+	// Analysis implementations are CLI-only. Native programs retain just nil
+	// observation hooks; graph extraction/tracing/mutation code is never packaged.
+	stub := `package kiro_runtime
+
+type coverageRecorder struct{}
+func (*coverageRecorder) enter(FuncSpec)error{return nil}
+func (*coverageRecorder) leave(){}
+func (*coverageRecorder) spawn(){}
+func (*coverageRecorder) completeTask(){}
+func (*coverageRecorder) step()error{return nil}
+func (*coverageRecorder) hit(any,string){}
+func (ctx *execContext) trackedString(node *stringExpr)(value,error){return ctx.interpolate(node.Value)}
+`
+	if err := os.WriteFile(filepath.Join(workDir, "kiro_runtime", "observation_stub.go"), []byte(stub), 0644); err != nil {
+		return err
 	}
 	raw, err := json.Marshal(spec)
 	if err != nil {

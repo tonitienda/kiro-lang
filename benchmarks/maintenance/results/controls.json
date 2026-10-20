@@ -1,0 +1,2334 @@
+{
+  "schema": "kiro.benchmark.selftest.v1",
+  "kind": "deterministic-harness-controls-not-agent-benchmark",
+  "passed": true,
+  "model_trials_run": 0,
+  "compiler_sha256": "452b8f825248c0a51e27530ff96ba07c6a8a99838e8659ac53ef1367d59ef3f9",
+  "inputs": {
+    "benchmarks/maintenance/workload": {
+      "README.md": "63547e2e70c4a9cc164df2ff3a828c8bebca1ed4524905428c4cafeb560340fa",
+      "app/main.ki": "eac3d00a853bc37f78bf9aa5a5f90aa2ad96db2ecc7153b4e24a32222423d182",
+      "internal/catalog/main.ki": "a8e8bee27f7a4e1fe64c5cd9210fe247fad07b79807756b62ba809b3f03158f2",
+      "internal/checkout/main.ki": "fd7a142324fab1d9a6a8d82a1e92109565952fe1da7ea81fbed3c12899464836",
+      "internal/inventory/main.ki": "bd5122e7b2f876b03816984d60987662d0bc7b76237c1d4226e4d43ee945083d",
+      "internal/pricing/main.ki": "3dade2b13649a162d67071abe0ea6a2f2eb62971e81de4c7dac5f6d21f9a98fc",
+      "internal/refunds/main.ki": "d67c0818bb8e44552b0cc6050768862bb56f0722e0ed3675530f44dea3964d45",
+      "internal/reservations/main.ki": "27d728b9eac3d9c6d94bef13929c51a7284269d9724c398677df42d37893bf2f",
+      "internal/shipping/main.ki": "4f515f92987b96391ba56a8786dc563b9c86fbde1be74de0460e04a3d43862b1",
+      "main.ki": "14de075db049e39310923c6c758aca27ac0ea92d268487306a4d2f4de5c25d7c",
+      "test/main.ki": "796123312ca20c52b69c98a285ac4874281a0b14fbd41af3c85ea96c8fba1dc5"
+    },
+    "benchmarks/maintenance/tasks": {
+      "discount-policy.json": "89b36f39a0dfe54d5a5f33d76583be753829e802dde551a5fb8e937828845e6a",
+      "partial-refund.json": "8ec5943a7696c126cb6f953218d89b025f5aac770df6e3c1df35da220aacae6f",
+      "payment-boundary.json": "d7fa4caa9934f31c0d562b017144cfbf6ecd7b460ac6627a2627a2ce9729fa35",
+      "payment-declined.json": "bc775c7ab550529b1fd91b193ab7c7524c5a83b00b0ce5af17c13e6d2171ec71",
+      "reservation-expiry.json": "f24f84cb44bb9c3dc230830e833e67c247b0f44daba6130f6ba8a4f3f3422516"
+    },
+    "benchmarks/maintenance/runner": {
+      "benchmark.py": "cd9ce3567bc14a460ab46d15dc39a2d72d839ae7fa53638bb91b4545d8c079c8",
+      "broker.py": "595a8f951f5cc23c5cc3f8fb67f0cdc90d3604139dc40c406a626070f776f852",
+      "contracts.json": "e884aa67744fd5a84028d93ebdc64da2296997c63d19554c618f287904b19953",
+      "controls.py": "e4fda8a90949a2aee3dd75fde127691795094bf5850df0b7f0dd3d5838e571e6",
+      "evaluate.py": "9120f71e4180ba45614ebe23851d5431959d088603b73496bf6900061944542d",
+      "oracle.py": "43510497770e81972e891cb7c14ecc88d96c98cdd45b4975efcdcdb55d1a0b2d",
+      "session.py": "c0a79be598c6af43a0625cf0a4afef009ba6483587161d28e339188ebd2efe13",
+      "test_benchmark.py": "0e0dbb3e10d23504b1cbac51872560336d9eeedbcd745061a7f7b54c55af552a"
+    },
+    "docs/llm": {
+      "SKILL.md": "4b2ef210b11ee01d564a3431231682046681c7bdd48e4a401547ec402372ce8c",
+      "assets.go": "1f3098d07f69a83c97d661f26b04120e12e1f9dd4a0ded6886be9a62e67a92a7",
+      "assets_test.go": "0cdf4a9fe1fafa64e84ee3583208700489c9d6d0b389bd1479a931a922949a1b",
+      "metadata.go": "1e4c0899c02cbbdab098cd43696a7f51365faae949dc92f0f66d2c467ec0c4ca",
+      "reference_test.go": "5906a9b137719b8e6a643baeff07a48d659a39853ee81ec31e380bdf15a9df46",
+      "references/examples/concurrency.ki": "a5a0dc656b28613e5fa38e1cab29e6d3365b1def9cd5df862ee45a545fc20412",
+      "references/examples/effects.ki": "0f06cac354630cd1d38ce7e94ee9328fef8961c097dab5f554e600234f3b40c1",
+      "references/examples/functional.ki": "23ee22a224084d85fc0c19d644eebc54960fd35195eb3dcb1e7132141514086d",
+      "references/examples/hello.ki": "a8967fd7f5d74fd0e4b97ea3ca2bbc93a6e327ee794f62666d5232c386731a16",
+      "references/examples/internal/pricing/main.ki": "147ad54f855765e6ef389ce7083544851c92efb01c41756bdd51c6ddd4e4c5a8",
+      "references/examples/result_optional.ki": "4db812de4dbf5d9af5f1574b0b011bf3423425402bc63cb9be98e1a84c7b7269",
+      "references/examples/service.ki": "9a9f0f6601114ebfe88f55747362ebe229c06ec151708d2fbfdf02ca732ffdf2",
+      "references/examples/typed_errors/README.md": "e6022dc4868c2337fc53bcc7bf6e8d7744e04107b8e112ae36de8ea0ef0e8ebb",
+      "references/examples/typed_errors/main.ki": "2d4b4dfaf803f0d3a0a4c2c45556b28dbf4c52db9cb4c37e9c4d4d9ea2a40a94",
+      "references/examples/validated_results/README.md": "6f0a689243ebaaa6c2f0e47c198604357a9267aa8f2397cb426f84c5e8812fd0",
+      "references/examples/validated_results/main.ki": "09947a94116064b4012f3173f9260ee23bf11642b93202247f54c02daacf1484",
+      "references/examples/validated_results/model/main.ki": "5f27cd83d953bb03d7714a071997b701209f55c9f38abe1551042ae3912d8888",
+      "references/examples/validated_results/pipeline/main.ki": "3f9bbc16fb1020c1462db9d7ed3c6d2c784ff4e27fdd39de1ccca611925591a9",
+      "references/kiro.json": "78684ef8b610473a1c4e7d80baec76f2a8932dad48dab89cb5403de5e0aa1fb9",
+      "references/language.md": "3b1ab280228a3f7fc2a02062a0fcc8bb8fdf4d0494ae28dc1e56c9289db86390"
+    }
+  },
+  "seconds": 26.771195755000008,
+  "raw_report_sha256": "0364dfcaf2027c55e452933abad99429dc209fd57cd1a58156aa43bd78394b53",
+  "scope": "Compact deterministic-control evidence. Full command/HTTP diagnostics can be regenerated with the selftest command. No model execution.",
+  "controls": [
+    {
+      "task": "baseline",
+      "variant": "unchanged",
+      "expected": true,
+      "passed": true,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.016166161999990436,
+          "stdout_sha256": "592e504e4be1fcaefef87eecae2b90fad88223103abe16ed0a2867caaf4afd93"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.8185350690000632,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.00827897999988636,
+          "stdout_sha256": "9406b7df9dd3fd874b46c7ab72731b615f92deffd5a2b468c58d771d6b4e0152"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7203846320003322,
+          "stdout_sha256": "a2ec1a1a90d6ebe047500bae50713690b203dbada3a4705295a51c16449e797b"
+        }
+      ]
+    },
+    {
+      "task": "discount-policy",
+      "variant": "unchanged",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": false,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 0,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 0,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [
+        {
+          "id": "discount-policy-0154",
+          "group": "discount-policy",
+          "passed": false,
+          "error": "Expecting value: line 1 column 1 (char 0)"
+        },
+        {
+          "id": "discount-policy-0155",
+          "group": "discount-policy",
+          "passed": false,
+          "error": "Expecting value: line 1 column 1 (char 0)"
+        }
+      ],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01574660500000391,
+          "stdout_sha256": "592e504e4be1fcaefef87eecae2b90fad88223103abe16ed0a2867caaf4afd93"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7194581190001372,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007856552999783162,
+          "stdout_sha256": "a9a9e0f667cb1076da0068ef93cb38607fa0d66d060cea4ec6ffa7c51b88ea2e"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.6749050490002446,
+          "stdout_sha256": "faeb01bc7a3e61d763d22e0d62bd68ac2ec72e9d1da2c3d3eee9e1e3d39cd92c"
+        }
+      ]
+    },
+    {
+      "task": "discount-policy",
+      "variant": "reference",
+      "expected": true,
+      "passed": true,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01575602999992043,
+          "stdout_sha256": "495386f1fa48a5640cde5e732eb651348320a246095b6302cf4781a8359fd260"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7201231999997617,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007728607999979431,
+          "stdout_sha256": "a593bd4774613362085836cbd2a83fc23a922e0108c53ea35e1c145200546d43"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7743895909998173,
+          "stdout_sha256": "91bb6c0a3b299887d7ab0a938601571f066a22ab660245ebec27a8785a89cbf2"
+        }
+      ]
+    },
+    {
+      "task": "discount-policy",
+      "variant": "negative",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": false,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 66,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 2,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [
+        {
+          "id": "discount-policy-0220",
+          "group": "discount-policy",
+          "passed": false,
+          "status": 200,
+          "expected_status": 200,
+          "actual": {
+            "discount_cents": 0,
+            "fee_cents": 30,
+            "payment_reference": "card:5300",
+            "remaining_stock": 90,
+            "shipping_cents": 300,
+            "sku": "notebook",
+            "subtotal_cents": 5000,
+            "total_cents": 5330,
+            "units": 10
+          },
+          "expected": {
+            "sku": "notebook",
+            "units": 10,
+            "remaining_stock": 90,
+            "subtotal_cents": 5000,
+            "discount_cents": 500,
+            "shipping_cents": 300,
+            "fee_cents": 30,
+            "total_cents": 4830,
+            "payment_reference": "card:4800"
+          }
+        },
+        {
+          "id": "discount-policy-0221",
+          "group": "discount-policy",
+          "passed": false,
+          "status": 200,
+          "expected_status": 200,
+          "actual": {
+            "discount_cents": 0,
+            "fee_cents": 0,
+            "payment_reference": "bank:5300",
+            "remaining_stock": 90,
+            "shipping_cents": 300,
+            "sku": "notebook",
+            "subtotal_cents": 5000,
+            "total_cents": 5300,
+            "units": 10
+          },
+          "expected": {
+            "sku": "notebook",
+            "units": 10,
+            "remaining_stock": 90,
+            "subtotal_cents": 5000,
+            "discount_cents": 500,
+            "shipping_cents": 300,
+            "fee_cents": 0,
+            "total_cents": 4800,
+            "payment_reference": "bank:4800"
+          }
+        }
+      ],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01576186400006918,
+          "stdout_sha256": "87e69172abdccd6785ed4429b2bfb49841980bb6f94298799afc3632e90d0bef"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.8201330819997565,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007773500999974203,
+          "stdout_sha256": "a64972882a105b3b63ba75e21b27b4533514a2d282cb97342eee6b4199bceaf9"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7220309409999572,
+          "stdout_sha256": "5b9da4320250582cd8f94b71a98dc1e0da5e7a993142075f6e493554416050fa"
+        }
+      ]
+    },
+    {
+      "task": "reservation-expiry",
+      "variant": "unchanged",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": false,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 8,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [
+        {
+          "id": "reservation-boundary-0234",
+          "group": "reservation-boundary",
+          "passed": false,
+          "status": 200,
+          "expected_status": 200,
+          "actual": {
+            "active": true
+          },
+          "expected": {
+            "active": false
+          }
+        },
+        {
+          "id": "reservation-boundary-0237",
+          "group": "reservation-boundary",
+          "passed": false,
+          "status": 200,
+          "expected_status": 200,
+          "actual": {
+            "active": true
+          },
+          "expected": {
+            "active": false
+          }
+        }
+      ],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01579126999968139,
+          "stdout_sha256": "592e504e4be1fcaefef87eecae2b90fad88223103abe16ed0a2867caaf4afd93"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.8193158580002091,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007692991999647347,
+          "stdout_sha256": "aa128003f355990f640e3d02e9bcdf6f836e42268931cf7e7a97b6ed1b3586f3"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7706168630002139,
+          "stdout_sha256": "68eabab09504445267579b3fd2f9dbffa54645a6436a25d6d25bab312f6a14fb"
+        }
+      ]
+    },
+    {
+      "task": "reservation-expiry",
+      "variant": "reference",
+      "expected": true,
+      "passed": true,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.0156837359995734,
+          "stdout_sha256": "937bd10975a16facae63c498e8cbd32fdaedba85056bbd011eba934f7442ac3e"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.771132372000011,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007793470000251546,
+          "stdout_sha256": "e8333e5d48f917ca2bc7a063aca8e968a0853eec7f4a0876a71fbf6c92f98c44"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7684801839995998,
+          "stdout_sha256": "5e5a672971799b0042f574ed2047a44dd75e99af1e52f51c2c7b0e4f2398cf99"
+        }
+      ]
+    },
+    {
+      "task": "reservation-expiry",
+      "variant": "negative",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "verification_failed",
+      "behavioral_passed": null,
+      "api": null,
+      "structural": null,
+      "http_cases_executed": 0,
+      "groups": {},
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.015764003999720444,
+          "stdout_sha256": "00373b96f9666c7a63d809fafce58b20aca8d4444dddbb8b8f98b8d43ba232e3"
+        },
+        {
+          "command": "test",
+          "exit_code": 1,
+          "timed_out": false,
+          "seconds": 0.7200167979999605,
+          "stdout_sha256": "47c880269954c8fe54550ecc5c91edd21128d611d10992de6dbdf54a03a9b2a7"
+        }
+      ]
+    },
+    {
+      "task": "partial-refund",
+      "variant": "unchanged",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": false,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 60,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [
+        {
+          "id": "refund-matrix-0255",
+          "group": "refund-matrix",
+          "passed": false,
+          "status": 200,
+          "expected_status": 200,
+          "actual": {
+            "refund_cents": 300,
+            "remaining_cents": 0
+          },
+          "expected": {
+            "refund_cents": 0,
+            "remaining_cents": 300
+          }
+        },
+        {
+          "id": "refund-matrix-0258",
+          "group": "refund-matrix",
+          "passed": false,
+          "status": 200,
+          "expected_status": 200,
+          "actual": {
+            "refund_cents": 800,
+            "remaining_cents": 0
+          },
+          "expected": {
+            "refund_cents": 0,
+            "remaining_cents": 800
+          }
+        }
+      ],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.016000203999738005,
+          "stdout_sha256": "592e504e4be1fcaefef87eecae2b90fad88223103abe16ed0a2867caaf4afd93"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7206169270002647,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007895972999904188,
+          "stdout_sha256": "c727fea4dc42aa290ea11f9917ce2fac564006d1cf7fdfbd328050fcc9b01458"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.6741262440000355,
+          "stdout_sha256": "bbb90e6d9ed4f5a275fbad635120b7e24b9bfd1c8e4b8918641d7594255022fb"
+        }
+      ]
+    },
+    {
+      "task": "partial-refund",
+      "variant": "reference",
+      "expected": true,
+      "passed": true,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": false,
+        "passed": true,
+        "checks": []
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.015811405000022205,
+          "stdout_sha256": "7b00d8c755cae3d729315b9fb44ba6f3463efbf3f6b8a5f48eb4ae61c4696c66"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.825246051999784,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007883392999701755,
+          "stdout_sha256": "4e1257fdb4e6fa5d925dc2ec28d2859b37a7176fbdd419066c14e156ffafb5a9"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7195215669999016,
+          "stdout_sha256": "7ac9973134ca399561f3f91ee38b6968449954a677129e92ee5c04c08224e89d"
+        }
+      ]
+    },
+    {
+      "task": "partial-refund",
+      "variant": "negative",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "verification_failed",
+      "behavioral_passed": null,
+      "api": null,
+      "structural": null,
+      "http_cases_executed": 0,
+      "groups": {},
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01579012000001967,
+          "stdout_sha256": "f861f86d03898e122f02aa979bcf48f2fd28240f7e444767803fa9088dfe6e35"
+        },
+        {
+          "command": "test",
+          "exit_code": 1,
+          "timed_out": false,
+          "seconds": 0.6727353239998592,
+          "stdout_sha256": "718847a4d42e0ccdcd9f74fbb91ecaf6ab51f94b8ae45727643cf8b1709f1503"
+        }
+      ]
+    },
+    {
+      "task": "payment-boundary",
+      "variant": "unchanged",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": true,
+        "passed": false,
+        "checks": [
+          {
+            "name": "payment helpers owned by payments",
+            "passed": false
+          },
+          {
+            "name": "payments authorization owns policy",
+            "passed": false
+          },
+          {
+            "name": "compatibility adapter calls payment module",
+            "passed": false
+          },
+          {
+            "name": "payments.authorize uses payment_known",
+            "passed": false
+          },
+          {
+            "name": "payments.authorize uses payment_fee",
+            "passed": false
+          },
+          {
+            "name": "payments.authorize uses payment_reference",
+            "passed": false
+          },
+          {
+            "name": "payment module has no forbidden dependencies",
+            "passed": true
+          }
+        ]
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01595668800018757,
+          "stdout_sha256": "592e504e4be1fcaefef87eecae2b90fad88223103abe16ed0a2867caaf4afd93"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.718556346999776,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.0077977350001674495,
+          "stdout_sha256": "34485f70f2489da0affb2f808b564391fc80cf935c366cd161f8c2488282c238"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.769827857999644,
+          "stdout_sha256": "45b3f1cc9bf72cc86c217a3ab9b0856d332d3c215120659586bb1a2bf24e7e1d"
+        },
+        {
+          "command": "analyze",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.016037888000028033,
+          "stdout_sha256": "7a1c4dbaab732ca7e178597b879cd4b38c1d1fe4c9bf50562eb1097ef9a44dd0"
+        }
+      ]
+    },
+    {
+      "task": "payment-boundary",
+      "variant": "reference",
+      "expected": true,
+      "passed": true,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": true,
+        "passed": true,
+        "checks": [
+          {
+            "name": "payment helpers owned by payments",
+            "passed": true
+          },
+          {
+            "name": "payments authorization owns policy",
+            "passed": true
+          },
+          {
+            "name": "compatibility adapter calls payment module",
+            "passed": true
+          },
+          {
+            "name": "payments.authorize uses payment_known",
+            "passed": true
+          },
+          {
+            "name": "payments.authorize uses payment_fee",
+            "passed": true
+          },
+          {
+            "name": "payments.authorize uses payment_reference",
+            "passed": true
+          },
+          {
+            "name": "payment module has no forbidden dependencies",
+            "passed": true
+          }
+        ]
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01614357399967048,
+          "stdout_sha256": "37533868ed2d40e3d5c9f196a5df55cbda1a131cb51242440ace14e14d4563d1"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7192072709999593,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.008111205999739468,
+          "stdout_sha256": "fad90b3ab397ee308cb6cf72323b4543c3dc3a44deeba06153248ab16a176204"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7226988200000051,
+          "stdout_sha256": "d655cb0152c5413d285169a727670f5d23d97402fc7d2c6d22f5393b4f587943"
+        },
+        {
+          "command": "analyze",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.03222203099994658,
+          "stdout_sha256": "38e65f1c6b29018bc33f034632c5ee644c59486aeb39c9d1ee15db145dca72bf"
+        }
+      ]
+    },
+    {
+      "task": "payment-boundary",
+      "variant": "negative",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": true,
+        "passed": false,
+        "checks": [
+          {
+            "name": "payment helpers owned by payments",
+            "passed": false
+          },
+          {
+            "name": "payments authorization owns policy",
+            "passed": false
+          },
+          {
+            "name": "compatibility adapter calls payment module",
+            "passed": false
+          },
+          {
+            "name": "payments.authorize uses payment_known",
+            "passed": false
+          },
+          {
+            "name": "payments.authorize uses payment_fee",
+            "passed": false
+          },
+          {
+            "name": "payments.authorize uses payment_reference",
+            "passed": false
+          },
+          {
+            "name": "payment module has no forbidden dependencies",
+            "passed": true
+          }
+        ]
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.015844816000026185,
+          "stdout_sha256": "acb2dc807681022921d16b16028c4ebd354bcfcc3587ed34f427ec9dd69bb642"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7164170930000182,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007981358000051841,
+          "stdout_sha256": "524851d485a733d340e58e4d074ae422bdfea93c28ba4d220fb63739f051a1d1"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7173821100000168,
+          "stdout_sha256": "0885c3adaaf3415a972b914e8bd2a900336964e551ea6309c328fb906c216d9d"
+        },
+        {
+          "command": "analyze",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.016073961000074632,
+          "stdout_sha256": "737a662cb59330356288bd2720dd81524b392149a665ce6cd79af315752228e8"
+        }
+      ]
+    },
+    {
+      "task": "payment-declined",
+      "variant": "unchanged",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": false,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": true,
+        "passed": false,
+        "checks": [
+          {
+            "name": "distinct checkout PaymentDeclined constructor",
+            "passed": false
+          },
+          {
+            "name": "authorization constructs declined outcome",
+            "passed": false
+          }
+        ]
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 3,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [
+        {
+          "id": "payment-outcome-0229",
+          "group": "payment-outcome",
+          "passed": false,
+          "status": 422,
+          "expected_status": 402,
+          "actual": "unknown payment: declined",
+          "expected": "payment declined"
+        }
+      ],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.015740656999696512,
+          "stdout_sha256": "592e504e4be1fcaefef87eecae2b90fad88223103abe16ed0a2867caaf4afd93"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7190273090000119,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007727198999873508,
+          "stdout_sha256": "147b024eec7964847043564ae87d29c2215f6113a15463d72ed3d6594577fe4f"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7193463059998066,
+          "stdout_sha256": "b75a0fdbbf16339e0c5453104602fe9834b09c7aca42a787844597576a4f451d"
+        },
+        {
+          "command": "analyze",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.03205019799997899,
+          "stdout_sha256": "fb11bb52e6657b10138b48907194d0524c62eef88f7d8eb416e197c7301740fd"
+        }
+      ]
+    },
+    {
+      "task": "payment-declined",
+      "variant": "reference",
+      "expected": true,
+      "passed": true,
+      "evaluation_status": "complete",
+      "behavioral_passed": true,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": true,
+        "passed": true,
+        "checks": [
+          {
+            "name": "distinct checkout PaymentDeclined constructor",
+            "passed": true
+          },
+          {
+            "name": "authorization constructs declined outcome",
+            "passed": true
+          }
+        ]
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 4,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01572268499967322,
+          "stdout_sha256": "f20c8b2ed0ac0318f7aac387d06660cf757944a711e25cddb31ad7ddb373f6ae"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.6710220289996869,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.007756096999855799,
+          "stdout_sha256": "3733c7c5dc8281078cd41e2222cc9136b311053d96417ce37521b9c9311ff7a4"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7166621309997936,
+          "stdout_sha256": "8efca76c8fb3ed9d13ba6abbfdef65a1aa50b781569aa05f03460ddb65ccf2cc"
+        },
+        {
+          "command": "analyze",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.0320363380001254,
+          "stdout_sha256": "2239c461c11067cc48c136baf3c9bfa5a73dcbc4b133e792f1728b76365d2e62"
+        }
+      ]
+    },
+    {
+      "task": "payment-declined",
+      "variant": "negative",
+      "expected": false,
+      "passed": false,
+      "evaluation_status": "complete",
+      "behavioral_passed": false,
+      "api": {
+        "passed": true,
+        "checks": [
+          {
+            "symbol": "app.handler",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Authorization",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.Receipt",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.authorize",
+            "passed": true
+          },
+          {
+            "symbol": "checkout.place",
+            "passed": true
+          },
+          {
+            "symbol": "inventory.remaining",
+            "passed": true
+          },
+          {
+            "symbol": "pricing.quote",
+            "passed": true
+          },
+          {
+            "symbol": "refunds.calculate",
+            "passed": true
+          },
+          {
+            "symbol": "reservations.status",
+            "passed": true
+          }
+        ]
+      },
+      "structural": {
+        "required": true,
+        "passed": true,
+        "checks": [
+          {
+            "name": "distinct checkout PaymentDeclined constructor",
+            "passed": true
+          },
+          {
+            "name": "authorization constructs declined outcome",
+            "passed": true
+          }
+        ]
+      },
+      "http_cases_executed": 353,
+      "groups": {
+        "checkout-regression": {
+          "passed": 144,
+          "total": 144
+        },
+        "validation-priority": {
+          "passed": 10,
+          "total": 10
+        },
+        "discount-policy": {
+          "passed": 72,
+          "total": 72
+        },
+        "discount-threshold": {
+          "passed": 3,
+          "total": 3
+        },
+        "payment-outcome": {
+          "passed": 3,
+          "total": 4
+        },
+        "reservation-boundary": {
+          "passed": 12,
+          "total": 12
+        },
+        "refund-matrix": {
+          "passed": 72,
+          "total": 72
+        },
+        "refund-invalid": {
+          "passed": 5,
+          "total": 5
+        },
+        "schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "routing": {
+          "passed": 6,
+          "total": 6
+        },
+        "strict-schema": {
+          "passed": 12,
+          "total": 12
+        },
+        "optional-omission": {
+          "passed": 1,
+          "total": 1
+        }
+      },
+      "first_failures": [
+        {
+          "id": "payment-outcome-0229",
+          "group": "payment-outcome",
+          "passed": false,
+          "status": 422,
+          "expected_status": 402,
+          "actual": "payment declined",
+          "expected": "payment declined"
+        }
+      ],
+      "steps": [
+        {
+          "command": "lint",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.015739371000108804,
+          "stdout_sha256": "e71d8899b654f0be10241490c00a233989de43e3774b75a379efa1267eec2259"
+        },
+        {
+          "command": "test",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.82130037800016,
+          "stdout_sha256": "1870cd20a123e415aa10753a0e795de1c91b3e97a97d6fa95a9c0eeacf23e00c"
+        },
+        {
+          "command": "symbols",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.008030358999803866,
+          "stdout_sha256": "7b499d9226257345e4015019f915fa942447d221168941b4c3548eba3274359f"
+        },
+        {
+          "command": "build",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.7214405760000773,
+          "stdout_sha256": "2254df2ea2a19f8f3db39a03ea854982b87de6d6badab0f95d8c061096610376"
+        },
+        {
+          "command": "analyze",
+          "exit_code": 0,
+          "timed_out": false,
+          "seconds": 0.01586480700007087,
+          "stdout_sha256": "529bb4b9cab20f71635d5a775e2807e80a589a2293b85db12882c65d0763e075"
+        }
+      ]
+    }
+  ]
+}

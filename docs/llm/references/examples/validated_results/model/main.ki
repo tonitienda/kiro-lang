@@ -1,0 +1,10 @@
+mod model
+
+type Request {
+  values:List[str]
+  note:?str
+}
+
+type Summary {
+  total:i32
+}

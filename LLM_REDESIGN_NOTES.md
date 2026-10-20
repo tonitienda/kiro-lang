@@ -2,6 +2,10 @@
 
 This file records the aggressive redesign pass that sharpens Kiro for LLM-generated and LLM-maintained code.
 
+Phase 12 revisits these design assumptions for agent-only implementation/review/audit.
+`when (subject) { ... }` and named value calls (`f(name: expression)`) are now required; see `PHASE12_NOTES.md` and
+`docs/research/agent_core_reassessment.md`. Later tagged-value/type proposals are not yet implemented.
+
 ## Redesign goals
 
 The redesign optimized for:
@@ -84,8 +88,8 @@ This pass tightened wording for:
 
 ```ki
 fn load() -> R[Config,str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(Config{port:port})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  return Ok(value : Config{port:port})
 }
 ```
 
@@ -93,7 +97,7 @@ fn load() -> R[Config,str] !env {
 
 ```ki
 fn handler(req:http.Req) -> R[http.Resp,str] {
-  return Ok(http.not_found())
+  return Ok(value : http.not_found())
 }
 ```
 
@@ -103,7 +107,7 @@ fn handler(req:http.Req) -> R[http.Resp,str] {
 group {
   let t = spawn work()
   let v = await t
-  return Ok(v)
+  return Ok(value : v)
 }
 ```
 
@@ -115,3 +119,22 @@ These areas remain intentionally narrow or unfinished:
 - broader concurrency diagnostics inside function bodies
 - generated-Go API stability
 - stdlib breadth beyond the documented canonical modules
+
+Phase 13 extends the keyed core with typed functions, explicit partial application,
+visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.md` and
+`docs/functional-core.md` for the implemented contracts and their limits.
+
+Phase 14 renames `list.fold` to `list.reduce` and adds explicit typed transducers.
+See `PHASE14_NOTES.md` for ordered execution and allocation limits.
+
+Phase 15 implements compositional result propagation and closed record/JSON schemas.
+See `PHASE15_NOTES.md` and `docs/results-and-schemas.md` for current enforcement and limits.
+
+Phase 16 adds typed variants, exhaustive recovery, explicit error conversion and executable
+list loops, and rejects unparseable bodies during checking; see `PHASE16_NOTES.md`.
+
+Phase 17 adds structured compiler feedback, discovery commands, formatter checks, conservative
+return-path analysis and semantic LSP overlays; see `PHASE17_NOTES.md` and `docs/agent-tools.md`.
+
+Phase 18 adds explicitly invoked analysis, coverage and mutation tools. They do not run in
+normal compiler/linter/LSP workflows; see `PHASE18_NOTES.md` and `docs/analysis-tools.md`.

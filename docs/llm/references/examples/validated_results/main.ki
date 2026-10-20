@@ -1,0 +1,48 @@
+mod main
+
+import json
+import model
+import parse
+import test
+import validated_pipeline
+
+fn test_success() -> nil {
+  let raw = "{\"values\":[\"1\",\"2\"]}"
+  test.eq ( actual : validated_pipeline.aggregate ( raw : raw ) , expected : Ok ( value : model.Summary { total : 3 } ) )
+  return nil
+}
+
+fn test_domain_failure() -> nil {
+  test.eq ( actual : validated_pipeline.aggregate ( raw : "{\"values\":[\"1\",\"bad\",\"3\"]}" ) , expected : parse.i32 ( text : "bad" ) )
+  return nil
+}
+
+fn test_schema_failure() -> nil {
+  test.eq ( actual : validated_pipeline.aggregate ( raw : "{}" ) , expected : Err ( error : "$: Request: missing required field \"values\"" ) )
+  return nil
+}
+
+fn test_partials_and_typed_callbacks() -> R[nil,str] {
+  let raw = "{\"values\":[\"4\"]}"
+  let decoder = validated_pipeline.decoder ( raw : raw )
+  let request = decoder ( ) ?
+  test.eq ( actual : request.note , expected : nil )
+  let aggregate = partial validated_pipeline.aggregate ( raw : raw )
+  test.eq ( actual : aggregate ( ) , expected : Ok ( value : model.Summary { total : 4 } ) )
+  test.eq ( actual : validated_pipeline.apply ( raw : raw , transform : validated_pipeline.aggregate ) , expected : Ok ( value : model.Summary { total : 4 } ) )
+  return Ok ( value : nil )
+}
+
+fn test_explicit_nil_tags() -> R[nil,str] {
+  test.eq ( actual : Ok ( value : nil ) == Err ( error : nil ) , expected : false )
+  let wire = json.encode ( value : Err ( error : nil ) ) ?
+  let decoded = json.decode [ R [ nil , nil ] ] ( text : wire ) ?
+  test.eq ( actual : decoded , expected : Err ( error : nil ) )
+  return Ok ( value : nil )
+}
+
+fn main() -> R[i32,str] !io {
+  let summary = validated_pipeline.aggregate ( raw : "{\"values\":[\"1\",\"2\"]}" ) ?
+  println ( value : summary.total )
+  return Ok ( value : 0 )
+}

@@ -39,6 +39,8 @@ type Location struct {
 }
 
 type Diagnostic struct {
+	Code     string `json:"code,omitempty"`
+	Data     any    `json:"data,omitempty"`
 	Range    Range  `json:"range"`
 	Severity int    `json:"severity,omitempty"`
 	Source   string `json:"source,omitempty"`

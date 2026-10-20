@@ -6,6 +6,6 @@ fn greet(name:str) -> str {
 }
 
 fn main() -> i32 !io {
-  println ( greet ( "toni" ) )
+  println ( value : greet ( name : "toni" ) )
   return 0
 }

@@ -1,0 +1,16 @@
+{
+  "schema": "kiro.architecture.v1",
+  "unresolved": "report",
+  "rules": [
+    {
+      "name": "pricing-does-not-know-http",
+      "from": "pricing.*",
+      "deny": ["app.*", "http.*", "builtin:http.*"]
+    },
+    {
+      "name": "catalog-does-not-know-pricing-or-http",
+      "from": "catalog.*",
+      "deny": ["pricing.*", "app.*", "http.*", "builtin:http.*"]
+    }
+  ]
+}

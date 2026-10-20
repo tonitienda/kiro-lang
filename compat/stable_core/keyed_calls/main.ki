@@ -1,0 +1,10 @@
+mod main
+
+fn join(left:str, right:str) -> str {
+  return left + right
+}
+
+fn main() -> i32 !io {
+  println(value:join(right:"B", left:"A"))
+  return 0
+}

@@ -25,8 +25,7 @@ curl -X POST http://127.0.0.1:8080/quotes \
 ```
 
 The quote has EUR subtotal 2200 cents, shipping 800 cents, total 3000 cents, and a null coupon.
-Current JSON encoding also emits the runtime's `_type` field. Consumers should ignore it;
-removing runtime metadata from public JSON is a proposed follow-up, not a stable API promise.
+JSON encoding now contains only data fields, without runtime `_type` metadata.
 
 ## Business rules
 
@@ -35,7 +34,7 @@ removing runtime metadata from public JSON is a proposed follow-up, not a stable
 - Delivery: `standard` costs 300 cents; `express` costs 800 cents.
 - `SHIPFREE` sets shipping to zero without changing the subtotal. Unknown coupons fail.
 - Use integer cents, not floating point. No taxes, payment, inventory, persistence, or external calls yet.
-- Send all four request fields explicitly, using JSON null for absent add-on/coupon.
+- JSON may omit optional add-on/coupon fields or supply null; source record constructors require all fields.
 
 `GET /health` returns 200; `POST /quotes` returns a JSON quote; other methods on these
 routes return 405; other paths return 404.
@@ -48,24 +47,39 @@ routes return 405; other paths return 404.
 - `internal/catalog/`: product lookup and optional add-on.
 - `internal/shipping/`: delivery validation and coupon policy.
 - `internal/pricing/`: pure composition and totals.
-- `test/`: 14 domain/handler tests, including invalid leaf operations.
+- `test/`: 20 domain/handler tests, including typed conversion, malformed input and each 422 variant.
 
 The example deliberately avoids `spawn`: these in-memory operations have no useful parallel work.
 Introduce concurrency when adding actual independent I/O and testing its lifecycle semantics.
 
-## Known limits exposed by this example
+## Enforced boundaries and remaining limits
 
-- `kiro check` does not establish full type correctness, including optional narrowing.
-- `json.decode[T]` does not yet validate required fields or field types.
-- The runtime turns a failed `?` into an interpreter error rather than returning an `Err`
-  to a caller that can inspect it. Invalid inputs currently reach HTTP 500, not a designed
-  400/422 response. The leaf error tests do **not** establish compositional error handling.
-- The runtime JSON representation exposes `_type` metadata.
-- The existing runtime supports less syntax than the frontend accepts; arbitrary carts
-  need working collection iteration and arithmetic before they make a useful next checkpoint.
-- Executables currently package a Go-hosted interpreter. `inspect go` emits stubs;
-  neither path currently gives direct, typed Go lowering of these business functions.
+- Catalog and shipping declare distinct error variants. Pricing converts each explicitly
+  into its own closed error type. Exhaustive matches bind and use payloads.
+- Typed decoding validates shape and fields. Malformed/nonconforming JSON returns HTTP 400;
+  absent optional addon/coupon fields become nil.
+- Each pricing error maps to HTTP 422 with its payload. An unexpected serialization Err
+  still reaches the adapter's HTTP 500 boundary.
+- Add an error variant and checking names the affected converter/handler. Reproduce this
+  without changing the example: `python3 scripts/probe_variant_evolution.py --kiro ./kiro`.
+- This example keeps its bounded two-product quote. List loops and collection helpers are
+  available; cart quantities, bounded totals and overflow policy remain follow-up work.
+- Checking remains incremental; constructor coverage is not arbitrary payload-domain or
+  return-path analysis. Complete concurrency/effect guarantees remain unfinished.
+- Executables package a Go-hosted interpreter; `inspect go` emits structural stubs.
 
 These limits are recorded rather than hidden behind extra example-specific helpers.
 See [the research plan](../../docs/research/agent_language_iteration.md) for proposed follow-ups,
 comparison controls, and the article/video direction.
+
+## Optional analysis
+
+```bash
+kiro analyze impact examples/quote_service --symbol pricing.quote --json
+kiro analyze slice examples/quote_service --symbol pricing.quote --value return --json
+kiro analyze rules examples/quote_service --rules examples/quote_service/architecture.json --json
+kiro analyze coverage examples/quote_service --json
+kiro analyze mutate examples/quote_service --symbol pricing.quote --max-mutants 4 --json
+```
+
+These are explicit calls, not compiler/linter gates. See [costs, contracts and limits](../../docs/analysis-tools.md).

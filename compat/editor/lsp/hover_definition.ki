@@ -11,6 +11,6 @@ fn greet(name:str) -> str {
 
 fn main() -> i32 !io {
   let u = User { name : "kiro" }
-  println ( greet ( u.name ) )
+  println ( value : greet ( name : u.name ) )
   return 0
 }

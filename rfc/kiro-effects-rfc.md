@@ -97,9 +97,9 @@ fn bootstrap() -> R[nil, str] !env !log !net
 
 ```ki
 fn main() -> i32 !env !log !net {
-  let port = env.get_or("PORT", ":8080")
-  log.info("starting ${port}")
-  http.serve(port, app)?
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  log.info(message : "starting ${port}")
+  http.serve(addr : port, handler : app)?
   return 0
 }
 ```
@@ -153,7 +153,7 @@ Example:
 
 ```ki
 fn read_port() -> str !env {
-  return env.get_or("PORT", ":8080")
+  return env.get_or(key : "PORT", fallback : ":8080")
 }
 
 fn main() -> i32 {
@@ -185,7 +185,7 @@ fn start_server(cfg:AppConfig) -> R[nil, str] !log !net
 
 fn main() -> i32 !env !log !net {
   let cfg = load_config()
-  start_server(cfg)?
+  start_server(cfg : cfg)?
   return 0
 }
 ```
@@ -249,8 +249,8 @@ fn app(req:http.Req) -> R[http.Resp, str] !json !net {
     let b = spawn fetch_b()
     let ra = await a
     let rb = await b
-    let body = json.encode(Msg{a:ra b:rb})?
-    return Ok(http.json(200, body))
+    let body = json.encode(value : Msg{a:ra b:rb})?
+    return Ok(value : http.json(code : 200, body : body))
   }
 }
 ```
@@ -448,7 +448,7 @@ fn greet(name:str) -> str =
   "hello ${name}"
 
 fn main() -> i32 !log {
-  log.info(greet("toni"))
+  log.info(message : greet(name : "toni"))
   return 0
 }
 ```
@@ -465,25 +465,26 @@ type Msg {
 }
 
 fn load_config() -> R[AppConfig, str] !env {
-  let port = env.get_or("PORT", ":8080")
-  return Ok(AppConfig{port:port})
+  let port = env.get_or(key : "PORT", fallback : ":8080")
+  return Ok(value : AppConfig{port:port})
 }
 
 fn app(req:http.Req) -> R[http.Resp, str] !json {
-  when req.path
+  when (req.path) {
     "/health" => {
-      let body = json.encode(Msg{status:"ok"})?
-      return Ok(http.json(200, body))
+      let body = json.encode(value : Msg{status:"ok"})?
+      return Ok(value : http.json(code : 200, body : body))
     }
     _ => {
-      return Ok(http.not_found())
+      return Ok(value : http.not_found())
     }
+  }
 }
 
 fn main() -> i32 !env !log !net {
   let cfg = load_config()?
-  log.info("starting ${cfg.port}")
-  http.serve(cfg.port, app)?
+  log.info(message : "starting ${cfg.port}")
+  http.serve(addr : cfg.port, handler : app)?
   return 0
 }
 ```
@@ -492,12 +493,12 @@ fn main() -> i32 !env !log !net {
 
 ```ki
 fn load(path:str) -> R[str, str] !fs {
-  return fs.read_file(path)
+  return fs.read_file(path : path)
 }
 
 fn main() -> i32 !fs !log {
-  let s = load("README.md")?
-  log.info(s)
+  let s = load(path : "README.md")?
+  log.info(message : s)
   return 0
 }
 ```

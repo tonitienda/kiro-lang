@@ -1,0 +1,10 @@
+{
+  "schema": "kiro.benchmark.task.v1",
+  "id": "payment-boundary",
+  "version": 1,
+  "title": "Extract payment policy behind a module boundary",
+  "requirement": "Move the payment_known, payment_fee, payment_reference and authorization policy from checkout into a new payments module. That module owns those three named helpers and authorize, along with its own authorization data/error contract; it must not depend on checkout, inventory, pricing, shipping, catalog, app, reservations or refunds. Keep checkout.authorize and checkout.Authorization/checkout.Error working as compatibility adapters for callers. checkout.authorize must call payments.authorize; checkout must no longer define the three payment_* helpers. Preserve all HTTP responses, fee/reference behavior, public APIs and tests. Do not merely add an unused module or re-export the old implementation. The functional and structural outcomes are scored separately.",
+  "scope": "One independent change to the supplied baseline; implement and verify without a human review gate.",
+  "acceptance": "Behavior is checked through HTTP against the task and unchanged baseline contracts. Payment-boundary additionally has an explicit structural check. Add or update meaningful public tests.",
+  "limits": "Do not change compiler, vendored guide, AGENTS.md, task.json or this task specification. Use the allowed tool protocol; analysis tools are optional only in the analysis condition."
+}

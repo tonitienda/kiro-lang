@@ -5,20 +5,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 	"io"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf16"
 
 	"github.com/kiro-lang/kiro/internal/format"
 )
 
 type Server struct {
-	docs map[string]*DocState
+	docs      map[string]*DocState
+	root      string
+	published map[string]bool
 }
 
 func NewServer() *Server {
-	return &Server{docs: map[string]*DocState{}}
+	return &Server{docs: map[string]*DocState{}, published: map[string]bool{}}
 }
 
 func (s *Server) Serve(in io.Reader, out io.Writer) error {
@@ -47,6 +53,19 @@ func (s *Server) Serve(in io.Reader, out io.Writer) error {
 func (s *Server) handle(req Request) []Response {
 	switch req.Method {
 	case "initialize":
+		var init struct {
+			RootURI          string `json:"rootUri"`
+			WorkspaceFolders []struct {
+				URI string `json:"uri"`
+			} `json:"workspaceFolders"`
+		}
+		_ = json.Unmarshal(req.Params, &init)
+		if init.RootURI == "" && len(init.WorkspaceFolders) > 0 {
+			init.RootURI = init.WorkspaceFolders[0].URI
+		}
+		if strings.HasPrefix(init.RootURI, "file://") {
+			s.root = PathFromURI(init.RootURI)
+		}
 		return []Response{{JSONRPC: "2.0", ID: req.ID, Result: map[string]any{"capabilities": map[string]any{
 			"textDocumentSync":           1,
 			"hoverProvider":              true,
@@ -79,7 +98,8 @@ func (s *Server) handle(req Request) []Response {
 		var p struct{ TextDocument struct{ URI string } }
 		_ = json.Unmarshal(req.Params, &p)
 		delete(s.docs, p.TextDocument.URI)
-		return []Response{{JSONRPC: "2.0", Method: "textDocument/publishDiagnostics", Params: map[string]any{"uri": p.TextDocument.URI, "diagnostics": []Diagnostic{}}}}
+		s.published[p.TextDocument.URI] = true
+		return s.projectDiagnostics()
 	case "textDocument/hover":
 		var p struct {
 			TextDocument struct{ URI string }
@@ -119,9 +139,9 @@ func (s *Server) handle(req Request) []Response {
 }
 
 func (s *Server) upsertDocument(uri, text string) []Response {
-	doc, diags := buildDocState(uri, text)
+	doc, _ := buildDocState(uri, text)
 	s.docs[uri] = doc
-	return []Response{{JSONRPC: "2.0", Method: "textDocument/publishDiagnostics", Params: map[string]any{"uri": uri, "diagnostics": diags}}}
+	return s.projectDiagnostics()
 }
 
 func (s *Server) hover(uri string, pos Position) any {
@@ -167,7 +187,7 @@ func (s *Server) formatting(uri string) any {
 	endLine := len(lines) - 1
 	endChar := 0
 	if len(lines) > 0 {
-		endChar = len([]rune(lines[endLine]))
+		endChar = len(utf16.Encode([]rune(lines[endLine])))
 	}
 	return []map[string]any{{"range": Range{Start: Position{}, End: Position{Line: endLine, Character: endChar}}, "newText": out}}
 }
@@ -181,9 +201,13 @@ func (s *Server) completion(uri string) any {
 	for _, s := range d.Symbols {
 		items = append(items, CompletionItem{Label: s.Name, Kind: s.Kind, Detail: s.Sig})
 	}
-	for _, kw := range []string{"fn", "type", "const", "if", "when", "for", "while", "spawn", "await", "group", "defer"} {
+	for _, kw := range []string{"fn", "type", "variant", "const", "let", "mut", "when", "for", "in", "return", "spawn", "await", "group", "partial", "default"} {
 		items = append(items, CompletionItem{Label: kw, Kind: 14})
 	}
+	for name, signature := range runtimekit.BuiltinContracts() {
+		items = append(items, CompletionItem{Label: name, Kind: 3, Detail: signature.String()})
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].Label < items[j].Label })
 	return items
 }
 
@@ -193,12 +217,28 @@ func wordAt(src string, pos Position) string {
 		return ""
 	}
 	r := []rune(lines[pos.Line])
+	units, index := 0, 0
+	for index < len(r) && units < pos.Character {
+		width := 1
+		if r[index] > 0xffff {
+			width = 2
+		}
+		if units+width > pos.Character {
+			return ""
+		}
+		units += width
+		index++
+	}
+	if units != pos.Character {
+		return ""
+	}
+	pos.Character = index
 	if pos.Character < 0 || pos.Character >= len(r) {
 		return ""
 	}
 	start, end := pos.Character, pos.Character
 	isWord := func(ch rune) bool {
-		return ch == '_' || ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'
+		return ch == '_' || unicode.IsLetter(ch) || unicode.IsDigit(ch)
 	}
 	for start > 0 && isWord(r[start-1]) {
 		start--

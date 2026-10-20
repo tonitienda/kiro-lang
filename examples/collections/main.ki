@@ -6,6 +6,6 @@ fn main() -> i32 !io {
   for x in xs {
   sum = sum + x
   }
-  print ( "done" )
+  print ( value : "done" )
   return 0
 }

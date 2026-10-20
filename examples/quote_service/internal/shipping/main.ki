@@ -1,28 +1,39 @@
 mod shipping
 
-fn base_price(delivery:str) -> R[i32,str] {
-  when delivery
-  "standard" => {
-  return Ok ( 300 )
+type Error {
+  variant UnknownDelivery {
+    delivery:str
   }
-  "express" => {
-  return Ok ( 800 )
-  }
-  _ => {
-  return Err ( "unknown delivery method" )
+  variant UnknownCoupon {
+    coupon:str
   }
 }
 
-fn price(delivery:str, coupon:?str) -> R[i32,str] {
-  let base = base_price ( delivery ) ?
-  when coupon
-  nil => {
-  return Ok ( base )
+fn base_price(delivery:str) -> R[i32,Error] {
+  when ( delivery ) {
+  "standard" => {
+  return Ok ( value : 300 )
   }
-  "SHIPFREE" => {
-  return Ok ( 0 )
+  "express" => {
+  return Ok ( value : 800 )
   }
   _ => {
-  return Err ( "unknown coupon" )
+  return Err ( error : Error.UnknownDelivery ( delivery : delivery ) )
+  }
+  }
+}
+
+fn price(delivery:str, coupon:?str) -> R[i32,Error] {
+  let base = base_price ( delivery : delivery ) ?
+  when ( coupon ) {
+  nil => {
+  return Ok ( value : base )
+  }
+  "SHIPFREE" => {
+  return Ok ( value : 0 )
+  }
+  _ => {
+  return Err ( error : Error.UnknownCoupon ( coupon : coupon ) )
+  }
   }
 }

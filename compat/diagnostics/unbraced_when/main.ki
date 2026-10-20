@@ -1,0 +1,6 @@
+mod main
+
+fn main() -> i32 {
+  when 1
+    1 => { return 0 }
+}

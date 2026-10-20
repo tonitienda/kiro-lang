@@ -1,0 +1,13 @@
+mod main
+
+type Failure {
+  variant Missing {
+    key:str
+  }
+  variant Offline {
+  }
+}
+
+fn run() -> nil {
+  for item in 1 { return nil }
+}

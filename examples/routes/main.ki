@@ -10,17 +10,18 @@ fn text(code:i32, body:str) -> Resp {
 }
 
 fn route(path:str) -> Resp {
-  when path
+  when ( path ) {
   "/health" => {
-  return text ( 200 , "ok" )
+  return text ( code : 200 , body : "ok" )
   }
   _ => {
-  return text ( 404 , "not found" )
+  return text ( code : 404 , body : "not found" )
+  }
   }
 }
 
 fn main() -> i32 !io {
-  let res = route ( "/health" )
-  print ( res.body )
+  let res = route ( path : "/health" )
+  print ( value : res.body )
   return 0
 }

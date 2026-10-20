@@ -1,0 +1,61 @@
+mod pricing
+
+import catalog
+import shipping
+
+type Error {
+  variant UnknownProduct {
+    sku:str
+  }
+  variant UnknownDelivery {
+    delivery:str
+  }
+  variant UnknownCoupon {
+    coupon:str
+  }
+}
+
+type Quote {
+  subtotal_cents:i32
+  discount_cents:i32
+  shipping_cents:i32
+  amount_cents:i32
+}
+
+fn unit_price(sku:str) -> R[i32,Error] {
+  when ( catalog.price ( sku : sku ) ) {
+  Ok ( value : let amount ) => { return Ok ( value : amount ) }
+  Err ( error : catalog.Error.UnknownProduct ( sku : let missing ) ) => { return Err ( error : Error.UnknownProduct ( sku : missing ) ) }
+  }
+}
+
+fn delivery_price(delivery:str) -> R[i32,Error] {
+  when ( shipping.price ( delivery : delivery ) ) {
+  Ok ( value : let amount ) => { return Ok ( value : amount ) }
+  Err ( error : shipping.Error.UnknownDelivery ( delivery : let missing ) ) => { return Err ( error : Error.UnknownDelivery ( delivery : missing ) ) }
+  }
+}
+
+fn discount(subtotal:i32, coupon:?str) -> R[i32,Error] {
+  when ( coupon ) {
+  nil => { return Ok ( value : 0 ) }
+  "SHIPFREE" => { return Ok ( value : 0 ) }
+  _ => { return Err ( error : Error.UnknownCoupon ( coupon : coupon ) ) }
+  }
+}
+
+fn shipping_discount(shipping:i32, coupon:?str) -> i32 {
+  when ( coupon ) {
+  "SHIPFREE" => { return 0 }
+  _ => { return shipping }
+  }
+}
+
+fn quote(sku:str, units:i32, delivery:str, coupon:?str) -> R[Quote,Error] {
+  let unit = unit_price ( sku : sku ) ?
+  let shipping = delivery_price ( delivery : delivery ) ?
+  let subtotal = unit * units
+  let discount = discount ( subtotal : subtotal , coupon : coupon ) ?
+  let charged_shipping = shipping_discount ( shipping : shipping , coupon : coupon )
+  return Ok ( value : Quote { subtotal_cents : subtotal , discount_cents : discount , shipping_cents : charged_shipping , amount_cents : subtotal - discount + charged_shipping } )
+}

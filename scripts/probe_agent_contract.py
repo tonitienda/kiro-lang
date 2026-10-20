@@ -19,7 +19,7 @@ fn number() -> i32 {
 }
 
 fn main() -> i32 !io {
-  println(number())
+  println(value : number())
   return 0
 }
 ''',
@@ -32,8 +32,8 @@ type Input {
 }
 
 fn main() -> i32 !io {
-  let input = json.decode[Input]("{}")?
-  println(json.encode(input)?)
+  let input = json.decode[Input](text : "{}")?
+  println(value : json.encode(value : input)?)
   return 0
 }
 ''',
@@ -45,7 +45,7 @@ fn main() -> i32 !io {
   for x in xs {
     sum = sum + x
   }
-  println(sum)
+  println(value : sum)
   return 0
 }
 ''',
@@ -54,20 +54,47 @@ fn main() -> i32 !io {
 import test
 
 fn leaf() -> R[i32,str] {
-  return Err("expected domain error")
+  return Err(error : "expected domain error")
 }
 
 fn parent() -> R[i32,str] {
   let value = leaf()?
-  return Ok(value)
+  return Ok(value : value)
 }
 
 fn main() -> i32 {
-  test.eq(parent(), Err("expected domain error"))
+  test.eq(actual : parent(), expected : Err(error : "expected domain error"))
   return 0
 }
 ''',
 }
+
+# Preserve the original four probes. Add a result-returning JSON boundary so the
+# new signature rule cannot masquerade as evidence that schema validation works.
+PROBES["json_required_field_result_boundary"] = """mod main
+import json
+type Input { quantity:i32 }
+fn main()->R[i32,str] !io {
+  let input = json.decode[Input](text:"{}")?
+  println(value:json.encode(value:input)?)
+  return Ok(value:0)
+}
+"""
+PROBES["explicit_nil_tags"] = """mod main
+import test
+fn main()->i32 {
+  test.eq(actual:Ok(value:nil) == Err(error:nil),expected:false)
+  return 0
+}
+"""
+PROBES["required_record_literal"] = """mod main
+type Input { quantity:i32 }
+fn main()->i32 {
+  let input = Input{}
+  return 0
+}
+"""
+
 
 
 def invoke(command, cwd):

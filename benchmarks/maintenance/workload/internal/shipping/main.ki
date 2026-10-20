@@ -1,0 +1,16 @@
+mod shipping
+
+type Error {
+  variant UnknownDelivery {
+    delivery:str
+  }
+}
+
+fn price(delivery:str) -> R[i32,Error] {
+  when ( delivery ) {
+  "standard" => { return Ok ( value : 300 ) }
+  "express" => { return Ok ( value : 800 ) }
+  "pickup" => { return Ok ( value : 0 ) }
+  _ => { return Err ( error : Error.UnknownDelivery ( delivery : delivery ) ) }
+  }
+}

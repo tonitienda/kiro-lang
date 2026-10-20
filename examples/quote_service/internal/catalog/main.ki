@@ -1,24 +1,32 @@
 mod catalog
 
-fn price(sku:str) -> R[i32,str] {
-  when sku
-  "book" => {
-  return Ok ( 1500 )
-  }
-  "poster" => {
-  return Ok ( 700 )
-  }
-  _ => {
-  return Err ( "unknown product" )
+type Error {
+  variant UnknownProduct {
+    sku:str
   }
 }
 
-fn addon_price(sku:?str) -> R[i32,str] {
-  when sku
-  nil => {
-  return Ok ( 0 )
+fn price(sku:str) -> R[i32,Error] {
+  when ( sku ) {
+  "book" => {
+  return Ok ( value : 1500 )
+  }
+  "poster" => {
+  return Ok ( value : 700 )
   }
   _ => {
-  return price ( sku )
+  return Err ( error : Error.UnknownProduct ( sku : sku ) )
+  }
+  }
+}
+
+fn addon_price(sku:?str) -> R[i32,Error] {
+  when ( sku ) {
+  nil => {
+  return Ok ( value : 0 )
+  }
+  _ => {
+  return price ( sku : sku )
+  }
   }
 }

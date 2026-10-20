@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
+	"github.com/kiro-lang/kiro/internal/lexer"
 	"github.com/kiro-lang/kiro/internal/parser"
 )
 
@@ -42,6 +43,13 @@ func Print(file *ast.File) string {
 			for _, f := range decl.Fields {
 				fmt.Fprintf(&b, "  %s:%s\n", f.Name, f.Type)
 			}
+			for _, v := range decl.Variants {
+				fmt.Fprintf(&b, "  variant %s {\n", v.Name)
+				for _, f := range v.Fields {
+					fmt.Fprintf(&b, "    %s:%s\n", f.Name, f.Type)
+				}
+				b.WriteString("  }\n")
+			}
 			b.WriteString("}")
 		case ast.FuncDecl:
 			b.WriteString(decl.Signature())
@@ -73,11 +81,7 @@ func normalizeBody(body string) []string {
 	lines := strings.Split(body, "\n")
 	out := make([]string, 0, len(lines))
 	for _, line := range lines {
-		trimmed := strings.Join(strings.Fields(strings.TrimSpace(line)), " ")
-		trimmed = strings.ReplaceAll(trimmed, "= =", "==")
-		trimmed = strings.ReplaceAll(trimmed, "= >", "=>")
-		trimmed = strings.ReplaceAll(trimmed, "- >", "->")
-		trimmed = strings.ReplaceAll(trimmed, " . ", ".")
+		trimmed := normalizeBodyLine(line)
 		if trimmed != "" {
 			out = append(out, trimmed)
 		}
@@ -86,4 +90,39 @@ func normalizeBody(body string) []string {
 		return []string{""}
 	}
 	return out
+}
+
+func normalizeBodyLine(line string) string {
+	tokens, err := lexer.Lex(line)
+	if err != nil {
+		// Source() already lexed the input. Keep a manually constructed AST's
+		// unknown text intact rather than rewriting its literal contents.
+		return strings.TrimSpace(line)
+	}
+	var parts, plain []string
+	flush := func() {
+		if len(plain) == 0 {
+			return
+		}
+		text := strings.Join(plain, " ")
+		text = strings.ReplaceAll(text, "= =", "==")
+		text = strings.ReplaceAll(text, "= >", "=>")
+		text = strings.ReplaceAll(text, "- >", "->")
+		text = strings.ReplaceAll(text, " . ", ".")
+		parts = append(parts, text)
+		plain = nil
+	}
+	for _, token := range tokens {
+		switch token.Kind {
+		case lexer.TokenEOF, lexer.TokenNewline:
+			continue
+		case lexer.TokenString:
+			flush()
+			parts = append(parts, "\""+token.Text+"\"")
+		default:
+			plain = append(plain, token.Text)
+		}
+	}
+	flush()
+	return strings.Join(parts, " ")
 }

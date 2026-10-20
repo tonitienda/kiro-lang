@@ -35,6 +35,9 @@ func (d FuncDecl) Signature() string {
 			b.WriteString(", ")
 		}
 		fmt.Fprintf(&b, "%s:%s", param.Name, param.Type)
+		if param.Default != "" {
+			fmt.Fprintf(&b, " = %s", param.Default)
+		}
 	}
 	fmt.Fprintf(&b, ") -> %s", d.ReturnType)
 	for _, effect := range d.CanonicalEffectNames() {

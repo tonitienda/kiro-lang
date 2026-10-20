@@ -1,5 +1,8 @@
 # Phase 11 Notes - Editor Tooling and LSP Baseline
 
+Phase 12 is now active; see `PHASE12_NOTES.md`. Existing editor/release tooling remains
+supported while the shared parser/formatter adopts the new explicit case delimiters.
+
 ## Agent-language research slice (2026-10-19)
 
 - Added `examples/quote_service/`, a seven-module integration seed with 14 domain/handler tests, without changing stable-core syntax.
@@ -27,3 +30,22 @@
 - tagged release automation now requires explicit workflow `contents: write` permission so CLI bundles, the packaged VS Code `.vsix`, and checksum assets can publish to GitHub Releases without manual intervention
 - LSP still depends on the same parser and formatter, not a second frontend
 - editor tooling continues to surface explicit function effects
+
+Phase 13 extends the keyed core with typed functions, explicit partial application,
+visible literal defaults and eager pure collection helpers. See `PHASE13_NOTES.md` and
+`docs/functional-core.md` for the implemented contracts and their limits.
+
+Phase 14 renames `list.fold` to `list.reduce` and adds explicit typed transducers.
+See `PHASE14_NOTES.md` for ordered execution and allocation limits.
+
+Phase 15 implements compositional result propagation and closed record/JSON schemas.
+See `PHASE15_NOTES.md` and `docs/results-and-schemas.md` for current enforcement and limits.
+
+Phase 16 adds typed variants, exhaustive recovery, explicit error conversion and executable
+list loops, and rejects unparseable bodies during checking; see `PHASE16_NOTES.md`.
+
+Phase 17 adds structured compiler feedback, discovery commands, formatter checks, conservative
+return-path analysis and semantic LSP overlays; see `PHASE17_NOTES.md` and `docs/agent-tools.md`.
+
+Phase 18 adds explicitly invoked analysis, coverage and mutation tools. They do not run in
+normal compiler/linter/LSP workflows; see `PHASE18_NOTES.md` and `docs/analysis-tools.md`.

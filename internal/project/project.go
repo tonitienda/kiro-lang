@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 	"github.com/kiro-lang/kiro/internal/parser"
 )
 
@@ -20,7 +21,7 @@ type File struct {
 }
 
 var stdlibModules = map[string]struct{}{
-	"fs": {}, "http": {}, "json": {}, "cli": {}, "env": {}, "log": {}, "ctx": {}, "parse": {}, "test": {}, "maybe": {}, "time": {},
+	"list": {}, "fs": {}, "http": {}, "json": {}, "cli": {}, "env": {}, "log": {}, "ctx": {}, "parse": {}, "test": {}, "maybe": {}, "time": {},
 }
 
 type Project struct {
@@ -29,21 +30,50 @@ type Project struct {
 	Files []File
 }
 
-func Load(entry string) (*Project, error) {
+func Load(entry string) (*Project, error) { return LoadOverlay(entry, nil) }
+func LoadOverlay(entry string, overlay map[string]string) (*Project, error) {
+	p, err := ParseOverlay(entry, overlay)
+	if err != nil {
+		d := runtimekit.DiagnosticOf(err, "KIRO_PROJECT")
+		return nil, &d
+	}
+	if err := p.Validate(); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+func Parse(entry string) (*Project, error) { return ParseOverlay(entry, nil) }
+func (proj *Project) Validate() error {
+	if err := proj.resolveImports(); err != nil {
+		return err
+	}
+	if err := validateEffects(proj); err != nil {
+		return err
+	}
+	if err := validateCalls(proj); err != nil {
+		return err
+	}
+	return validateFunctionalContracts(proj)
+}
+
+// Overlay keys are absolute paths; contents are checked without writing to disk.
+func ParseOverlay(entry string, overlay map[string]string) (*Project, error) {
 	entryPath, err := filepath.Abs(entry)
 	if err != nil {
 		return nil, err
 	}
 	info, err := os.Stat(entryPath)
 	if err != nil {
-		return nil, err
+		if _, exists := overlay[entryPath]; !exists {
+			return nil, err
+		}
 	}
 
 	proj := &Project{}
-	if info.IsDir() {
+	if info != nil && info.IsDir() {
 		proj.Root = entryPath
 		proj.Entry = filepath.Join(entryPath, "main.ki")
-		if _, err := os.Stat(proj.Entry); err != nil {
+		if _, err := os.Stat(proj.Entry); err != nil && !hasOverlay(overlay, proj.Entry) {
 			return nil, fmt.Errorf("entry directory %s must contain main.ki", entry)
 		}
 	} else {
@@ -54,9 +84,10 @@ func Load(entry string) (*Project, error) {
 		proj.Root = filepath.Dir(entryPath)
 	}
 
-	if err := filepath.WalkDir(proj.Root, func(path string, d os.DirEntry, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
+	paths := map[string]bool{}
+	if err := filepath.WalkDir(proj.Root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
 		if d.IsDir() {
 			if strings.HasPrefix(d.Name(), ".") && path != proj.Root {
@@ -64,31 +95,49 @@ func Load(entry string) (*Project, error) {
 			}
 			return nil
 		}
-		if !strings.HasSuffix(path, ".ki") {
-			return nil
+		if strings.HasSuffix(path, ".ki") {
+			paths[path] = true
 		}
-		src, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		f, err := parser.Parse(string(src))
-		if err != nil {
-			return withSourceLocation(path, string(src), err)
-		}
-		rel, _ := filepath.Rel(proj.Root, path)
-		proj.Files = append(proj.Files, File{Path: path, Rel: filepath.ToSlash(rel), AST: f, Src: string(src)})
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-
-	sort.Slice(proj.Files, func(i, j int) bool { return proj.Files[i].Rel < proj.Files[j].Rel })
-
-	if err := proj.resolveImports(); err != nil {
-		return nil, err
+	for path := range overlay {
+		rel, err := filepath.Rel(proj.Root, path)
+		if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) || !strings.HasSuffix(path, ".ki") {
+			continue
+		}
+		hidden := false
+		for _, part := range strings.Split(rel, string(filepath.Separator)) {
+			hidden = hidden || strings.HasPrefix(part, ".")
+		}
+		if !hidden {
+			paths[path] = true
+		}
 	}
-	if err := validateEffects(proj); err != nil {
-		return nil, err
+	names := []string{}
+	for path := range paths {
+		names = append(names, path)
+	}
+	sort.Strings(names)
+	for _, path := range names {
+		src, exists := overlay[path]
+		if !exists {
+			data, err := os.ReadFile(path)
+			if err != nil {
+				return nil, err
+			}
+			src = string(data)
+		}
+		f, err := parser.Parse(src)
+		if err != nil {
+			return nil, SourceDiagnostic(path, src, err, "KIRO_SYNTAX")
+		}
+		rel, _ := filepath.Rel(proj.Root, path)
+		proj.Files = append(proj.Files, File{Path: path, Rel: filepath.ToSlash(rel), AST: f, Src: src})
+	}
+	if len(proj.Files) == 0 {
+		return nil, errors.New("project contains no .ki source files")
 	}
 
 	return proj, nil
@@ -111,7 +160,11 @@ func (p *Project) resolveImports() error {
 			if hasModuleByPath(p.Files, imp) {
 				continue
 			}
-			return fmt.Errorf("%s: unresolved import %q\nhint: import a stdlib module (%s) or a project module whose `mod` name/path matches the import", f.Rel, imp, strings.Join(sortedStdlibModules(), ", "))
+			d := runtimekit.NewDiagnostic("KIRO_PROJECT", fmt.Sprintf("%s: unresolved import %q\nhint: import a stdlib module (%s) or a project module whose `mod` name/path matches the import", f.Rel, imp, strings.Join(sortedStdlibModules(), ", ")))
+			d.File = f.Path
+			d.Target = imp
+			d.Hint = "import a supported standard-library or declared project module"
+			return d
 		}
 	}
 	return nil
@@ -137,3 +190,5 @@ func hasModuleByPath(files []File, imp string) bool {
 	}
 	return false
 }
+
+func hasOverlay(overlay map[string]string, path string) bool { _, ok := overlay[path]; return ok }

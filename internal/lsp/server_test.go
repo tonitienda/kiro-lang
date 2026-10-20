@@ -9,12 +9,12 @@ const sample = `mod main
 
 /// add docs
 fn add(a:i32, b:i32) -> i32 !io {
-  println("adding")
+  println(value : "adding")
   return a + b
 }
 
 fn main() -> i32 !io {
-  return add(1, 2)
+  return add(a : 1, b : 2)
 }
 `
 

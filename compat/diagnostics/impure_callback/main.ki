@@ -1,0 +1,8 @@
+mod main
+import list
+fn emit(value:i32)->nil !io {println(value:value)
+return nil}
+fn main()->nil !io {
+list.map(items:[],transform:emit)
+return nil
+}

@@ -10,6 +10,6 @@ fn (u:User) greet(prefix:str) -> str {
 
 fn main() -> i32 !io {
   let u = User { name : "kiro" }
-  println ( u.greet ( "hi" ) )
+  println ( value : u.greet ( prefix : "hi" ) )
   return 0
 }

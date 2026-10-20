@@ -26,6 +26,12 @@ type ConstSpec struct {
 }
 
 type TypeSpec struct {
+	Name     string        `json:"name"`
+	Fields   []FieldSpec   `json:"fields"`
+	Variants []VariantSpec `json:"variants,omitempty"`
+}
+
+type VariantSpec struct {
 	Name   string      `json:"name"`
 	Fields []FieldSpec `json:"fields"`
 }
@@ -36,6 +42,9 @@ type FieldSpec struct {
 }
 
 type FuncSpec struct {
+	File         string      `json:"file,omitempty"`
+	Line         int         `json:"line,omitempty"`
+	Column       int         `json:"column,omitempty"`
 	Module       string      `json:"module"`
 	Name         string      `json:"name"`
 	ReceiverType string      `json:"receiver_type,omitempty"`
@@ -43,11 +52,13 @@ type FuncSpec struct {
 	ReturnType   string      `json:"return_type"`
 	BlockBody    bool        `json:"block_body"`
 	Body         string      `json:"body"`
+	Effects      []string    `json:"effects,omitempty"`
 }
 
 type ParamSpec struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Default string `json:"default,omitempty"`
 }
 
 func DecodeSpec(raw string) (ProgramSpec, error) {

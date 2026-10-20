@@ -1,5 +1,8 @@
 # Kiro Phase 1 Spec
 
+Current syntax and semantics: [language reference](language-reference.md). This page is
+a secondary overview; historical milestones do not define additional executable syntax.
+
 This repository follows a constrained Phase 1 implementation plan for Kiro:
 
 - lexer

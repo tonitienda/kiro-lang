@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/kiro-lang/kiro/internal/ast"
-	"github.com/kiro-lang/kiro/internal/lexer"
+	"github.com/kiro-lang/kiro/internal/buildsys/runtimekit"
 )
 
 var knownEffects = map[string]struct{}{
@@ -86,7 +86,14 @@ func validateEffects(p *Project) error {
 				}
 				sort.Strings(missing)
 				msg := fmt.Errorf("%d:%d: missing effect declaration: %q calls %q\nexpected: add %q to %s\nhint: effects model operational impurity and must be declared at the caller boundary", fn.Line, fn.Column, fn.Name, call, "!"+missing[0], fn.Signature())
-				return withSourceLocation(file.Path, file.Src, msg)
+				d := runtimekit.NewDiagnostic("KIRO_EFFECT_REQUIRED", msg.Error())
+				d.Symbol = file.AST.Module + "." + fn.Name
+				d.Target = call
+				d.Missing = missing
+				d.Hint = "declare required operational effects at the caller boundary"
+				d.Range = runtimekit.DeclarationRange(fn.Line, fn.Column, len([]rune(fn.Name)))
+				d.LocationKind = "declaration"
+				return withSourceLocation(file.Path, file.Src, d)
 			}
 		}
 	}
@@ -125,26 +132,17 @@ func sortedKnownEffects() []string {
 }
 
 func collectCalls(body string) []string {
-	toks, err := lexer.Lex(body)
+	sites, err := runtimekit.InspectCalls(body)
 	if err != nil {
 		return nil
 	}
 	var calls []string
-	for i := 0; i < len(toks); i++ {
-		if toks[i].Kind != lexer.TokenIdent {
-			continue
-		}
-		parts := []string{toks[i].Text}
-		j := i + 1
-		for j+1 < len(toks) && toks[j].Text == "." && toks[j+1].Kind == lexer.TokenIdent {
-			parts = append(parts, toks[j+1].Text)
-			j += 2
-		}
-		if j < len(toks) && toks[j].Text == "(" {
-			calls = append(calls, strings.Join(parts, "."))
-			i = j - 1
+	for _, site := range sites {
+		if !site.Partial {
+			calls = append(calls, site.Target)
 		}
 	}
+
 	return calls
 }
 
