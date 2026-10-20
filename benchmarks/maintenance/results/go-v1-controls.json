@@ -1,0 +1,1978 @@
+{
+  "schema": "kiro.benchmark.go-preparation-evidence.v1",
+  "kind": "deterministic-setup-controls-not-model-results",
+  "model_trials_run": 0,
+  "source_parent": "d6a51b0663c901701623de95640933a26aef477d",
+  "go_version": "go version go1.26.3 darwin/arm64",
+  "kiro_sha256": "2f0cf17166bd966089395c335359e7c8bc9e050f75f62fa73ef197cd5c18662f",
+  "parity": {
+    "kind": "deterministic-cross-language-fixture-validation-not-model-performance",
+    "trusted_fixture": true,
+    "arithmetic_domain": "signed i32 inputs and non-overflowing intermediate arithmetic",
+    "cases_per_language": 519,
+    "languages": {
+      "kiro": {
+        "passed": true,
+        "passed_cases": 519,
+        "failures": []
+      },
+      "go": {
+        "passed": true,
+        "passed_cases": 519,
+        "failures": []
+      }
+    },
+    "passed": true
+  },
+  "go": {
+    "passed": true,
+    "evaluations": 16,
+    "controls": [
+      {
+        "control": "baseline",
+        "expected_passed": true,
+        "evaluation": {
+          "task": "baseline",
+          "passed": true,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.336s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "unchanged",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "discount-policy",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 0,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 0,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.335s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "unchanged",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "reservation-expiry",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 8,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.344s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "unchanged",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "partial-refund",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 60,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.376s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "unchanged",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "payment-boundary",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.356s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": true,
+            "passed": false,
+            "checks": [
+              {
+                "name": "payments owns authorization type",
+                "passed": false
+              },
+              {
+                "name": "payments authorization owns policy",
+                "passed": false
+              },
+              {
+                "name": "payments authorization returns its record and ordinary error",
+                "passed": false
+              },
+              {
+                "name": "compatibility adapter calls payment module",
+                "passed": false
+              },
+              {
+                "name": "payments owns and calls PaymentKnown",
+                "passed": false
+              },
+              {
+                "name": "payments owns and calls PaymentFee",
+                "passed": false
+              },
+              {
+                "name": "payments owns and calls PaymentReference",
+                "passed": false
+              },
+              {
+                "name": "payments has no forbidden dependencies",
+                "passed": true
+              }
+            ]
+          }
+        }
+      },
+      {
+        "control": "unchanged",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "payment-declined",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 3,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.353s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": true,
+            "passed": false,
+            "checks": [
+              {
+                "name": "distinct checkout declined outcome",
+                "passed": false
+              },
+              {
+                "name": "authorization constructs declined outcome",
+                "passed": false
+              }
+            ]
+          }
+        }
+      },
+      {
+        "control": "reference",
+        "expected_passed": true,
+        "evaluation": {
+          "task": "discount-policy",
+          "passed": true,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.328s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "negative",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "discount-policy",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 66,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 2,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.342s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "reference",
+        "expected_passed": true,
+        "evaluation": {
+          "task": "reservation-expiry",
+          "passed": true,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.327s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "negative",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "reservation-expiry",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 8,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.338s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "reference",
+        "expected_passed": true,
+        "evaluation": {
+          "task": "partial-refund",
+          "passed": true,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.339s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "negative",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "partial-refund",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 60,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.346s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": false,
+            "passed": true,
+            "checks": []
+          }
+        }
+      },
+      {
+        "control": "reference",
+        "expected_passed": true,
+        "evaluation": {
+          "task": "payment-boundary",
+          "passed": true,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.365s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/payments\t[no test files]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": true,
+            "passed": true,
+            "checks": [
+              {
+                "name": "payments owns authorization type",
+                "passed": true
+              },
+              {
+                "name": "payments authorization owns policy",
+                "passed": true
+              },
+              {
+                "name": "payments authorization returns its record and ordinary error",
+                "passed": true
+              },
+              {
+                "name": "compatibility adapter calls payment module",
+                "passed": true
+              },
+              {
+                "name": "payments owns and calls PaymentKnown",
+                "passed": true
+              },
+              {
+                "name": "payments owns and calls PaymentFee",
+                "passed": true
+              },
+              {
+                "name": "payments owns and calls PaymentReference",
+                "passed": true
+              },
+              {
+                "name": "payments has no forbidden dependencies",
+                "passed": true
+              }
+            ]
+          }
+        }
+      },
+      {
+        "control": "negative",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "payment-boundary",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.323s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/payments\t[no test files]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": true,
+            "passed": false,
+            "checks": [
+              {
+                "name": "payments owns authorization type",
+                "passed": false
+              },
+              {
+                "name": "payments authorization owns policy",
+                "passed": false
+              },
+              {
+                "name": "payments authorization returns its record and ordinary error",
+                "passed": false
+              },
+              {
+                "name": "compatibility adapter calls payment module",
+                "passed": false
+              },
+              {
+                "name": "payments owns and calls PaymentKnown",
+                "passed": false
+              },
+              {
+                "name": "payments owns and calls PaymentFee",
+                "passed": false
+              },
+              {
+                "name": "payments owns and calls PaymentReference",
+                "passed": false
+              },
+              {
+                "name": "payments has no forbidden dependencies",
+                "passed": true
+              }
+            ]
+          }
+        }
+      },
+      {
+        "control": "reference",
+        "expected_passed": true,
+        "evaluation": {
+          "task": "payment-declined",
+          "passed": true,
+          "status": "complete",
+          "behavioral_passed": true,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 4,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.334s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": true,
+            "passed": true,
+            "checks": [
+              {
+                "name": "distinct checkout declined outcome",
+                "passed": true
+              },
+              {
+                "name": "authorization constructs declined outcome",
+                "passed": true
+              }
+            ]
+          }
+        }
+      },
+      {
+        "control": "negative",
+        "expected_passed": false,
+        "evaluation": {
+          "task": "payment-declined",
+          "passed": false,
+          "status": "complete",
+          "behavioral_passed": false,
+          "groups": {
+            "checkout-regression": {
+              "passed": 144,
+              "total": 144
+            },
+            "validation-priority": {
+              "passed": 10,
+              "total": 10
+            },
+            "discount-policy": {
+              "passed": 72,
+              "total": 72
+            },
+            "discount-threshold": {
+              "passed": 3,
+              "total": 3
+            },
+            "payment-outcome": {
+              "passed": 3,
+              "total": 4
+            },
+            "reservation-boundary": {
+              "passed": 12,
+              "total": 12
+            },
+            "refund-matrix": {
+              "passed": 72,
+              "total": 72
+            },
+            "refund-invalid": {
+              "passed": 5,
+              "total": 5
+            },
+            "schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "routing": {
+              "passed": 6,
+              "total": 6
+            },
+            "strict-schema": {
+              "passed": 12,
+              "total": 12
+            },
+            "optional-omission": {
+              "passed": 1,
+              "total": 1
+            }
+          },
+          "api": {
+            "passed": true,
+            "checks": [
+              {
+                "symbol": "app.Handler",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorization",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Receipt",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Authorize",
+                "passed": true
+              },
+              {
+                "symbol": "checkout.Place",
+                "passed": true
+              },
+              {
+                "symbol": "inventory.Remaining",
+                "passed": true
+              },
+              {
+                "symbol": "pricing.QuoteFor",
+                "passed": true
+              },
+              {
+                "symbol": "refunds.Calculate",
+                "passed": true
+              },
+              {
+                "symbol": "reservations.StatusAt",
+                "passed": true
+              }
+            ],
+            "stderr": "",
+            "stdout": "ok  \tbenchmark.local/checkout\t0.368s [no tests to run]\nok  \tbenchmark.local/checkout/app\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/catalog\t[no test files]\nok  \tbenchmark.local/checkout/internal/checkout\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/inventory\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/pricing\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/refunds\t(cached) [no tests to run]\nok  \tbenchmark.local/checkout/internal/reservations\t(cached) [no tests to run]\n?   \tbenchmark.local/checkout/internal/shipping\t[no test files]\n",
+            "probe_compilation": "all-nine-contracts-together"
+          },
+          "structural": {
+            "required": true,
+            "passed": true,
+            "checks": [
+              {
+                "name": "distinct checkout declined outcome",
+                "passed": true
+              },
+              {
+                "name": "authorization constructs declined outcome",
+                "passed": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "kiro": {
+    "passed": true,
+    "evaluations": 16
+  },
+  "validation": {
+    "root_go_test": "passed",
+    "root_go_vet": "passed",
+    "fixture_go_test": "passed",
+    "fixture_go_vet": "passed",
+    "python_unittest": {
+      "passed": true,
+      "tests": 31
+    }
+  },
+  "limits": {
+    "kind": "environment-observation-not-model-result",
+    "docker_cli": true,
+    "docker_daemon_available": false,
+    "docker_observation": "Cannot connect to the Docker daemon at unix:///Users/toni/.docker/run/docker.sock. Is the docker daemon running?",
+    "external_model_driver": null,
+    "model_trials_run": 0,
+    "go_version": "go version go1.26.3 darwin/arm64",
+    "isolation_end_to_end_verified": false
+  },
+  "input_sha256": {
+    "benchmarks/maintenance/workload/README.md": "63547e2e70c4a9cc164df2ff3a828c8bebca1ed4524905428c4cafeb560340fa",
+    "benchmarks/maintenance/workload/app/main.ki": "eac3d00a853bc37f78bf9aa5a5f90aa2ad96db2ecc7153b4e24a32222423d182",
+    "benchmarks/maintenance/workload/internal/catalog/main.ki": "a8e8bee27f7a4e1fe64c5cd9210fe247fad07b79807756b62ba809b3f03158f2",
+    "benchmarks/maintenance/workload/internal/checkout/main.ki": "fd7a142324fab1d9a6a8d82a1e92109565952fe1da7ea81fbed3c12899464836",
+    "benchmarks/maintenance/workload/internal/inventory/main.ki": "bd5122e7b2f876b03816984d60987662d0bc7b76237c1d4226e4d43ee945083d",
+    "benchmarks/maintenance/workload/internal/pricing/main.ki": "3dade2b13649a162d67071abe0ea6a2f2eb62971e81de4c7dac5f6d21f9a98fc",
+    "benchmarks/maintenance/workload/internal/refunds/main.ki": "d67c0818bb8e44552b0cc6050768862bb56f0722e0ed3675530f44dea3964d45",
+    "benchmarks/maintenance/workload/internal/reservations/main.ki": "27d728b9eac3d9c6d94bef13929c51a7284269d9724c398677df42d37893bf2f",
+    "benchmarks/maintenance/workload/internal/shipping/main.ki": "4f515f92987b96391ba56a8786dc563b9c86fbde1be74de0460e04a3d43862b1",
+    "benchmarks/maintenance/workload/main.ki": "14de075db049e39310923c6c758aca27ac0ea92d268487306a4d2f4de5c25d7c",
+    "benchmarks/maintenance/workload/test/main.ki": "796123312ca20c52b69c98a285ac4874281a0b14fbd41af3c85ea96c8fba1dc5",
+    "benchmarks/maintenance/workload-go-v1/README.md": "c5a32cd2af9e92b9842b3b8a8182ef7f2e4f3c05b3df19f9e6c1852dadc764a9",
+    "benchmarks/maintenance/workload-go-v1/app/app.go": "3dbcc9f327319891144589a0cc528772a39c4e76b5edf04d8ff3b229521c932e",
+    "benchmarks/maintenance/workload-go-v1/go.mod": "c9e6086a9704a4b85804e6a19e3ea745618c7e43606cad58ee6da44d80dd24c1",
+    "benchmarks/maintenance/workload-go-v1/internal/catalog/catalog.go": "f66c5f6c6518ff84bbebeb58fcb38cc458adfae89fd398fa37af808e70e9a3e6",
+    "benchmarks/maintenance/workload-go-v1/internal/checkout/checkout.go": "4a927947ce759b8b6a266fd27e978c8cfaffba4c495848c6f196014b378a1f11",
+    "benchmarks/maintenance/workload-go-v1/internal/inventory/inventory.go": "a94cb7dc9ba207da41dd834ebc8defea8899693c25cb1eeee05ecdca6944d80d",
+    "benchmarks/maintenance/workload-go-v1/internal/pricing/pricing.go": "73ec956860d97312604a430cbaf44ca4013a81d8b4aa77eb69dea47a2792f51c",
+    "benchmarks/maintenance/workload-go-v1/internal/refunds/refunds.go": "cf8f561898438ce61ba97ad6d2e4c685f8a379418ace5dabf75c987700500ce6",
+    "benchmarks/maintenance/workload-go-v1/internal/reservations/reservations.go": "34b159ec4eee513de1dd2956637db9db34e261f7de99c6e6c695f104b8a9192f",
+    "benchmarks/maintenance/workload-go-v1/internal/shipping/shipping.go": "460cb1eefb3aa91f87c3b80984ecf6310c4f9da07530049046376c8b07e22d84",
+    "benchmarks/maintenance/workload-go-v1/main.go": "e3cd9bec76a73bc167339c7de638907cb576ba7fdc746c2501524effe13a30ff",
+    "benchmarks/maintenance/workload-go-v1/public_test.go": "22f32dc9e39140be488386872042c29d9a2905f5789679ce0ee44582af552222",
+    "benchmarks/maintenance/tasks/discount-policy.json": "89b36f39a0dfe54d5a5f33d76583be753829e802dde551a5fb8e937828845e6a",
+    "benchmarks/maintenance/tasks/partial-refund.json": "8ec5943a7696c126cb6f953218d89b025f5aac770df6e3c1df35da220aacae6f",
+    "benchmarks/maintenance/tasks/payment-boundary.json": "d7fa4caa9934f31c0d562b017144cfbf6ecd7b460ac6627a2627a2ce9729fa35",
+    "benchmarks/maintenance/tasks/payment-declined.json": "bc775c7ab550529b1fd91b193ab7c7524c5a83b00b0ce5af17c13e6d2171ec71",
+    "benchmarks/maintenance/tasks/reservation-expiry.json": "f24f84cb44bb9c3dc230830e833e67c247b0f44daba6130f6ba8a4f3f3422516",
+    "benchmarks/maintenance/tasks-go-v1/discount-policy.json": "318a3b0180ee6da042f7dbc3c8887f595331721dbb4c84267c9391097371ef7e",
+    "benchmarks/maintenance/tasks-go-v1/partial-refund.json": "e358eca00aa832ee065929c669d70b4028ac8b2a3a15db858893a6744f1a429c",
+    "benchmarks/maintenance/tasks-go-v1/payment-boundary.json": "a851b016a021f456bcf9b24e56d81a83d628a89069520d664bd8f9871129fcd7",
+    "benchmarks/maintenance/tasks-go-v1/payment-declined.json": "7eeae9bf76f61097c64b22cf28732e5b436dba8c20742a0102419996bc4fe3ec",
+    "benchmarks/maintenance/tasks-go-v1/reservation-expiry.json": "003b8a5c5fef2fe90490011374633eaa93fdd042106b92db1709f865e25fe084",
+    "benchmarks/maintenance/runner/benchmark.py": "cd9ce3567bc14a460ab46d15dc39a2d72d839ae7fa53638bb91b4545d8c079c8",
+    "benchmarks/maintenance/runner/broker.py": "595a8f951f5cc23c5cc3f8fb67f0cdc90d3604139dc40c406a626070f776f852",
+    "benchmarks/maintenance/runner/contracts.json": "e884aa67744fd5a84028d93ebdc64da2296997c63d19554c618f287904b19953",
+    "benchmarks/maintenance/runner/controls.py": "e4fda8a90949a2aee3dd75fde127691795094bf5850df0b7f0dd3d5838e571e6",
+    "benchmarks/maintenance/runner/evaluate.py": "9120f71e4180ba45614ebe23851d5431959d088603b73496bf6900061944542d",
+    "benchmarks/maintenance/runner/go_benchmark.py": "ecc495a167bc1d810654c58c6ed570e94296f38b5c5d1fb5d4d6799eece8fb6a",
+    "benchmarks/maintenance/runner/go_controls.py": "d8b11a44e2819d57f7ba9dabd2f9d989e6ea11b23810c136836e6ae2ab2f5f56",
+    "benchmarks/maintenance/runner/goinspect/main.go": "a106a15c76c8441d10df818ead4776bb225ba0401ecd3e449a0931bda0b72ad6",
+    "benchmarks/maintenance/runner/oracle.py": "43510497770e81972e891cb7c14ecc88d96c98cdd45b4975efcdcdb55d1a0b2d",
+    "benchmarks/maintenance/runner/prepare_pilot.py": "e0533a0b517d5f4661fff21a96715e520811abc8173763532f5b4808749c89c7",
+    "benchmarks/maintenance/runner/session.py": "c0a79be598c6af43a0625cf0a4afef009ba6483587161d28e339188ebd2efe13",
+    "benchmarks/maintenance/runner/test_benchmark.py": "0e0dbb3e10d23504b1cbac51872560336d9eeedbcd745061a7f7b54c55af552a",
+    "benchmarks/maintenance/runner/test_go_benchmark.py": "613882a8fe5a0ac6ba2ddc203f02a6045370d715b5b866c7029cc9445ab557d2",
+    "benchmarks/maintenance/runner/test_go_parity.py": "190df3984ab55047f7b55dbfb3da1fe2bb8bcc818e282bbd38ca7dd28489d72e",
+    "benchmarks/maintenance/runner/test_go_structure_audit.py": "b657faeb4e7c5f72b6b74423dd979da8e7c680b6a382d6f1cb43a7bdd19f15cd",
+    "benchmarks/maintenance/runner/test_prepare_pilot.py": "affa5bc4b5bc13691f267d552c2794a86fcec8b92a43674ec3bfe875a5c5d8da"
+  }
+}

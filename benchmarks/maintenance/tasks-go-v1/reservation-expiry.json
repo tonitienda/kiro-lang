@@ -1,0 +1,16 @@
+{
+  "schema": "kiro.benchmark.go-task.v1",
+  "id": "reservation-expiry",
+  "version": 1,
+  "title": "Repair reservation expiry boundary",
+  "requirement": "A reservation is active exactly when now is strictly less than expires_at. At equality it is expired. Fix the equality boundary for all integer timestamps, including zero and negative values. Preserve the response schema and unrelated behavior.",
+  "scope": "One independent change to the supplied baseline; implement and verify without a human review gate.",
+  "acceptance": "Behavior is checked through HTTP against the task and unchanged baseline contracts. Payment-boundary additionally has an explicit structural check. Add or update meaningful public tests.",
+  "limits": "Do not change AGENTS.md, task.json or the Go module identity. Use the declared isolated tool environment. Add meaningful tests; implement, audit and verify without waiting for human source review.",
+  "fixture": "go-maintenance-v1",
+  "source_task": {
+    "id": "reservation-expiry",
+    "version": 1
+  },
+  "language": "go"
+}

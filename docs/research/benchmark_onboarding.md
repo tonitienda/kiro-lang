@@ -127,3 +127,16 @@ harness. Deterministic controls are recorded separately from model trials. Actua
 execution is blocked in the development environment by missing Docker/model transport;
 Docker end-to-end validation and a separate agent audit of the oracle remain outstanding.
 The current language reference remains Phase 19; no model or Go advantage is measured.
+
+
+## Versioned Go counterpart and native pilots
+
+The [matched pilot guide](../../benchmarks/maintenance/GO_PILOT.md) supplies an independent
+Go baseline and task mappings plus complete generated prompts for both languages. Primary
+comparisons are Claude/Kiro versus Claude/Go and Codex/Kiro versus Codex/Go, with identical
+settings within each agent's pair. Compare correctness before effort. The Kiro analysis
+ablation remains separate. Scaffolded native Kiro preparation is v2; it does not mutate the
+pinned v1 cohort or upgrade old instruction-constrained reports to isolated model results.
+Strict request validation belongs to setup in both languages. Preparation, scripted fixes
+and negative controls are not model results. Current daemon/driver limits still prevent
+new isolated model runs; see the guide for parity boundaries and execution requirements.

@@ -33,6 +33,23 @@ bubblewrap namespace creation was also denied by the host. No model trials were 
 Docker orchestration is covered by argument/mount tests but is not end-to-end verified here.
 The model-provider adapter is a trusted external component, not supplied/configured in this
 phase. The oracle and fixture were authored by the same setup agent; an independent agent
-audit is still needed to reduce correlated specification/checker mistakes. The later Go
-fixture/adapter and structural-check mapping are not implemented yet. No performance or
-language-comparison conclusion follows from harness controls.
+audit is still needed to reduce correlated specification/checker mistakes. A separately
+versioned Go fixture, task mappings, evaluator and controls are now implemented; see
+`benchmarks/maintenance/GO_PILOT.md`. The original Kiro cohort is unchanged. No performance
+or language-comparison conclusion follows from harness controls.
+
+## Go counterpart preparation
+
+Added an idiomatic standard-library Go baseline with the same business responsibilities,
+six public tests and strict HTTP request validation, preserving the baseline expiry and
+partial-refund bugs. New Go tasks and scaffolded Kiro pilot preparation are explicitly
+versioned. Shared HTTP cases stay unchanged. Go public API compile probes and AST-based
+architecture checks score separately from behavior; aliases/ordinary errors are supported.
+Reference/incorrect controls and an independent cross-language input matrix validate setup,
+not model performance. See the Go pilot guide and results for exact observed checks.
+
+On this development host Docker CLI is installed but its daemon is unavailable; no external
+model adapter was configured. No new model candidates were executed, and candidate code
+was never silently evaluated on the host. The prior execution-limit paragraph describes
+the original Phase 20 environment. New native scaffold preparation retains generated
+AGENTS.md and .kiro; the original v1 harness workspace generator remains pinned unchanged.

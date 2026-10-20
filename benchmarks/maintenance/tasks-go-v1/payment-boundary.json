@@ -1,0 +1,16 @@
+{
+  "schema": "kiro.benchmark.go-task.v1",
+  "id": "payment-boundary",
+  "version": 1,
+  "title": "Extract payment policy behind a module boundary",
+  "requirement": "Move payment recognition, fee, reference and authorization policy from internal/checkout to a new internal/payments package. Payments owns PaymentKnown, PaymentFee, PaymentReference (unexported camelCase equivalents are permitted), Authorize and its own Authorization/error contract. It must not depend directly or transitively on checkout, inventory, pricing, shipping, catalog, app, reservations or refunds. Keep checkout.Authorize and checkout.Authorization/checkout.Error working for existing callers. checkout.Authorize must delegate to payments.Authorize; checkout must no longer define the three payment helpers. Preserve all HTTP responses, fee/reference behavior, public APIs and tests. Ordinary Go errors and aliases or wrappers are permitted when they preserve the contract; no nominal error/record conversion is required. Do not add an unused package or re-export policy that still lives in checkout. Behavioral, public API and structural outcomes are scored separately.",
+  "scope": "One independent change to the supplied baseline; implement and verify without a human review gate.",
+  "acceptance": "Behavior is checked through HTTP against the task and unchanged baseline contracts. Payment-boundary additionally has an explicit structural check. Add or update meaningful public tests.",
+  "limits": "Do not change AGENTS.md, task.json or the Go module identity. Use the declared isolated tool environment. Add meaningful tests; implement, audit and verify without waiting for human source review.",
+  "fixture": "go-maintenance-v1",
+  "source_task": {
+    "id": "payment-boundary",
+    "version": 1
+  },
+  "language": "go"
+}

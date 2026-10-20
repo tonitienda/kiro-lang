@@ -9,8 +9,10 @@ a completeness proof.
 
 The paired experiment asks whether optional analysis helps a fresh agent complete a Kiro
 maintenance change correctly at a useful total cost. It does not measure a universal language
-ranking. A later Go port can reuse the HTTP requirements/case matrix; Go fixture/tooling and
-structural-check mapping are not implemented in this cohort.
+ranking. The separately versioned [Go counterpart and matched pilot procedure](GO_PILOT.md) reuse
+the HTTP case matrix. Its controls are preparation evidence, not model results; Go is not
+part of the original pinned Kiro cohort. The primary language comparison pairs each agent
+with itself across Kiro and Go, separately from the Kiro analysis-tool ablation.
 
 | Task | Requested change | Evaluation |
 | --- | --- | --- |
