@@ -1,0 +1,27 @@
+mod catalog
+
+type Error {
+  variant UnknownProduct {
+    sku:str
+  }
+}
+
+fn price(sku:str) -> R[i32,Error] {
+  when ( sku ) {
+  "book" => { return Ok ( value : 1500 ) }
+  "poster" => { return Ok ( value : 700 ) }
+  "mug" => { return Ok ( value : 1200 ) }
+  "notebook" => { return Ok ( value : 500 ) }
+  _ => { return Err ( error : Error.UnknownProduct ( sku : sku ) ) }
+  }
+}
+
+fn name(sku:str) -> R[str,Error] {
+  when ( sku ) {
+  "book" => { return Ok ( value : "Book" ) }
+  "poster" => { return Ok ( value : "Poster" ) }
+  "mug" => { return Ok ( value : "Mug" ) }
+  "notebook" => { return Ok ( value : "Notebook" ) }
+  _ => { return Err ( error : Error.UnknownProduct ( sku : sku ) ) }
+  }
+}

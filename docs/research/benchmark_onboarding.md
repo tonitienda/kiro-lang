@@ -118,3 +118,12 @@ what the agent inspected, a failure/repair and the acceptance result. Label each
 measured, an interpretation of a trace, or an untested hypothesis. Publish the fixtures,
 versioned docs, run procedure, unsuccessful trials and limitations alongside aggregate
 results. The single quote-service smoke run in Phase 18 is a tooling check, not this benchmark.
+
+## Phase 20 implementation status
+
+The [maintenance suite](../../benchmarks/maintenance/README.md) implements a larger workload,
+five tasks, HTTP/API/structure evaluation, control validation and a paired external-driver
+harness. Deterministic controls are recorded separately from model trials. Actual model
+execution is blocked in the development environment by missing Docker/model transport;
+Docker end-to-end validation and a separate agent audit of the oracle remain outstanding.
+The current language reference remains Phase 19; no model or Go advantage is measured.

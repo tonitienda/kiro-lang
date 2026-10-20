@@ -1,0 +1,44 @@
+mod public_tests
+
+import checkout
+import reservations
+import refunds
+import test
+
+fn test_checkout() -> R[nil,checkout.Error] {
+  let receipt = checkout.place ( sku : "book" , units : 2 , available : 4 , delivery : "standard" , coupon : nil , payment : "card" ) ?
+  test.eq ( actual : receipt.total_cents , expected : 3330 )
+  test.eq ( actual : receipt.remaining_stock , expected : 2 )
+  test.eq ( actual : receipt.payment_reference , expected : "card:3300" )
+  return Ok ( value : nil )
+}
+
+fn test_free_shipping() -> R[nil,checkout.Error] {
+  let receipt = checkout.place ( sku : "mug" , units : 1 , available : 1 , delivery : "express" , coupon : "SHIPFREE" , payment : "bank" ) ?
+  test.eq ( actual : receipt.total_cents , expected : 1200 )
+  return Ok ( value : nil )
+}
+
+fn test_invalid_stock() -> nil {
+  test.eq ( actual : checkout.place ( sku : "book" , units : 2 , available : 1 , delivery : "standard" , coupon : nil , payment : "card" ) , expected : Err ( error : checkout.Error.InsufficientStock ( requested : 2 , available : 1 ) ) )
+  return nil
+}
+
+fn test_reservation_before_and_after() -> nil {
+  test.eq ( actual : reservations.status ( now : 9 , expires_at : 10 ).active , expected : true )
+  test.eq ( actual : reservations.status ( now : 11 , expires_at : 10 ).active , expected : false )
+  return nil
+}
+
+fn test_full_refund() -> R[nil,refunds.Error] {
+  let result = refunds.calculate ( unit_cents : 1500 , units : 2 , returned_units : 2 , shipping_cents : 300 ) ?
+  test.eq ( actual : result.refund_cents , expected : 3300 )
+  test.eq ( actual : result.remaining_cents , expected : 0 )
+  return Ok ( value : nil )
+}
+
+fn test_zero_refund() -> R[nil,refunds.Error] {
+  let result = refunds.calculate ( unit_cents : 1500 , units : 2 , returned_units : 0 , shipping_cents : 300 ) ?
+  test.eq ( actual : result.refund_cents , expected : 0 )
+  return Ok ( value : nil )
+}

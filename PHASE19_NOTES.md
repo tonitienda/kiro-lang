@@ -42,3 +42,6 @@ limits. Analysis stays opt-in. No model benchmark or Go comparison has been run 
 
 These are compiler/documentation checks. Model maintenance benchmarks and the Go comparison
 remain subsequent work; there are no new agent-performance results to present yet.
+
+Phase 20 adds the workload, deterministic evaluator and external-driver trial harness.
+See `PHASE20_NOTES.md`; model trials remain blocked by missing execution prerequisites.

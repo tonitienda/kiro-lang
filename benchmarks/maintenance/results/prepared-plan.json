@@ -1,0 +1,263 @@
+{
+  "schema": "kiro.benchmark.plan.v1",
+  "kind": "prepared-not-executed",
+  "repetitions": 3,
+  "seed": 20261020,
+  "source_commit": "51daf4d3d0cb8781f6345c7a6e0a625778801f0f",
+  "source_dirty": true,
+  "compiler_sha256": "452b8f825248c0a51e27530ff96ba07c6a8a99838e8659ac53ef1367d59ef3f9",
+  "guide": {
+    "schema": "kiro.language-reference.v1",
+    "path": "references/language.md",
+    "sha256": "3b1ab280228a3f7fc2a02062a0fcc8bb8fdf4d0494ae28dc1e56c9289db86390"
+  },
+  "guide_version": "phase19-language-reference",
+  "inputs": {
+    "benchmarks/maintenance/workload": {
+      "README.md": "63547e2e70c4a9cc164df2ff3a828c8bebca1ed4524905428c4cafeb560340fa",
+      "app/main.ki": "eac3d00a853bc37f78bf9aa5a5f90aa2ad96db2ecc7153b4e24a32222423d182",
+      "internal/catalog/main.ki": "a8e8bee27f7a4e1fe64c5cd9210fe247fad07b79807756b62ba809b3f03158f2",
+      "internal/checkout/main.ki": "fd7a142324fab1d9a6a8d82a1e92109565952fe1da7ea81fbed3c12899464836",
+      "internal/inventory/main.ki": "bd5122e7b2f876b03816984d60987662d0bc7b76237c1d4226e4d43ee945083d",
+      "internal/pricing/main.ki": "3dade2b13649a162d67071abe0ea6a2f2eb62971e81de4c7dac5f6d21f9a98fc",
+      "internal/refunds/main.ki": "d67c0818bb8e44552b0cc6050768862bb56f0722e0ed3675530f44dea3964d45",
+      "internal/reservations/main.ki": "27d728b9eac3d9c6d94bef13929c51a7284269d9724c398677df42d37893bf2f",
+      "internal/shipping/main.ki": "4f515f92987b96391ba56a8786dc563b9c86fbde1be74de0460e04a3d43862b1",
+      "main.ki": "14de075db049e39310923c6c758aca27ac0ea92d268487306a4d2f4de5c25d7c",
+      "test/main.ki": "796123312ca20c52b69c98a285ac4874281a0b14fbd41af3c85ea96c8fba1dc5"
+    },
+    "benchmarks/maintenance/tasks": {
+      "discount-policy.json": "89b36f39a0dfe54d5a5f33d76583be753829e802dde551a5fb8e937828845e6a",
+      "partial-refund.json": "8ec5943a7696c126cb6f953218d89b025f5aac770df6e3c1df35da220aacae6f",
+      "payment-boundary.json": "d7fa4caa9934f31c0d562b017144cfbf6ecd7b460ac6627a2627a2ce9729fa35",
+      "payment-declined.json": "bc775c7ab550529b1fd91b193ab7c7524c5a83b00b0ce5af17c13e6d2171ec71",
+      "reservation-expiry.json": "f24f84cb44bb9c3dc230830e833e67c247b0f44daba6130f6ba8a4f3f3422516"
+    },
+    "benchmarks/maintenance/runner": {
+      "benchmark.py": "cd9ce3567bc14a460ab46d15dc39a2d72d839ae7fa53638bb91b4545d8c079c8",
+      "broker.py": "595a8f951f5cc23c5cc3f8fb67f0cdc90d3604139dc40c406a626070f776f852",
+      "contracts.json": "e884aa67744fd5a84028d93ebdc64da2296997c63d19554c618f287904b19953",
+      "controls.py": "e4fda8a90949a2aee3dd75fde127691795094bf5850df0b7f0dd3d5838e571e6",
+      "evaluate.py": "9120f71e4180ba45614ebe23851d5431959d088603b73496bf6900061944542d",
+      "oracle.py": "43510497770e81972e891cb7c14ecc88d96c98cdd45b4975efcdcdb55d1a0b2d",
+      "session.py": "c0a79be598c6af43a0625cf0a4afef009ba6483587161d28e339188ebd2efe13",
+      "test_benchmark.py": "0e0dbb3e10d23504b1cbac51872560336d9eeedbcd745061a7f7b54c55af552a"
+    },
+    "docs/llm": {
+      "SKILL.md": "4b2ef210b11ee01d564a3431231682046681c7bdd48e4a401547ec402372ce8c",
+      "assets.go": "1f3098d07f69a83c97d661f26b04120e12e1f9dd4a0ded6886be9a62e67a92a7",
+      "assets_test.go": "0cdf4a9fe1fafa64e84ee3583208700489c9d6d0b389bd1479a931a922949a1b",
+      "metadata.go": "1e4c0899c02cbbdab098cd43696a7f51365faae949dc92f0f66d2c467ec0c4ca",
+      "reference_test.go": "5906a9b137719b8e6a643baeff07a48d659a39853ee81ec31e380bdf15a9df46",
+      "references/examples/concurrency.ki": "a5a0dc656b28613e5fa38e1cab29e6d3365b1def9cd5df862ee45a545fc20412",
+      "references/examples/effects.ki": "0f06cac354630cd1d38ce7e94ee9328fef8961c097dab5f554e600234f3b40c1",
+      "references/examples/functional.ki": "23ee22a224084d85fc0c19d644eebc54960fd35195eb3dcb1e7132141514086d",
+      "references/examples/hello.ki": "a8967fd7f5d74fd0e4b97ea3ca2bbc93a6e327ee794f62666d5232c386731a16",
+      "references/examples/internal/pricing/main.ki": "147ad54f855765e6ef389ce7083544851c92efb01c41756bdd51c6ddd4e4c5a8",
+      "references/examples/result_optional.ki": "4db812de4dbf5d9af5f1574b0b011bf3423425402bc63cb9be98e1a84c7b7269",
+      "references/examples/service.ki": "9a9f0f6601114ebfe88f55747362ebe229c06ec151708d2fbfdf02ca732ffdf2",
+      "references/examples/typed_errors/README.md": "e6022dc4868c2337fc53bcc7bf6e8d7744e04107b8e112ae36de8ea0ef0e8ebb",
+      "references/examples/typed_errors/main.ki": "2d4b4dfaf803f0d3a0a4c2c45556b28dbf4c52db9cb4c37e9c4d4d9ea2a40a94",
+      "references/examples/validated_results/README.md": "6f0a689243ebaaa6c2f0e47c198604357a9267aa8f2397cb426f84c5e8812fd0",
+      "references/examples/validated_results/main.ki": "09947a94116064b4012f3173f9260ee23bf11642b93202247f54c02daacf1484",
+      "references/examples/validated_results/model/main.ki": "5f27cd83d953bb03d7714a071997b701209f55c9f38abe1551042ae3912d8888",
+      "references/examples/validated_results/pipeline/main.ki": "3f9bbc16fb1020c1462db9d7ed3c6d2c784ff4e27fdd39de1ccca611925591a9",
+      "references/kiro.json": "78684ef8b610473a1c4e7d80baec76f2a8932dad48dab89cb5403de5e0aa1fb9",
+      "references/language.md": "3b1ab280228a3f7fc2a02062a0fcc8bb8fdf4d0494ae28dc1e56c9289db86390"
+    }
+  },
+  "limits": {
+    "tool_calls": 120,
+    "trial_seconds": 900,
+    "response_seconds": 120,
+    "tool_seconds": 60
+  },
+  "schedule": [
+    {
+      "id": "r1-partial-refund-core",
+      "repeat": 1,
+      "task": "partial-refund",
+      "condition": "core"
+    },
+    {
+      "id": "r1-partial-refund-analysis",
+      "repeat": 1,
+      "task": "partial-refund",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-reservation-expiry-analysis",
+      "repeat": 2,
+      "task": "reservation-expiry",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-reservation-expiry-core",
+      "repeat": 2,
+      "task": "reservation-expiry",
+      "condition": "core"
+    },
+    {
+      "id": "r1-payment-declined-analysis",
+      "repeat": 1,
+      "task": "payment-declined",
+      "condition": "analysis"
+    },
+    {
+      "id": "r1-payment-declined-core",
+      "repeat": 1,
+      "task": "payment-declined",
+      "condition": "core"
+    },
+    {
+      "id": "r1-reservation-expiry-core",
+      "repeat": 1,
+      "task": "reservation-expiry",
+      "condition": "core"
+    },
+    {
+      "id": "r1-reservation-expiry-analysis",
+      "repeat": 1,
+      "task": "reservation-expiry",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-payment-boundary-analysis",
+      "repeat": 2,
+      "task": "payment-boundary",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-payment-boundary-core",
+      "repeat": 2,
+      "task": "payment-boundary",
+      "condition": "core"
+    },
+    {
+      "id": "r2-payment-declined-analysis",
+      "repeat": 2,
+      "task": "payment-declined",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-payment-declined-core",
+      "repeat": 2,
+      "task": "payment-declined",
+      "condition": "core"
+    },
+    {
+      "id": "r3-payment-declined-analysis",
+      "repeat": 3,
+      "task": "payment-declined",
+      "condition": "analysis"
+    },
+    {
+      "id": "r3-payment-declined-core",
+      "repeat": 3,
+      "task": "payment-declined",
+      "condition": "core"
+    },
+    {
+      "id": "r1-discount-policy-core",
+      "repeat": 1,
+      "task": "discount-policy",
+      "condition": "core"
+    },
+    {
+      "id": "r1-discount-policy-analysis",
+      "repeat": 1,
+      "task": "discount-policy",
+      "condition": "analysis"
+    },
+    {
+      "id": "r3-payment-boundary-core",
+      "repeat": 3,
+      "task": "payment-boundary",
+      "condition": "core"
+    },
+    {
+      "id": "r3-payment-boundary-analysis",
+      "repeat": 3,
+      "task": "payment-boundary",
+      "condition": "analysis"
+    },
+    {
+      "id": "r1-payment-boundary-core",
+      "repeat": 1,
+      "task": "payment-boundary",
+      "condition": "core"
+    },
+    {
+      "id": "r1-payment-boundary-analysis",
+      "repeat": 1,
+      "task": "payment-boundary",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-discount-policy-analysis",
+      "repeat": 2,
+      "task": "discount-policy",
+      "condition": "analysis"
+    },
+    {
+      "id": "r2-discount-policy-core",
+      "repeat": 2,
+      "task": "discount-policy",
+      "condition": "core"
+    },
+    {
+      "id": "r3-discount-policy-core",
+      "repeat": 3,
+      "task": "discount-policy",
+      "condition": "core"
+    },
+    {
+      "id": "r3-discount-policy-analysis",
+      "repeat": 3,
+      "task": "discount-policy",
+      "condition": "analysis"
+    },
+    {
+      "id": "r3-reservation-expiry-analysis",
+      "repeat": 3,
+      "task": "reservation-expiry",
+      "condition": "analysis"
+    },
+    {
+      "id": "r3-reservation-expiry-core",
+      "repeat": 3,
+      "task": "reservation-expiry",
+      "condition": "core"
+    },
+    {
+      "id": "r2-partial-refund-core",
+      "repeat": 2,
+      "task": "partial-refund",
+      "condition": "core"
+    },
+    {
+      "id": "r2-partial-refund-analysis",
+      "repeat": 2,
+      "task": "partial-refund",
+      "condition": "analysis"
+    },
+    {
+      "id": "r3-partial-refund-analysis",
+      "repeat": 3,
+      "task": "partial-refund",
+      "condition": "analysis"
+    },
+    {
+      "id": "r3-partial-refund-core",
+      "repeat": 3,
+      "task": "partial-refund",
+      "condition": "core"
+    }
+  ],
+  "model": null,
+  "model_settings": null,
+  "metrics": {
+    "primary": "behavioral correctness and explicit structural contract",
+    "usage": "driver reported or unavailable"
+  }
+}

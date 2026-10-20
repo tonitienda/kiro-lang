@@ -1,0 +1,37 @@
+mod refunds
+
+type Error {
+  variant InvalidRefund {
+  }
+}
+
+type Refund {
+  refund_cents:i32
+  remaining_cents:i32
+}
+
+fn valid(unit_cents:i32, units:i32, returned_units:i32, shipping_cents:i32) -> bool {
+  when ( unit_cents < 0 ) { true => { return false } _ => { } }
+  when ( units < = 0 ) { true => { return false } _ => { } }
+  when ( returned_units < 0 ) { true => { return false } _ => { } }
+  when ( returned_units > units ) { true => { return false } _ => { } }
+  when ( shipping_cents < 0 ) { true => { return false } _ => { } }
+  return true
+}
+
+fn shipping_refund(returned_units:i32, units:i32, shipping_cents:i32) -> i32 {
+  when ( returned_units == 0 ) {
+  true => { return 0 }
+  _ => { return shipping_cents }
+  }
+}
+
+fn calculate(unit_cents:i32, units:i32, returned_units:i32, shipping_cents:i32) -> R[Refund,Error] {
+  when ( valid ( unit_cents : unit_cents , units : units , returned_units : returned_units , shipping_cents : shipping_cents ) ) {
+  false => { return Err ( error : Error.InvalidRefund ( ) ) }
+  _ => { }
+  }
+  let paid = unit_cents * units + shipping_cents
+  let returned = unit_cents * returned_units + shipping_refund ( returned_units : returned_units , units : units , shipping_cents : shipping_cents )
+  return Ok ( value : Refund { refund_cents : returned , remaining_cents : paid - returned } )
+}

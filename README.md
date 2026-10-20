@@ -37,6 +37,11 @@ and the executable builtin API. Agents receive it through new-project guidance; 
 [benchmark onboarding protocol](docs/research/benchmark_onboarding.md) pins versions and
 accounts for learning/context costs before comparison with Go.
 
+The [maintenance benchmark](benchmarks/maintenance/README.md) now provides five independent
+tasks, a larger HTTP workload, deterministic reference/negative controls and a paired
+external-model trial harness. It has no model results yet: the development environment lacks
+a Docker runtime and configured model driver. See [Phase 20](PHASE20_NOTES.md).
+
 ### Current backend boundary
 
 Runnable programs currently package a Go-hosted interpreter into a Go executable. `kiro inspect go` currently emits structural stubs, not direct typed lowering of the executable business logic. Checking, runtime semantics, and generated-Go inspection are still incomplete; see the research plan for reproducible probes and limitations.
